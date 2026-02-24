@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "FPConnect",
+    "slug": "fpconnect-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#1d4ed8"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fpconnect.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1d4ed8"
+      },
+      "package": "com.fpconnect.mobile"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "scheme": "fpconnect"
+  }
+}
