@@ -1,2 +1,6 @@
 # Add package-lock.json to ignore
 /apps/web/package-lock.json
+
+# Next.js build output
+apps/web/.next/
+apps/web/node_modules/
