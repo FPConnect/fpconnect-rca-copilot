@@ -34,7 +34,7 @@ export default function Sidebar() {
         <span className="text-xl font-bold tracking-tight text-blue-400">
           FPConnect
         </span>
-        <span className="block text-xs text-gray-400 mt-0.5">RCA Copilot</span>
+        <span className="block text-xs text-gray-400 mt-0.5">Technologies</span>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map(({ href, label, icon: Icon }) => {
