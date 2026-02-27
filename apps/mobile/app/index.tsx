@@ -1,13 +1,37 @@
 import React from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
-import Header from "../src/components/Header";
 import Card from "../src/components/Card";
+import { Ticket, Clock, CheckCircle, AlertTriangle } from "lucide-react-native";
 
 const METRICS = [
-  { label: "Open Tickets", value: 12, bg: "#fef9c3", color: "#854d0e" },
-  { label: "In Progress", value: 5, bg: "#dbeafe", color: "#1e40af" },
-  { label: "Resolved Today", value: 8, bg: "#dcfce7", color: "#166534" },
-  { label: "Critical", value: 2, bg: "#fee2e2", color: "#991b1b" },
+  {
+    label: "Open Tickets",
+    value: 12,
+    bg: "#fef9c3",
+    color: "#854d0e",
+    icon: <Ticket size={20} color="#854d0e" />,
+  },
+  {
+    label: "In Progress",
+    value: 5,
+    bg: "#dbeafe",
+    color: "#1e40af",
+    icon: <Clock size={20} color="#1e40af" />,
+  },
+  {
+    label: "Resolved Today",
+    value: 8,
+    bg: "#dcfce7",
+    color: "#166534",
+    icon: <CheckCircle size={20} color="#166534" />,
+  },
+  {
+    label: "Critical",
+    value: 2,
+    bg: "#fee2e2",
+    color: "#991b1b",
+    icon: <AlertTriangle size={20} color="#991b1b" />,
+  },
 ];
 
 const RECENT_ACTIVITY = [
@@ -20,10 +44,7 @@ const RECENT_ACTIVITY = [
 export default function DashboardScreen() {
   return (
     <View style={styles.container}>
-      <Header title="Dashboard" />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>Dashboard</Text>
-
         {/* Metric cards — 2 per row */}
         <View style={styles.grid}>
           {METRICS.map((m) => (
@@ -33,6 +54,7 @@ export default function DashboardScreen() {
               value={m.value}
               backgroundColor={m.bg}
               textColor={m.color}
+              icon={m.icon}
             />
           ))}
         </View>
@@ -58,12 +80,6 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   content: { padding: 16, paddingBottom: 32 },
-  heading: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 16,
-  },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -72,13 +88,13 @@ const styles = StyleSheet.create({
   },
   section: {
     backgroundColor: "#ffffff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   sectionTitle: {
     fontSize: 16,

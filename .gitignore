@@ -2,3 +2,6 @@
 apps/web/.next/
 apps/web/node_modules/
 apps/web/tsconfig.tsbuildinfo
+
+# Mobile app dependencies
+apps/mobile/node_modules/
