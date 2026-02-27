@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, SafeAreaView } from "react-native";
-import { Bell } from "lucide-react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 interface HeaderProps {
   title: string;
@@ -18,7 +18,7 @@ export default function Header({ title, notificationCount = 0 }: HeaderProps) {
         <View style={styles.right}>
           <Text style={styles.title}>{title}</Text>
           <View style={styles.bellWrap}>
-            <Bell size={20} color="#6b7280" />
+            <Ionicons name="notifications-outline" size={22} color="#6b7280" />
             {notificationCount > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>

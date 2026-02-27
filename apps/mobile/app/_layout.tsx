@@ -1,12 +1,6 @@
 import { Tabs } from "expo-router";
 import { TouchableOpacity } from "react-native";
-import {
-  LayoutDashboard,
-  Monitor,
-  Ticket,
-  Settings,
-  Bell,
-} from "lucide-react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function RootLayout() {
   return (
@@ -18,7 +12,7 @@ export default function RootLayout() {
         headerTitleStyle: { fontWeight: "700", fontSize: 17 },
         headerRight: () => (
           <TouchableOpacity style={{ marginRight: 16 }}>
-            <Bell size={20} color="#ffffff" />
+            <Ionicons name="notifications-outline" size={22} color="#ffffff" />
           </TouchableOpacity>
         ),
         tabBarStyle: {
@@ -37,7 +31,7 @@ export default function RootLayout() {
         options={{
           title: "Dashboard",
           tabBarIcon: ({ color, size }) => (
-            <LayoutDashboard color={color} size={size} />
+            <Ionicons name="grid-outline" color={color} size={size} />
           ),
         }}
       />
@@ -46,7 +40,7 @@ export default function RootLayout() {
         options={{
           title: "Machines",
           tabBarIcon: ({ color, size }) => (
-            <Monitor color={color} size={size} />
+            <Ionicons name="hardware-chip-outline" color={color} size={size} />
           ),
         }}
       />
@@ -55,7 +49,7 @@ export default function RootLayout() {
         options={{
           title: "Tickets",
           tabBarIcon: ({ color, size }) => (
-            <Ticket color={color} size={size} />
+            <Ionicons name="ticket-outline" color={color} size={size} />
           ),
         }}
       />
@@ -64,7 +58,7 @@ export default function RootLayout() {
         options={{
           title: "Settings",
           tabBarIcon: ({ color, size }) => (
-            <Settings color={color} size={size} />
+            <Ionicons name="settings-outline" color={color} size={size} />
           ),
         }}
       />
