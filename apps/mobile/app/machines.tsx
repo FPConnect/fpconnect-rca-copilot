@@ -4,10 +4,8 @@ import {
   Text,
   ScrollView,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import Header from "../src/components/Header";
 
 interface Machine {
   id: string;
@@ -49,10 +47,7 @@ export default function MachinesScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="Machines" />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>Machines</Text>
-
         <TextInput
           style={styles.searchInput}
           placeholder="Search machines..."
@@ -108,12 +103,11 @@ export default function MachinesScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   content: { padding: 16, paddingBottom: 32 },
-  heading: { fontSize: 24, fontWeight: "700", color: "#111827", marginBottom: 12 },
   searchInput: {
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
@@ -122,21 +116,21 @@ const styles = StyleSheet.create({
   },
   empty: {
     backgroundColor: "#ffffff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 32,
     alignItems: "center",
   },
   emptyText: { fontSize: 14, color: "#9ca3af" },
   card: {
     backgroundColor: "#ffffff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 14,
     marginBottom: 10,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   cardHeader: {
     flexDirection: "row",

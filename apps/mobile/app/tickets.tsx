@@ -8,7 +8,6 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import Header from "../src/components/Header";
 
 interface Ticket {
   id: string;
@@ -68,10 +67,7 @@ export default function TicketsScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="Tickets" />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.heading}>Tickets</Text>
-
         {/* Create form */}
         <View style={styles.form}>
           <Text style={styles.formTitle}>Create Ticket</Text>
@@ -160,17 +156,16 @@ export default function TicketsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   content: { padding: 16, paddingBottom: 32 },
-  heading: { fontSize: 24, fontWeight: "700", color: "#111827", marginBottom: 12 },
   form: {
     backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 14,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   formTitle: { fontSize: 15, fontWeight: "600", color: "#1f2937", marginBottom: 10 },
   input: {
@@ -221,14 +216,14 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 14, color: "#9ca3af" },
   card: {
     backgroundColor: "#ffffff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 14,
     marginBottom: 10,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   cardHeader: {
     flexDirection: "row",

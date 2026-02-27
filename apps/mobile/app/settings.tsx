@@ -9,7 +9,6 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import Header from "../src/components/Header";
 
 interface NotificationPrefs {
   email: boolean;
@@ -97,10 +96,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="Settings" />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.heading}>Settings</Text>
-
         {/* Profile */}
         <SectionCard title="User Profile">
           <Text style={styles.fieldLabel}>Name</Text>
@@ -211,17 +207,16 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8fafc" },
   content: { padding: 16, paddingBottom: 32 },
-  heading: { fontSize: 24, fontWeight: "700", color: "#111827", marginBottom: 16 },
   sectionCard: {
     backgroundColor: "#ffffff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   sectionTitle: { fontSize: 15, fontWeight: "600", color: "#1f2937", marginBottom: 8 },
   sectionDivider: { height: 1, backgroundColor: "#f3f4f6", marginBottom: 12 },
