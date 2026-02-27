@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { NotificationProvider } from "@/contexts/NotificationContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 
 export const metadata: Metadata = {
   title: "FPConnect RCA Copilot",
@@ -13,7 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <NotificationProvider>
+          <SidebarProvider>{children}</SidebarProvider>
+        </NotificationProvider>
+      </body>
     </html>
   );
 }
