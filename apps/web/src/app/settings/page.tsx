@@ -118,8 +118,8 @@ function Toggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between py-3 gap-4">
-      <div className="min-w-0">
+    <div className="flex items-center justify-between py-3 gap-4 overflow-hidden">
+      <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-gray-700">{label}</p>
         {description && (
           <p className="text-xs text-gray-400 mt-0.5">{description}</p>
@@ -129,13 +129,13 @@ function Toggle({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative flex-shrink-0 w-10 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
+        className={`relative flex-shrink-0 w-11 h-6 rounded-full overflow-hidden transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
           checked ? "bg-blue-600" : "bg-gray-200"
         }`}
       >
         <span
-          className={`absolute top-1 left-0 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-            checked ? "translate-x-5" : "translate-x-1"
+          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+            checked ? "translate-x-5" : "translate-x-0"
           }`}
         />
       </button>
