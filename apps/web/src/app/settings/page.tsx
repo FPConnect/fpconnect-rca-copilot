@@ -97,7 +97,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl shadow p-6 mb-6">
+    <div className="bg-white rounded-xl shadow p-6 mb-6 overflow-hidden">
       <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
         {title}
       </h2>
@@ -118,7 +118,7 @@ function Toggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between py-3 gap-4 overflow-hidden">
+    <div className="flex items-center justify-between py-3 gap-4">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-gray-700">{label}</p>
         {description && (
@@ -129,7 +129,7 @@ function Toggle({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative flex-shrink-0 w-11 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+        className={`relative flex-shrink-0 w-11 h-6 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
           checked ? "bg-blue-600" : "bg-gray-200"
         }`}
       >
@@ -219,7 +219,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Configurações</h1>
 
       {/* Profile */}
