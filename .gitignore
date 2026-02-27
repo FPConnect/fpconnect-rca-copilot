@@ -1,3 +1,4 @@
 # Next.js build output
 apps/web/.next/
 apps/web/node_modules/
+apps/web/tsconfig.tsbuildinfo
