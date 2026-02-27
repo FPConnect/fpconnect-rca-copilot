@@ -12,13 +12,16 @@ import {
   ShieldCheck,
   History,
   Settings,
+  Ticket,
 } from "lucide-react";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/machines", label: "Máquinas", icon: Monitor },
   { href: "/health-checks", label: "Health Checks", icon: HeartPulse },
   { href: "/alerts", label: "Alertas", icon: Bell },
+  { href: "/tickets", label: "Tickets", icon: Ticket },
   { href: "/metrics", label: "Métricas", icon: BarChart2 },
   { href: "/maintenance", label: "Manutenção", icon: Wrench },
   { href: "/access-control", label: "Controle de Acesso", icon: ShieldCheck },
@@ -27,6 +30,7 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { unreadCount } = useNotifications();
 
   return (
     <aside className="w-64 min-h-screen bg-gray-900 text-white flex flex-col">
@@ -54,11 +58,31 @@ export default function Sidebar() {
             </Link>
           );
         })}
+        <Link
+          href="/notifications"
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            pathname === "/notifications"
+              ? "bg-blue-600 text-white"
+              : "text-gray-300 hover:bg-gray-800 hover:text-white"
+          }`}
+        >
+          <Bell size={18} />
+          <span className="flex-1">Notificações</span>
+          {unreadCount > 0 && (
+            <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs rounded-full font-semibold">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </Link>
       </nav>
       <div className="px-3 py-4 border-t border-gray-700">
         <Link
           href="/settings"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            pathname === "/settings"
+              ? "bg-blue-600 text-white"
+              : "text-gray-300 hover:bg-gray-800 hover:text-white"
+          }`}
         >
           <Settings size={18} />
           Configurações
@@ -67,3 +91,4 @@ export default function Sidebar() {
     </aside>
   );
 }
+
