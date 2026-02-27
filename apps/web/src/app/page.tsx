@@ -1,5 +1,3 @@
-import DashboardPage from "./dashboard/page";
-
-export default function Home() {
-  return <DashboardPage />;
+export default function Page() {
+  return <div>Hello FPConnect</div>;
 }
