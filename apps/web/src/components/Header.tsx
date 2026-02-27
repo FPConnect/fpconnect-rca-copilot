@@ -1,19 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, User, ChevronDown, LogOut, Settings } from "lucide-react";
+import { Bell, User, ChevronDown, LogOut, Settings, Menu } from "lucide-react";
 import Link from "next/link";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 export default function Header() {
   const [userOpen, setUserOpen] = useState(false);
   const { unreadCount, markAllRead } = useNotifications();
+  const { toggle } = useSidebar();
 
   return (
-    <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-10">
-      <h1 className="text-base font-semibold text-gray-700 hidden sm:block">
-        Healthcare Equipment Monitor
-      </h1>
+    <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={toggle}
+          className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+          aria-label="Abrir menu"
+        >
+          <Menu size={20} />
+        </button>
+        <h1 className="text-base font-semibold text-gray-700 hidden sm:block">
+          Healthcare Equipment Monitor
+        </h1>
+      </div>
 
       <div className="flex items-center gap-4 ml-auto">
         {/* Notifications */}

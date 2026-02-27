@@ -74,8 +74,8 @@ export default function HistoryPage() {
           onClear={() => { setFilters({}); setPage(1); }}
         />
       </div>
-      <div className="bg-white rounded-xl shadow overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-xl shadow overflow-x-auto">
+        <table className="w-full text-sm min-w-[600px]">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               {["Ação", "Usuário", "Recurso", "Data/Hora"].map((h) => (
