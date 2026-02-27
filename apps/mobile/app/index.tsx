@@ -1,7 +1,7 @@
 import React from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet, SafeAreaView } from "react-native";
 import Card from "../src/components/Card";
-import { Ticket, Clock, CheckCircle, AlertTriangle } from "lucide-react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const METRICS = [
   {
@@ -9,28 +9,28 @@ const METRICS = [
     value: 12,
     bg: "#fef9c3",
     color: "#854d0e",
-    icon: <Ticket size={20} color="#854d0e" />,
+    icon: <Ionicons name="ticket-outline" size={22} color="#854d0e" />,
   },
   {
     label: "In Progress",
     value: 5,
     bg: "#dbeafe",
     color: "#1e40af",
-    icon: <Clock size={20} color="#1e40af" />,
+    icon: <Ionicons name="time-outline" size={22} color="#1e40af" />,
   },
   {
     label: "Resolved Today",
     value: 8,
     bg: "#dcfce7",
     color: "#166534",
-    icon: <CheckCircle size={20} color="#166534" />,
+    icon: <Ionicons name="checkmark-circle-outline" size={22} color="#166534" />,
   },
   {
     label: "Critical",
     value: 2,
     bg: "#fee2e2",
     color: "#991b1b",
-    icon: <AlertTriangle size={20} color="#991b1b" />,
+    icon: <Ionicons name="warning-outline" size={22} color="#991b1b" />,
   },
 ];
 
@@ -42,9 +42,24 @@ const RECENT_ACTIVITY = [
 ];
 
 export default function DashboardScreen() {
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? "Good morning 👋" : hour < 18 ? "Good afternoon 👋" : "Good evening 👋";
+
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Welcome Banner */}
+        <View style={styles.banner}>
+          <View>
+            <Text style={styles.bannerGreet}>{greeting}</Text>
+            <Text style={styles.bannerName}>Admin</Text>
+          </View>
+          <View style={styles.bannerBadge}>
+            <Text style={styles.bannerBadgeText}>FPConnect</Text>
+          </View>
+        </View>
+
         {/* Metric cards — 2 per row */}
         <View style={styles.grid}>
           {METRICS.map((m) => (
@@ -73,13 +88,31 @@ export default function DashboardScreen() {
           ))}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
+  safe: { flex: 1, backgroundColor: "#f8fafc" },
   content: { padding: 16, paddingBottom: 32 },
+  banner: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#2563eb",
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 20,
+  },
+  bannerGreet: { fontSize: 13, color: "#bfdbfe", fontWeight: "500" },
+  bannerName: { fontSize: 22, fontWeight: "800", color: "#ffffff", marginTop: 2 },
+  bannerBadge: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 99,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  bannerBadgeText: { color: "#ffffff", fontWeight: "700", fontSize: 13 },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",

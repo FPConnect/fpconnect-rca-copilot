@@ -7,7 +7,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
 } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 interface Ticket {
   id: string;
@@ -40,6 +45,7 @@ export default function TicketsScreen() {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Ticket["priority"]>("medium");
   const [search, setSearch] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
 
   const PRIORITIES: Ticket["priority"][] = ["low", "medium", "high", "critical"];
 
@@ -57,6 +63,7 @@ export default function TicketsScreen() {
     setTickets([newTicket, ...tickets]);
     setTitle("");
     setPriority("medium");
+    setModalVisible(false);
   };
 
   const filtered = useMemo(() => {
@@ -66,50 +73,10 @@ export default function TicketsScreen() {
   }, [tickets, search]);
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {/* Create form */}
-        <View style={styles.form}>
-          <Text style={styles.formTitle}>Create Ticket</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ticket title..."
-            placeholderTextColor="#9ca3af"
-            value={title}
-            onChangeText={setTitle}
-          />
-          <View style={styles.priorityRow}>
-            {PRIORITIES.map((p) => {
-              const active = priority === p;
-              const pc = PRIORITY_COLORS[p];
-              return (
-                <TouchableOpacity
-                  key={p}
-                  style={[
-                    styles.priorityBtn,
-                    { backgroundColor: active ? pc.bg : "#f3f4f6" },
-                    active && styles.priorityBtnActive,
-                  ]}
-                  onPress={() => setPriority(p)}
-                >
-                  <Text
-                    style={[
-                      styles.priorityBtnText,
-                      { color: active ? pc.text : "#6b7280" },
-                    ]}
-                  >
-                    {p}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          <TouchableOpacity style={styles.createBtn} onPress={handleCreate}>
-            <Text style={styles.createBtnText}>+ Create</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Search */}
+    <SafeAreaView style={styles.safe}>
+      {/* Search */}
+      <View style={styles.searchWrap}>
+        <Ionicons name="search-outline" size={16} color="#9ca3af" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search tickets..."
@@ -117,10 +84,13 @@ export default function TicketsScreen() {
           value={search}
           onChangeText={setSearch}
         />
+      </View>
 
-        {/* Ticket list */}
+      {/* Ticket list */}
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {filtered.length === 0 ? (
           <View style={styles.empty}>
+            <Ionicons name="ticket-outline" size={40} color="#d1d5db" />
             <Text style={styles.emptyText}>No tickets found.</Text>
           </View>
         ) : (
@@ -149,69 +119,119 @@ export default function TicketsScreen() {
           })
         )}
       </ScrollView>
-    </View>
+
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setModalVisible(true)}
+        accessibilityLabel="Create new ticket"
+        accessibilityRole="button"
+      >
+        <Ionicons name="add" size={28} color="#ffffff" />
+      </TouchableOpacity>
+
+      {/* New Ticket Modal */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>New Ticket</Text>
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                accessibilityLabel="Close modal"
+                accessibilityRole="button"
+              >
+                <Ionicons name="close" size={22} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.fieldLabel}>Title</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Describe the issue..."
+              placeholderTextColor="#9ca3af"
+              value={title}
+              onChangeText={setTitle}
+              multiline
+              numberOfLines={2}
+              accessibilityLabel="Ticket title"
+            />
+
+            <Text style={styles.fieldLabel}>Priority</Text>
+            <View style={styles.priorityRow}>
+              {PRIORITIES.map((p) => {
+                const active = priority === p;
+                const pc = PRIORITY_COLORS[p];
+                return (
+                  <TouchableOpacity
+                    key={p}
+                    style={[
+                      styles.priorityBtn,
+                      { backgroundColor: active ? pc.bg : "#f3f4f6" },
+                      active && styles.priorityBtnActive,
+                    ]}
+                    onPress={() => setPriority(p)}
+                  >
+                    <Text
+                      style={[
+                        styles.priorityBtnText,
+                        { color: active ? pc.text : "#6b7280" },
+                      ]}
+                    >
+                      {p}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <TouchableOpacity style={styles.createBtn} onPress={handleCreate}>
+              <Text style={styles.createBtnText}>Create Ticket</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
-  content: { padding: 16, paddingBottom: 32 },
-  form: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 14,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
-  },
-  formTitle: { fontSize: 15, fontWeight: "600", color: "#1f2937", marginBottom: 10 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: "#111827",
-    marginBottom: 10,
-  },
-  priorityRow: { flexDirection: "row", gap: 6, marginBottom: 10, flexWrap: "wrap" },
-  priorityBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 99,
-  },
-  priorityBtnActive: {
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.1)",
-  },
-  priorityBtnText: { fontSize: 12, fontWeight: "600", textTransform: "capitalize" },
-  createBtn: {
-    backgroundColor: "#2563eb",
-    borderRadius: 8,
-    paddingVertical: 10,
+  safe: { flex: 1, backgroundColor: "#f8fafc" },
+  searchWrap: {
+    flexDirection: "row",
     alignItems: "center",
-  },
-  createBtnText: { color: "#ffffff", fontWeight: "700", fontSize: 14 },
-  searchInput: {
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 10,
-    paddingHorizontal: 14,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 4,
+    paddingHorizontal: 12,
+  },
+  searchIcon: { marginRight: 8 },
+  searchInput: {
+    flex: 1,
     paddingVertical: 10,
     fontSize: 14,
     color: "#111827",
-    marginBottom: 14,
   },
+  content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 100 },
   empty: {
     backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 32,
+    borderRadius: 16,
+    padding: 48,
     alignItems: "center",
+    gap: 12,
   },
   emptyText: { fontSize: 14, color: "#9ca3af" },
   card: {
@@ -238,4 +258,77 @@ const styles = StyleSheet.create({
   badgeText: { fontSize: 11, fontWeight: "700", textTransform: "capitalize" },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 99, backgroundColor: "#f3f4f6" },
   statusBadgeText: { fontSize: 11, fontWeight: "600", color: "#374151" },
+  fab: {
+    position: "absolute",
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#2563eb",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#2563eb",
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  modalSheet: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: "#e5e7eb",
+    borderRadius: 2,
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  modalTitle: { fontSize: 18, fontWeight: "700", color: "#111827" },
+  fieldLabel: { fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: "#111827",
+    marginBottom: 16,
+    textAlignVertical: "top",
+  },
+  priorityRow: { flexDirection: "row", gap: 8, marginBottom: 20, flexWrap: "wrap" },
+  priorityBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 99,
+  },
+  priorityBtnActive: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.1)",
+  },
+  priorityBtnText: { fontSize: 12, fontWeight: "600", textTransform: "capitalize" },
+  createBtn: {
+    backgroundColor: "#2563eb",
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  createBtnText: { color: "#ffffff", fontWeight: "700", fontSize: 15 },
 });

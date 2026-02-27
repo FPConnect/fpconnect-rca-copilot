@@ -5,7 +5,9 @@ import {
   ScrollView,
   TextInput,
   StyleSheet,
+  SafeAreaView,
 } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 interface Machine {
   id: string;
@@ -46,18 +48,22 @@ export default function MachinesScreen() {
   }, [search]);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search machines..."
-          placeholderTextColor="#9ca3af"
-          value={search}
-          onChangeText={setSearch}
-        />
+        <View style={styles.searchWrap}>
+          <Ionicons name="search-outline" size={16} color="#9ca3af" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search machines..."
+            placeholderTextColor="#9ca3af"
+            value={search}
+            onChangeText={setSearch}
+          />
+        </View>
 
         {filtered.length === 0 ? (
           <View style={styles.empty}>
+            <Ionicons name="hardware-chip-outline" size={40} color="#d1d5db" />
             <Text style={styles.emptyText}>No machines found.</Text>
           </View>
         ) : (
@@ -96,19 +102,26 @@ export default function MachinesScreen() {
           })
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
+  safe: { flex: 1, backgroundColor: "#f8fafc" },
   content: { padding: 16, paddingBottom: 32 },
-  searchInput: {
+  searchWrap: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#e5e7eb",
     borderRadius: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
+    marginBottom: 14,
+  },
+  searchIcon: { marginRight: 8 },
+  searchInput: {
+    flex: 1,
     paddingVertical: 10,
     fontSize: 14,
     color: "#111827",
@@ -117,8 +130,9 @@ const styles = StyleSheet.create({
   empty: {
     backgroundColor: "#ffffff",
     borderRadius: 16,
-    padding: 32,
+    padding: 48,
     alignItems: "center",
+    gap: 12,
   },
   emptyText: { fontSize: 14, color: "#9ca3af" },
   card: {

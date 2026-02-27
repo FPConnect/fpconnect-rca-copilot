@@ -8,6 +8,7 @@ import {
   Switch,
   StyleSheet,
   Alert,
+  SafeAreaView,
 } from "react-native";
 
 interface NotificationPrefs {
@@ -95,7 +96,7 @@ export default function SettingsScreen() {
   const THEMES: Array<"light" | "dark" | "system"> = ["light", "dark", "system"];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {/* Profile */}
         <SectionCard title="User Profile">
@@ -200,12 +201,12 @@ export default function SettingsScreen() {
           </View>
         </SectionCard>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
+  safe: { flex: 1, backgroundColor: "#f8fafc" },
   content: { padding: 16, paddingBottom: 32 },
   sectionCard: {
     backgroundColor: "#ffffff",
