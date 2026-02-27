@@ -3,6 +3,7 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 import ToastManager from "@/components/ToastManager";
 
 export const metadata: Metadata = {
@@ -19,12 +20,14 @@ export default function RootLayout({
     <html lang="en">
       <body className="flex min-h-screen bg-gray-50">
         <NotificationProvider>
-          <Sidebar />
-          <div className="flex flex-col flex-1 min-w-0">
-            <Header />
-            <main className="flex-1 p-6 overflow-auto">{children}</main>
-          </div>
-          <ToastManager />
+          <SidebarProvider>
+            <Sidebar />
+            <div className="flex flex-col flex-1 min-w-0">
+              <Header />
+              <main className="flex-1 p-4 md:p-6 overflow-auto">{children}</main>
+            </div>
+            <ToastManager />
+          </SidebarProvider>
         </NotificationProvider>
       </body>
     </html>

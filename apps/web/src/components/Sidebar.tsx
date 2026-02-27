@@ -13,8 +13,10 @@ import {
   History,
   Settings,
   Ticket,
+  X,
 } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -31,14 +33,24 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
+  const { isOpen, close } = useSidebar();
 
-  return (
+  const navContent = (
     <aside className="w-64 min-h-screen bg-gray-900 text-white flex flex-col">
-      <div className="px-6 py-5 border-b border-gray-700">
-        <span className="text-xl font-bold tracking-tight text-blue-400">
-          FPConnect
-        </span>
-        <span className="block text-xs text-gray-400 mt-0.5">Technologies</span>
+      <div className="px-6 py-5 border-b border-gray-700 flex items-center justify-between">
+        <div>
+          <span className="text-xl font-bold tracking-tight text-blue-400">
+            FPConnect
+          </span>
+          <span className="block text-xs text-gray-400 mt-0.5">Technologies</span>
+        </div>
+        <button
+          onClick={close}
+          className="md:hidden p-1 rounded text-gray-400 hover:text-white"
+          aria-label="Fechar menu"
+        >
+          <X size={20} />
+        </button>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map(({ href, label, icon: Icon }) => {
@@ -47,6 +59,7 @@ export default function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={close}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 active
                   ? "bg-blue-600 text-white"
@@ -60,6 +73,7 @@ export default function Sidebar() {
         })}
         <Link
           href="/notifications"
+          onClick={close}
           className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             pathname === "/notifications"
               ? "bg-blue-600 text-white"
@@ -78,6 +92,7 @@ export default function Sidebar() {
       <div className="px-3 py-4 border-t border-gray-700">
         <Link
           href="/settings"
+          onClick={close}
           className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             pathname === "/settings"
               ? "bg-blue-600 text-white"
@@ -89,6 +104,25 @@ export default function Sidebar() {
         </Link>
       </div>
     </aside>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <div className="hidden md:flex">{navContent}</div>
+
+      {/* Mobile sidebar overlay */}
+      {isOpen && (
+        <div className="md:hidden fixed inset-0 z-40 flex">
+          <button
+            className="fixed inset-0 bg-black/50 cursor-default"
+            onClick={close}
+            aria-label="Fechar menu"
+          />
+          <div className="relative z-50">{navContent}</div>
+        </div>
+      )}
+    </>
   );
 }
 
