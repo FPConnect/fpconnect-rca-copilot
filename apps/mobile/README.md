@@ -2,6 +2,20 @@
 
 ## Known-good startup checklist (Android & iOS)
 
+## If `Missing script` appears
+
+You are not on the latest commit in `apps/mobile`.
+
+Run:
+
+```bash
+cd apps/mobile
+git rev-parse --short HEAD
+npm run
+```
+
+You must see scripts `doctor`, `start:go`, and `start:dev-client` in the list.
+
 From repository root:
 
 ```bash
