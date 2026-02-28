@@ -22,7 +22,7 @@ From repository root:
 cd apps/mobile
 npm run reinstall
 npm run doctor
-npm run start:go
+npm start
 ```
 
 If you are using a **development build** (not Expo Go), use:
@@ -50,3 +50,10 @@ Expected major versions:
 - `expo-router@6.x`
 - `react@19.1.0`
 - `react-native@0.81.5`
+
+
+## Manual reset only
+
+```bash
+npm run clean
+```
