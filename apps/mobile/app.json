@@ -25,7 +25,8 @@
     },
     "scheme": "fpconnect",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-dev-client"
     ]
   }
 }
