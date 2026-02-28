@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "newArchEnabled": true,
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#1d4ed8"
@@ -23,6 +24,9 @@
     "web": {
       "bundler": "metro"
     },
-    "scheme": "fpconnect"
+    "scheme": "fpconnect",
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
