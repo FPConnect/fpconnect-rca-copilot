@@ -1,0 +1,59 @@
+# Mobile App (Expo)
+
+## Known-good startup checklist (Android & iOS)
+
+## If `Missing script` appears
+
+You are not on the latest commit in `apps/mobile`.
+
+Run:
+
+```bash
+cd apps/mobile
+git rev-parse --short HEAD
+npm run
+```
+
+You must see scripts `doctor`, `start:go`, and `start:dev-client` in the list.
+
+From repository root:
+
+```bash
+cd apps/mobile
+npm run reinstall
+npm run doctor
+npm start
+```
+
+If you are using a **development build** (not Expo Go), use:
+
+```bash
+npm run start:dev-client
+```
+
+## Why this matters
+
+If Metro reports mismatched package versions (e.g. `expo-router@4`, `react-native@0.76`, `react@18`), your local install is still using stale dependencies.
+
+This app expects SDK 54-compatible versions declared in `package.json`.
+
+## Quick validation
+
+```bash
+npm ls expo expo-dev-client expo-router react react-native
+```
+
+Expected major versions:
+
+- `expo@54.x`
+- `expo-dev-client@6.x`
+- `expo-router@6.x`
+- `react@19.1.0`
+- `react-native@0.81.5`
+
+
+## Manual reset only
+
+```bash
+npm run clean
+```
