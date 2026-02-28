@@ -11,6 +11,14 @@
     "web": "npx expo start --web",
     "doctor": "npx expo-doctor",
     "reinstall": "node -e \"const fs=require('fs');fs.rmSync('node_modules',{recursive:true,force:true});fs.rmSync('package-lock.json',{force:true});\" && npm cache clean --force && npm install"
+    "start": "expo start",
+    "start:go": "expo start --go -c",
+    "start:dev-client": "expo start --dev-client -c",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "doctor": "expo-doctor",
+    "reinstall": "rm -rf node_modules package-lock.json && npm cache clean --force && npm install"
   },
   "dependencies": {
     "expo": "~54.0.33",
