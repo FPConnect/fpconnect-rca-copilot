@@ -1,5 +1,43 @@
 # Mobile App (Expo)
 
+## Testing on a physical device (Android or iOS)
+
+### Prerequisites
+
+1. Install [Node.js 18+](https://nodejs.org)
+2. Install **Expo Go** on your phone:
+   - [Android — Google Play](https://play.google.com/store/apps/details?id=host.exp.exponent)
+   - [iOS — App Store](https://apps.apple.com/app/expo-go/id982107779)
+3. Make sure your phone and computer are on the **same Wi-Fi network**
+
+### Steps
+
+```bash
+cd apps/mobile
+npm install
+npm start          # starts the Expo dev server and shows a QR code
+```
+
+Open **Expo Go** on your phone and scan the QR code shown in the terminal.  
+The app will load directly on your device — no cable required.
+
+Or, from the repository root:
+
+```bash
+make install-mobile   # install dependencies
+make dev-mobile       # start the Expo dev server
+```
+
+### Target a specific platform
+
+```bash
+npm run android   # Android emulator or connected device via USB
+npm run ios       # iOS simulator (macOS only)
+npm run web       # open in browser (Expo Web)
+```
+
+---
+
 ## Known-good startup checklist (Android & iOS)
 
 ## If `Missing script` appears
@@ -14,7 +52,7 @@ git rev-parse --short HEAD
 npm run
 ```
 
-You must see scripts `doctor`, `start:go`, and `start:dev-client` in the list.
+You must see scripts `doctor`, `start:go`, `start:dev-client`, and `test` in the list.
 
 From repository root:
 
@@ -51,6 +89,13 @@ Expected major versions:
 - `react@19.1.0`
 - `react-native@0.81.5`
 
+## Run tests
+
+```bash
+npm test
+# or from the repository root:
+make test-mobile
+```
 
 ## Manual reset only
 

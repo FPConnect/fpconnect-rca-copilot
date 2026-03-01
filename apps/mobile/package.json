@@ -9,6 +9,7 @@
     "android": "npx expo start --android",
     "ios": "npx expo start --ios",
     "web": "npx expo start --web",
+    "test": "echo 'No tests yet' && exit 0",
     "doctor": "npx expo-doctor",
     "reinstall": "npm run clean && npm cache clean --force && npm install",
     "clean": "node -e \"const fs=require('fs');fs.rmSync('node_modules',{recursive:true,force:true});fs.rmSync('package-lock.json',{force:true});\""
