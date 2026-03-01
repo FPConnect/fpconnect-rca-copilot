@@ -3,5 +3,8 @@ apps/web/.next/
 apps/web/node_modules/
 apps/web/tsconfig.tsbuildinfo
 
-# Mobile app dependencies
+# Mobile app dependencies and build artifacts
 apps/mobile/node_modules/
+apps/mobile/.expo/
+apps/mobile/.expo-shared/
+apps/mobile/dist/
