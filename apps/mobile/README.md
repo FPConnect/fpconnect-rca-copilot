@@ -102,3 +102,9 @@ make test-mobile
 ```bash
 npm run clean
 ```
+
+To also remove the lockfile (full reset):
+
+```bash
+npm run clean:all
+```
