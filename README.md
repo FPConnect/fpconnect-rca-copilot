@@ -33,20 +33,89 @@ NEXT_PUBLIC_APP_VERSION=1.0.0
 | `NEXT_PUBLIC_APP_NAME` | `FPConnect` | Application name |
 | `NEXT_PUBLIC_APP_VERSION` | `1.0.0` | Application version |
 
-## Deploy to Vercel
+## Deploy to Production (Cloud)
 
-1. Push your code to GitHub
-2. Import the repository in [Vercel](https://vercel.com)
-3. Set the **Root Directory** to `apps/web`
-4. Add environment variables:
-   - `NEXT_PUBLIC_API_URL` → your backend URL
-   - `NEXT_PUBLIC_APP_NAME` → `FPConnect`
-   - `NEXT_PUBLIC_APP_VERSION` → `1.0.0`
-5. Click **Deploy**
+### Architecture
 
-The app will be live at your Vercel URL with no authentication required.
+| Component | Platform | Notes |
+|---|---|---|
+| Web (Next.js) | [Vercel](https://vercel.com) | Free tier available |
+| API (FastAPI) | [Railway](https://railway.app) | Free trial available |
+| Database (PostgreSQL + pgvector) | [Neon](https://neon.tech) | Free tier, supports pgvector |
+| Redis | [Upstash](https://upstash.com) | Free tier |
+| Storage | [Cloudflare R2](https://cloudflare.com/r2) or AWS S3 | |
 
-## Docker (Full Stack)
+### Step 1 — Database (Neon)
+
+1. Create a free account at [neon.tech](https://neon.tech)
+2. Create a new project and copy the **Connection String** (it looks like `postgresql://user:pass@host/db?sslmode=require`)
+3. Enable the `pgvector` extension in the Neon SQL editor:
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS vector;
+   ```
+
+### Step 2 — Redis (Upstash)
+
+1. Create a free account at [upstash.com](https://upstash.com)
+2. Create a new **Redis** database (choose the region closest to your API)
+3. Copy the **Redis URL** (e.g. `rediss://default:password@host:port`)
+
+### Step 3 — API (Railway)
+
+1. Create an account at [railway.app](https://railway.app)
+2. Click **New Project → Deploy from GitHub repo** and select this repository
+3. Set the **Root Directory** to `apps/api`
+4. Add the following environment variables in Railway's dashboard:
+
+   ```
+   DATABASE_URL=<your Neon connection string>
+   REDIS_URL=<your Upstash Redis URL>
+   SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
+   OPENAI_API_KEY=<your OpenAI key>
+   MINIO_ENDPOINT=<your S3/R2 endpoint>
+   MINIO_ACCESS_KEY=<your access key>
+   MINIO_SECRET_KEY=<your secret key>
+   MINIO_BUCKET=fpconnect
+   ```
+
+5. After deploying, run the database migrations from the Railway shell:
+   ```bash
+   alembic upgrade head
+   ```
+6. Copy the public Railway URL (e.g. `https://fpconnect-api.up.railway.app`)
+
+### Step 4 — Web (Vercel)
+
+1. Create an account at [vercel.com](https://vercel.com)
+2. Click **Add New → Project** and import this GitHub repository
+3. The **Root Directory** is pre-configured via `vercel.json` — Vercel will detect `apps/web` automatically
+4. Add the following environment variables:
+
+   ```
+   NEXT_PUBLIC_API_URL=<your Railway API URL from Step 3>
+   NEXT_PUBLIC_APP_NAME=FPConnect
+   NEXT_PUBLIC_APP_VERSION=1.0.0
+   ```
+
+5. Click **Deploy** — your app will be live at `https://<your-project>.vercel.app`
+
+### Step 5 — Automated CI/CD (GitHub Actions)
+
+Push to `main` automatically tests and deploys both services. Add these secrets to your GitHub repository (**Settings → Secrets and variables → Actions**):
+
+| Secret | How to get it |
+|---|---|
+| `VERCEL_TOKEN` | Vercel dashboard → Settings → Tokens |
+| `RAILWAY_TOKEN` | Railway dashboard → Account → Tokens |
+
+Once the secrets are set, every push to `main` will:
+1. Run all tests
+2. Deploy the web app to Vercel
+3. Deploy the API to Railway
+
+---
+
+## Docker (Full Stack — Local)
 
 ```bash
 make up        # Start all services
