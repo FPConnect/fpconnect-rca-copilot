@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspace=apps/web",
+    "start": "npm run start --workspace=apps/web"
+  },
+  "workspaces": [
+    "apps/web",
+    "apps/mobile"
+  ]
+}

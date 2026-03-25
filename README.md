@@ -17,6 +17,47 @@ Open [http://localhost:3000](http://localhost:3000) — the app redirects to `/d
 
 > To run on port 3001: `npm run dev -- -p 3001`
 
+## Mobile App (React Native / Expo)
+
+The project includes a full React Native mobile app under `apps/mobile`.
+
+### Prerequisites
+
+- [Node.js 18+](https://nodejs.org)
+- [Expo Go](https://expo.dev/client) installed on your iOS or Android device, **or** an Android/iOS simulator
+
+### Run on your device or simulator
+
+```bash
+cd apps/mobile
+npm install
+npm start          # opens Expo Dev Tools — scan the QR code with Expo Go
+```
+
+Or use the Makefile from the repository root:
+
+```bash
+make install-mobile   # install dependencies
+make dev-mobile       # start the Expo dev server
+```
+
+To target a specific platform:
+
+```bash
+npm run android   # open in Android emulator / connected device
+npm run ios       # open in iOS simulator (macOS only)
+npm run web       # open in browser (Expo Web)
+```
+
+### Mobile screens
+
+| Screen | Description |
+|---|---|
+| Dashboard | Summary metrics and recent activity feed |
+| Machines | Live list of medical equipment with status badges |
+| Tickets | Create and search maintenance tickets |
+| Settings | User profile, appearance, and notification preferences |
+
 ## Environment Variables
 
 Copy `apps/web/.env.example` to `apps/web/.env.local`:

@@ -23,6 +23,7 @@ class TicketUpdate(BaseModel):
     status: Optional[str] = None
     priority: Optional[str] = None
     assignee_id: Optional[int] = None
+    escalation_level: Optional[int] = None
 
 
 class TicketResponse(BaseModel):
@@ -37,6 +38,7 @@ class TicketResponse(BaseModel):
     location: Optional[str] = None
     creator_id: int
     assignee_id: Optional[int] = None
+    escalation_level: Optional[int] = None
 
     class Config:
         from_attributes = True

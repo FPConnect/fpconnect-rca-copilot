@@ -1,4 +1,4 @@
-.PHONY: up down build test lint migrate
+.PHONY: up down build test lint migrate dev-mobile install-mobile test-mobile
 
 up:
 	docker-compose up -d
@@ -17,6 +17,9 @@ test-api:
 
 test-web:
 	cd apps/web && npm test
+
+test-mobile:
+	cd apps/mobile && npm test
 
 lint-api:
 	cd apps/api && ruff check app/ tests/
@@ -41,6 +44,9 @@ dev-api:
 
 dev-web:
 	cd apps/web && npm run dev
+
+dev-mobile:
+	cd apps/mobile && npm run start
 
 format-api:
 	cd apps/api && ruff format app/ tests/

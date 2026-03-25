@@ -1,0 +1,2279 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agente Autonomo</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #343541;
+        --bg-soft: #2f3038;
+        --bg-elevated: #40414f;
+        --panel: #202123;
+        --panel-soft: #1f2023;
+        --surface: #343541;
+        --surface-2: #40414f;
+        --surface-3: #4a4d57;
+        --text: #ececf1;
+        --muted: #a8abb6;
+        --line: rgba(255, 255, 255, 0.08);
+        --line-strong: rgba(255, 255, 255, 0.14);
+        --accent: #19c37d;
+        --accent-soft: rgba(25, 195, 125, 0.14);
+        --danger: #ef4444;
+        --warn: #f59e0b;
+        --ok: #22c55e;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+        --radius-lg: 18px;
+        --radius-md: 14px;
+        --radius-sm: 10px;
+        --sidebar-width: 232px;
+        --inspector-width: 320px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Bahnschrift, "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      }
+
+      body {
+        overflow: hidden;
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+        border: 0;
+      }
+
+      .layout {
+        --workspace-width: 0px;
+        display: grid;
+        grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--workspace-width);
+        min-height: 100vh;
+      }
+
+      .layout.workspace-open {
+        --workspace-width: 0px;
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        background: var(--panel);
+        border-right: 1px solid var(--line);
+      }
+
+      .sidebar-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        background: #19c37d;
+        color: #08130d;
+        font-weight: 800;
+        font-size: 13px;
+      }
+
+      .brand-copy {
+        min-width: 0;
+      }
+
+      .brand-copy strong,
+      .sidebar-section-title,
+      .pane-header strong,
+      .chat-header strong,
+      .composer-top strong,
+      .empty-title,
+      .browser-placeholder strong,
+      .message-role,
+      .inspector-title {
+        letter-spacing: 0.01em;
+      }
+
+      .brand-copy strong {
+        display: block;
+        font-size: 13px;
+      }
+
+      .brand-copy span {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .icon-button,
+      .sidebar-button,
+      .inspector-button,
+      .composer-send,
+      .quick-card,
+      .toggle-chip,
+      .action-button {
+        transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+      }
+
+      .icon-button:hover,
+      .sidebar-button:hover,
+      .inspector-button:hover,
+      .composer-send:hover,
+      .quick-card:hover,
+      .toggle-chip:hover,
+
+      .vault-form {
+        display: grid;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .vault-note {
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+      .action-button:hover {
+        transform: translateY(-1px);
+      }
+
+      .icon-button {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: #2a2b32;
+        color: var(--muted);
+        border: 1px solid var(--line);
+      }
+
+      .sidebar-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin: 0 12px;
+        padding: 10px 12px;
+        border-radius: 11px;
+        background: #2a2b32;
+        color: var(--text);
+        border: 1px solid var(--line);
+      }
+
+      .sidebar-button.primary {
+        justify-content: flex-start;
+        background: transparent;
+      }
+
+      .sidebar-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 8px 12px;
+      }
+
+      .sidebar-section {
+        margin-top: 12px;
+      }
+
+      .sidebar-section-title {
+        padding: 0 8px 6px;
+        font-size: 11px;
+        color: #8b8e99;
+        text-transform: uppercase;
+      }
+
+      .history-list,
+      .shortcut-list,
+      .meta-list {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .history-item,
+      .shortcut-item,
+      .meta-card {
+        border-radius: 12px;
+        border: 1px solid transparent;
+      }
+
+      .history-item {
+        width: 100%;
+        padding: 9px 10px;
+        text-align: left;
+        background: transparent;
+        color: var(--text);
+      }
+
+      .history-item.active,
+      .history-item:hover,
+      .shortcut-item:hover,
+      .meta-card:hover {
+        background: #2a2b32;
+        border-color: var(--line);
+      }
+
+      .history-item strong,
+      .shortcut-item strong,
+      .meta-card strong {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .history-item span,
+      .shortcut-item span,
+      .meta-card span,
+      .sidebar-note,
+      .helper,
+      .composer-hint,
+      .browser-copy,
+      .browser-meta,
+      .inspector-subtitle,
+      .field-label,
+      .chat-subtitle,
+      .status-copy,
+      .browser-label,
+      .chip-status {
+        color: var(--muted);
+      }
+
+      .history-item span,
+      .shortcut-item span,
+      .meta-card span {
+        display: block;
+        margin-top: 3px;
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
+      .shortcut-item {
+        width: 100%;
+        text-align: left;
+        padding: 9px 10px;
+        background: transparent;
+        color: var(--text);
+      }
+
+      .meta-card {
+        padding: 9px 10px;
+        background: #2a2b32;
+      }
+
+      .sidebar-note {
+        padding: 12px 10px 2px;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .main {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        min-width: 0;
+        height: 100vh;
+        background: var(--bg);
+      }
+
+      .chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(52, 53, 65, 0.92);
+        backdrop-filter: blur(14px);
+      }
+
+      .chat-header strong {
+        display: block;
+        font-size: 14px;
+      }
+
+      .chat-subtitle {
+        margin-top: 3px;
+        font-size: 11px;
+      }
+
+      .status-cluster {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .status-badge,
+      .toggle-chip,
+      .chip-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #2a2b32;
+        font-size: 11px;
+      }
+
+      .status-badge.busy {
+        background: rgba(245, 158, 11, 0.12);
+      }
+
+      .status-badge.error {
+        background: rgba(239, 68, 68, 0.14);
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--ok);
+      }
+
+      .status-badge.busy .status-dot {
+        background: var(--warn);
+      }
+
+      .status-badge.error .status-dot {
+        background: var(--danger);
+      }
+
+      .toggle-chip {
+        cursor: pointer;
+      }
+
+      .toggle-chip input {
+        accent-color: var(--accent);
+      }
+
+      .chat-scroll {
+        flex: 1;
+        min-height: 0;
+        overflow-y: scroll;
+        scrollbar-gutter: stable;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.28) rgba(255, 255, 255, 0.06);
+      }
+
+      .chat-scroll::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      .chat-scroll::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .chat-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.28);
+        border-radius: 999px;
+      }
+
+      .chat-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.42);
+      }
+
+      .chat-inner {
+        width: min(760px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 22px 0 24px;
+      }
+
+      .workspace-chat-stage {
+        display: none;
+        min-height: calc(100vh - 210px);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: #0f1115;
+        overflow: hidden;
+      }
+
+      .workspace-chat-stage.visible {
+        display: grid;
+      }
+
+      .workspace-chat-image {
+        display: none;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #0f1115;
+        outline: none;
+        cursor: default;
+      }
+
+      .workspace-chat-image:focus {
+        box-shadow: inset 0 0 0 2px rgba(25, 195, 125, 0.9);
+      }
+
+      .workspace-agent-overlay {
+        display: none;
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 17, 21, 0.72);
+        backdrop-filter: blur(3px);
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 14px;
+        color: #e2e5ea;
+        font-size: 0.93rem;
+        z-index: 10;
+        pointer-events: none;
+      }
+      .workspace-agent-overlay.active {
+        display: flex;
+      }
+      .workspace-agent-spinner {
+        width: 36px;
+        height: 36px;
+        border: 3px solid rgba(25,195,125,0.2);
+        border-top-color: #19c37d;
+        border-radius: 50%;
+        animation: ws-spin 0.75s linear infinite;
+      }
+      @keyframes ws-spin {
+        to { transform: rotate(360deg); }
+      }
+      .workspace-agent-overlay span {
+        max-width: 260px;
+        text-align: center;
+        color: #b0b8c6;
+      }
+
+      .workspace-chat-placeholder {
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 18px;
+        color: var(--muted);
+      }
+
+      .workspace-chat-placeholder strong {
+        display: block;
+        color: var(--text);
+        margin-bottom: 6px;
+      }
+
+      .empty-state {
+        display: grid;
+        place-items: center;
+        min-height: calc(100vh - 250px);
+        text-align: center;
+      }
+
+      .empty-shell {
+        width: min(680px, 100%);
+      }
+
+      .empty-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        margin-bottom: 12px;
+        border: 1px solid var(--line);
+        background: rgba(25, 195, 125, 0.06);
+        font-size: 11px;
+        color: #b7f0d4;
+      }
+
+      .empty-title {
+        font-size: clamp(22px, 3.1vw, 30px);
+        font-weight: 650;
+        line-height: 1.14;
+      }
+
+      .empty-copy {
+        width: min(560px, 100%);
+        margin: 10px auto 0;
+        font-size: 13px;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .quick-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .quick-card {
+        padding: 12px;
+        border-radius: 12px;
+        text-align: left;
+        background: #3a3b47;
+        border: 1px solid var(--line);
+        color: var(--text);
+        box-shadow: none;
+      }
+
+      .quick-card strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+      }
+
+      .quick-card span {
+        display: block;
+        font-size: 12px;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+
+      .message-list {
+        display: none;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .message {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .message.user {
+        justify-content: flex-end;
+      }
+
+      .message.assistant {
+        justify-content: flex-start;
+      }
+
+      .avatar {
+        flex: 0 0 30px;
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .message.assistant .avatar {
+        background: linear-gradient(135deg, #19c37d 0%, #0ea56a 100%);
+        color: #08130d;
+      }
+
+      .message.user .avatar {
+        background: #5b5e71;
+        color: var(--text);
+      }
+
+      .message-wrap {
+        min-width: 0;
+        width: min(100%, 760px);
+      }
+
+      .message-role {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 10px;
+        text-transform: uppercase;
+        color: #c4c7d0;
+      }
+
+      .message-card {
+        padding: 0;
+        font-size: 14px;
+        line-height: 1.65;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: var(--text);
+      }
+
+      .message.assistant .message-card {
+        color: var(--text);
+      }
+
+      .message-card.pending {
+        color: #c9cedb;
+        font-style: italic;
+      }
+
+      .message-card.error {
+        color: #fecaca;
+      }
+
+      .message.user .message-wrap {
+        max-width: min(82%, 720px);
+      }
+
+      .message.user .message-card {
+        background: #30313d;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 12px 14px;
+        color: var(--text);
+      }
+
+      .composer-shell {
+        position: relative;
+        padding: 8px 18px 14px;
+        border-top: 1px solid var(--line);
+        background: var(--bg);
+      }
+
+      .composer {
+        width: min(760px, 100%);
+        margin: 0 auto;
+        border-radius: 14px;
+        border: 1px solid var(--line-strong);
+        background: #40414f;
+        box-shadow: none;
+        overflow: hidden;
+      }
+
+      .composer-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 12px 0;
+      }
+
+      .composer-top strong {
+        display: block;
+        font-size: 12px;
+      }
+
+      .composer-hint {
+        display: block;
+        margin-top: 2px;
+        font-size: 10px;
+      }
+
+      .composer-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 6px;
+        align-items: end;
+        padding: 8px 12px 10px;
+      }
+
+      .composer-input {
+        min-height: 46px;
+        max-height: 160px;
+        resize: vertical;
+        padding: 11px 13px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: #40414f;
+        color: var(--text);
+        outline: none;
+      }
+
+      .composer-input:focus,
+      .field:focus {
+        border-color: rgba(25, 195, 125, 0.5);
+        box-shadow: 0 0 0 3px rgba(25, 195, 125, 0.12);
+      }
+
+      .composer-send {
+        height: 46px;
+        min-width: 46px;
+        padding: 0 16px;
+        border-radius: 12px;
+        background: #19c37d;
+        color: #03150d;
+        font-weight: 700;
+      }
+
+      .composer-send:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .composer-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 0 12px 10px;
+        flex-wrap: wrap;
+      }
+
+      .helper-list,
+      .chip-row,
+      .action-row,
+      .zoom-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .helper {
+        font-size: 10px;
+      }
+
+      .chip-status {
+        font-size: 10px;
+        padding: 6px 9px;
+      }
+
+      .inspector {
+        display: none;
+        flex-direction: column;
+        min-width: 0;
+        background: var(--panel);
+        border-left: 1px solid var(--line);
+      }
+
+      .layout.workspace-open .inspector {
+        display: none;
+      }
+
+      .pane-header {
+        padding: 13px 15px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .pane-header strong,
+      .inspector-title {
+        display: block;
+        font-size: 13px;
+      }
+
+      .pane-header span,
+      .status-copy,
+      .browser-copy,
+      .browser-meta,
+      .inspector-subtitle,
+      .field-label {
+        display: block;
+        margin-top: 3px;
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
+      .inspector-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px 12px 18px;
+      }
+
+      .inspector-card {
+        margin-bottom: 10px;
+        padding: 11px;
+        border-radius: 12px;
+        background: #2a2b32;
+        border: 1px solid var(--line);
+      }
+
+      .inspector-card.highlight {
+        background: #2f3038;
+      }
+
+      .field-label {
+        margin-bottom: 6px;
+      }
+
+      .field {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: #30313d;
+        color: var(--text);
+        outline: none;
+      }
+
+      .inspector-button,
+      .action-button {
+        padding: 8px 10px;
+        border-radius: 9px;
+        border: 1px solid var(--line);
+        background: #30313d;
+        color: var(--text);
+      }
+
+      .inspector-button.primary,
+      .action-button.primary {
+        background: rgba(25, 195, 125, 0.16);
+        border-color: rgba(25, 195, 125, 0.32);
+        color: #d4f9ea;
+      }
+
+      .inspector-button.danger {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: rgba(239, 68, 68, 0.22);
+        color: #fecaca;
+      }
+
+      .browser-stage {
+        position: relative;
+        min-height: 190px;
+        margin-top: 10px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #0f1115;
+        border: 1px solid var(--line);
+      }
+
+      .browser-topbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 9px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(64, 65, 79, 0.34);
+      }
+
+      .browser-dots {
+        display: inline-flex;
+        gap: 5px;
+      }
+
+      .browser-dots span {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+      }
+
+      .browser-dots span:nth-child(1) {
+        background: #ef4444;
+      }
+
+      .browser-dots span:nth-child(2) {
+        background: #f59e0b;
+      }
+
+      .browser-dots span:nth-child(3) {
+        background: #22c55e;
+      }
+
+      .browser-label {
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px;
+      }
+
+      .browser-view {
+        position: relative;
+        min-height: 200px;
+        display: grid;
+        place-items: center;
+        padding: 12px;
+      }
+
+      .browser-image {
+        display: none;
+        width: 100%;
+        height: auto;
+        max-height: 460px;
+        object-fit: contain;
+        border-radius: 12px;
+      }
+
+      .browser-placeholder {
+        max-width: 30ch;
+        text-align: center;
+      }
+
+      .browser-placeholder strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 15px;
+        color: var(--text);
+      }
+
+      .browser-placeholder p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+
+      .browser-meta {
+        margin-top: 10px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 1240px) {
+        body {
+          overflow: auto;
+        }
+
+        .layout {
+          grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+        }
+
+        .inspector {
+          grid-column: 1 / -1;
+          border-left: 0;
+          border-top: 1px solid var(--line);
+          min-height: 0;
+        }
+
+        .inspector-scroll {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .inspector-card {
+          margin-bottom: 0;
+        }
+      }
+
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar,
+        .inspector {
+          min-height: 0;
+        }
+
+        .sidebar {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .chat-header {
+          padding: 12px 14px;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .status-cluster {
+          justify-content: flex-start;
+        }
+
+        .chat-inner,
+        .composer {
+          width: min(100%, calc(100% - 12px));
+        }
+
+        .quick-grid,
+        .inspector-scroll {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .composer-shell {
+          padding: 8px 8px 10px;
+        }
+
+        .composer-row {
+          grid-template-columns: 1fr;
+        }
+
+        .composer-send {
+          width: 100%;
+        }
+
+        .message.user .message-wrap {
+          max-width: 100%;
+        }
+
+        .chat-inner {
+          width: calc(100% - 16px);
+          padding-top: 16px;
+        }
+
+        .empty-title {
+          font-size: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="brand">
+            <div class="brand-mark">AA</div>
+            <div class="brand-copy">
+              <strong>Agente Autonomo</strong>
+              <span>workspace web</span>
+            </div>
+          </div>
+          <button class="icon-button" type="button" aria-label="Painel lateral">=</button>
+        </div>
+
+        <button id="new-chat" class="sidebar-button primary" type="button">+ Novo chat</button>
+
+        <div class="sidebar-scroll">
+          <section class="sidebar-section">
+            <div class="sidebar-section-title">Recentes</div>
+            <div id="history-list" class="history-list">
+              <button class="history-item active" type="button">
+                <strong id="history-current-title">Sessao atual</strong>
+                <span id="history-current-preview">Conversa atual.</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="sidebar-section">
+            <div class="sidebar-section-title">Sessao</div>
+            <div class="meta-list">
+              <div class="meta-card">
+                <strong id="session-mode-label">Modo agente</strong>
+                <span>Fluxo continuo para tarefas web quando houver caminho seguro.</span>
+              </div>
+              <div class="meta-card">
+                <strong id="browser-ready-label">Browser aguardando</strong>
+                <span>O painel da direita usa somente os endpoints do backend atual.</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="sidebar-section">
+            <div class="sidebar-section-title">Cofre da workspace</div>
+            <div class="meta-card">
+              <strong>Login e senha</strong>
+              <span>Salvo localmente neste navegador para o agente executar login quando solicitado.</span>
+            </div>
+            <div class="vault-form">
+              <select id="vault-service-select" class="field"></select>
+              <input id="vault-service" class="field" type="text" placeholder="Servico (ex.: linkedin)" />
+              <input id="vault-username" class="field" type="text" placeholder="Usuario ou email" />
+              <input id="vault-password" class="field" type="password" placeholder="Senha" />
+              <div class="action-row" style="margin-top: 2px;">
+                <button id="vault-save" class="action-button primary" type="button">Salvar</button>
+                <button id="vault-delete" class="action-button" type="button">Excluir</button>
+              </div>
+              <div id="vault-note" class="vault-note">Nenhuma credencial salva.</div>
+            </div>
+          </section>
+
+          <div class="sidebar-note">
+            Interface refeita no formato de chat app. Estrutura parecida no uso, mas sem copiar o layout proprietario exatamente.
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="chat-header">
+          <div>
+            <strong>Chat operacional</strong>
+            <div class="chat-subtitle">Conversa central, compositor fixo e painel lateral de navegador.</div>
+          </div>
+
+          <div class="status-cluster">
+            <div id="app-status" class="status-badge">
+              <span class="status-dot"></span>
+              <span id="app-status-text">Pronto</span>
+            </div>
+
+            <label class="toggle-chip">
+              <input id="agent-mode" type="checkbox" checked />
+              <span>Modo agente</span>
+            </label>
+
+            <label class="toggle-chip">
+              <input id="auto-accept" type="checkbox" checked />
+              <span>Auto-aceitar</span>
+            </label>
+
+            <label class="toggle-chip">
+              <input id="browser-live" type="checkbox" checked />
+              <span>Espelho ao vivo</span>
+            </label>
+          </div>
+        </header>
+
+        <div id="chat-scroll" class="chat-scroll">
+          <div id="chat-inner" class="chat-inner">
+            <section id="workspace-chat-stage" class="workspace-chat-stage" style="position:relative">
+              <img id="workspace-chat-image" class="workspace-chat-image" alt="Workspace em tela ampla" tabindex="0" />
+              <div id="workspace-agent-overlay" class="workspace-agent-overlay">
+                <div class="workspace-agent-spinner"></div>
+                <span id="workspace-agent-label">Agente trabalhando...</span>
+              </div>
+              <div id="workspace-chat-placeholder" class="workspace-chat-placeholder">
+                <div>
+                  <strong>Workspace em tela ampla</strong>
+                  <span>Aguardando captura da janela interna. Clique para focar e use mouse/teclado.</span>
+                </div>
+              </div>
+            </section>
+
+            <section id="empty-state" class="empty-state">
+              <div class="empty-shell">
+                <div class="empty-kicker">Janela interna conectada ao backend atual</div>
+                <div class="empty-title">O que voce quer que eu faca agora?</div>
+                <p class="empty-copy">
+                  Use o chat para pedir uma acao, abrir um site, disparar um fluxo ou investigar um problema. O navegador interno continua disponivel no painel lateral para validar o que esta acontecendo em tempo real.
+                </p>
+
+                <div class="quick-grid">
+                  <button class="quick-card" type="button" data-chat="abra meu github">
+                    <strong>Abrir perfil</strong>
+                    <span>Peca para o agente abrir GitHub, LinkedIn ou outro destino web direto no browser interno.</span>
+                  </button>
+                  <button class="quick-card" type="button" data-chat="mercado: trilha iniciante">
+                    <strong>Montar trilha</strong>
+                    <span>Use o chat para pedir estudo, plano, checklist ou fluxo operacional objetivo.</span>
+                  </button>
+                  <button class="quick-card" type="button" data-chat="liste os proximos passos para configurar este agente no meu PC">
+                    <strong>Configurar ambiente</strong>
+                    <span>Resumo curto e executavel do que falta para deixar a maquina pronta.</span>
+                  </button>
+                  <button class="quick-card" type="button" data-chat="com a area de trabalho remota, acesse meu linkedin">
+                    <strong>Navegacao assistida</strong>
+                    <span>Acione o fluxo web e acompanhe o resultado no espelho lateral.</span>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section id="message-list" class="message-list"></section>
+            <div id="chat-bottom-anchor" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div id="composer-shell" class="composer-shell">
+          <form id="composer" class="composer">
+            <div class="composer-top">
+              <div>
+                <strong>Mensagem</strong>
+                <span class="composer-hint">Enter envia. Shift+Enter cria nova linha.</span>
+              </div>
+
+              <div class="chip-row">
+                <span id="chip-browser" class="chip-status">browser: aguardando</span>
+                <span id="chip-zoom" class="chip-status">zoom: 100%</span>
+              </div>
+            </div>
+
+            <div class="composer-row">
+              <textarea id="chat-input" class="composer-input" rows="1" placeholder="Envie uma mensagem para o agente"></textarea>
+              <button id="chat-send" class="composer-send" type="submit">Enviar</button>
+            </div>
+
+            <div class="composer-footer">
+              <div class="helper-list">
+                <span class="helper">O chat envia para /api/command com os toggles da sessao.</span>
+                <span class="helper">A interface do browser lateral continua usando /api/browser/*.</span>
+              </div>
+            </div>
+          </form>
+        </div>
+      </main>
+
+      <aside class="inspector">
+        <div class="pane-header">
+          <strong>Janela interna</strong>
+          <span>Acompanhe o espelho remoto, abra URLs, envie texto e clique na imagem.</span>
+        </div>
+
+        <div class="inspector-scroll">
+          <section class="inspector-card highlight">
+            <div class="inspector-title" id="browser-title">Browser remoto</div>
+            <div class="inspector-subtitle" id="browser-subtitle">Bootstrap automatico ao carregar a pagina.</div>
+
+            <div class="browser-stage">
+              <div class="browser-topbar">
+                <div class="browser-dots" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div id="browser-url-label" class="browser-label">Nenhuma pagina carregada</div>
+              </div>
+
+              <div id="browser-view" class="browser-view">
+                <img id="browser-image" class="browser-image" alt="Espelho da janela interna" />
+                <div id="browser-placeholder" class="browser-placeholder">
+                  <strong>Preparando sessao visual</strong>
+                  <p>Quando o navegador interno estiver ativo, a captura da tela aparece aqui e aceita cliques.</p>
+                </div>
+              </div>
+            </div>
+
+            <div id="browser-meta" class="browser-meta">Nenhuma captura disponivel ainda.</div>
+          </section>
+
+          <section class="inspector-card">
+            <label class="field-label" for="browser-url">Abrir URL</label>
+            <input id="browser-url" class="field" type="text" placeholder="https://example.com" />
+            <div class="action-row" style="margin-top: 10px;">
+              <button id="browser-open" class="action-button primary" type="button">Abrir</button>
+              <button id="browser-refresh" class="action-button" type="button">Atualizar</button>
+            </div>
+          </section>
+
+          <section class="inspector-card">
+            <label class="field-label" for="browser-text">Enviar texto</label>
+            <input id="browser-text" class="field" type="text" placeholder="Digite para a pagina atual" />
+            <div class="action-row" style="margin-top: 10px;">
+              <button id="browser-type" class="action-button" type="button">Digitar</button>
+              <button id="browser-enter" class="action-button" type="button">Enter</button>
+              <button id="browser-copy" class="action-button" type="button">Copiar</button>
+              <button id="browser-paste" class="action-button" type="button">Colar</button>
+            </div>
+          </section>
+
+          <section class="inspector-card">
+            <div class="field-label">Ferramentas</div>
+            <div class="zoom-row">
+              <button id="browser-zoom-out" class="inspector-button" type="button">A-</button>
+              <button id="browser-zoom-reset" class="inspector-button" type="button">100%</button>
+              <button id="browser-zoom-in" class="inspector-button" type="button">A+</button>
+              <button id="browser-close" class="inspector-button danger" type="button">Encerrar</button>
+            </div>
+            <div id="browser-copy-note" class="browser-copy">Clique na imagem do espelho para mandar coordenadas reais para a janela interna.</div>
+          </section>
+        </div>
+      </aside>
+    </div>
+
+    <script>
+      const state = {
+        live: true,
+        browserReady: false,
+        browserZoom: 1,
+        snapshotWidth: 0,
+        snapshotHeight: 0,
+        copiedText: "",
+        pollTimer: null,
+        sending: false,
+        stickToBottom: true,
+        workspaceVisible: false,
+      };
+
+      const WORKSPACE_SHOW_COMMANDS = new Set([
+        "mostrar workspace",
+        "abrir workspace",
+        "exibir workspace",
+        "workspace on",
+        "mostrar painel",
+        "abrir painel",
+      ]);
+
+      const WORKSPACE_HIDE_COMMANDS = new Set([
+        "ocultar workspace",
+        "fechar workspace",
+        "esconder workspace",
+        "workspace off",
+        "ocultar painel",
+        "fechar painel",
+      ]);
+
+      const CREDENTIAL_VAULT_KEY = "aa_workspace_credentials_v1";
+
+      const els = {
+        layout: document.querySelector(".layout"),
+        appStatus: document.getElementById("app-status"),
+        appStatusText: document.getElementById("app-status-text"),
+        agentMode: document.getElementById("agent-mode"),
+        autoAccept: document.getElementById("auto-accept"),
+        browserLive: document.getElementById("browser-live"),
+        browserTitle: document.getElementById("browser-title"),
+        browserSubtitle: document.getElementById("browser-subtitle"),
+        browserUrlLabel: document.getElementById("browser-url-label"),
+        browserMeta: document.getElementById("browser-meta"),
+        browserCopyNote: document.getElementById("browser-copy-note"),
+        browserImage: document.getElementById("browser-image"),
+        browserPlaceholder: document.getElementById("browser-placeholder"),
+        browserUrl: document.getElementById("browser-url"),
+        browserText: document.getElementById("browser-text"),
+        browserReadyLabel: document.getElementById("browser-ready-label"),
+        sessionModeLabel: document.getElementById("session-mode-label"),
+        chipBrowser: document.getElementById("chip-browser"),
+        chipZoom: document.getElementById("chip-zoom"),
+        chatScroll: document.getElementById("chat-scroll"),
+        workspaceChatStage: document.getElementById("workspace-chat-stage"),
+        workspaceChatImage: document.getElementById("workspace-chat-image"),
+        workspaceAgentOverlay: document.getElementById("workspace-agent-overlay"),
+        workspaceAgentLabel: document.getElementById("workspace-agent-label"),
+        workspaceChatPlaceholder: document.getElementById("workspace-chat-placeholder"),
+        vaultServiceSelect: document.getElementById("vault-service-select"),
+        vaultService: document.getElementById("vault-service"),
+        vaultUsername: document.getElementById("vault-username"),
+        vaultPassword: document.getElementById("vault-password"),
+        vaultSave: document.getElementById("vault-save"),
+        vaultDelete: document.getElementById("vault-delete"),
+        vaultNote: document.getElementById("vault-note"),
+        emptyState: document.getElementById("empty-state"),
+        messageList: document.getElementById("message-list"),
+        chatBottomAnchor: document.getElementById("chat-bottom-anchor"),
+        chatInput: document.getElementById("chat-input"),
+        composer: document.getElementById("composer"),
+        historyList: document.getElementById("history-list"),
+        historyCurrentTitle: document.getElementById("history-current-title"),
+        historyCurrentPreview: document.getElementById("history-current-preview"),
+        newChat: document.getElementById("new-chat"),
+        chatSend: document.getElementById("chat-send"),
+      };
+
+      function setAppStatus(kind, text) {
+        els.appStatus.className = "status-badge" + (kind ? " " + kind : "");
+        els.appStatusText.textContent = text;
+      }
+
+      function normalizeChatCommand(value) {
+        return value
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function normalizeServiceKey(value) {
+        return (value || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9._-]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .trim();
+      }
+
+      function loadCredentialVault() {
+        try {
+          const raw = localStorage.getItem(CREDENTIAL_VAULT_KEY);
+          const parsed = raw ? JSON.parse(raw) : null;
+          if (!parsed || typeof parsed !== "object") {
+            state.credentials = { selected: "", entries: {} };
+            return;
+          }
+          state.credentials = {
+            selected: String(parsed.selected || ""),
+            entries: parsed.entries && typeof parsed.entries === "object" ? parsed.entries : {},
+          };
+        } catch (error) {
+          state.credentials = { selected: "", entries: {} };
+        }
+      }
+
+      function saveCredentialVault() {
+        localStorage.setItem(CREDENTIAL_VAULT_KEY, JSON.stringify(state.credentials || { selected: "", entries: {} }));
+      }
+
+      function refreshCredentialVaultUi() {
+        const vault = state.credentials || { selected: "", entries: {} };
+        const keys = Object.keys(vault.entries || {}).sort();
+
+        els.vaultServiceSelect.innerHTML = "";
+        const noneOption = document.createElement("option");
+        noneOption.value = "";
+        noneOption.textContent = "Selecionar servico salvo";
+        els.vaultServiceSelect.appendChild(noneOption);
+
+        keys.forEach((key) => {
+          const option = document.createElement("option");
+          option.value = key;
+          option.textContent = key;
+          els.vaultServiceSelect.appendChild(option);
+        });
+
+        if (vault.selected && keys.includes(vault.selected)) {
+          els.vaultServiceSelect.value = vault.selected;
+        } else {
+          vault.selected = "";
+          els.vaultServiceSelect.value = "";
+        }
+
+        if (vault.selected && vault.entries[vault.selected]) {
+          const entry = vault.entries[vault.selected];
+          els.vaultService.value = vault.selected;
+          els.vaultUsername.value = entry.username || "";
+          els.vaultPassword.value = entry.password || "";
+          const masked = entry.password ? "*".repeat(Math.min(12, String(entry.password).length)) : "sem senha";
+          els.vaultNote.textContent = `Servico ativo: ${vault.selected} | usuario: ${entry.username || "(vazio)"} | senha: ${masked}`;
+        } else {
+          els.vaultService.value = "";
+          els.vaultUsername.value = "";
+          els.vaultPassword.value = "";
+          els.vaultNote.textContent = keys.length ? "Selecione um servico salvo para editar." : "Nenhuma credencial salva.";
+        }
+      }
+
+      function getActiveLoginContext() {
+        const vault = state.credentials || { selected: "", entries: {} };
+        if (!vault.selected || !vault.entries || !vault.entries[vault.selected]) {
+          return null;
+        }
+        const entry = vault.entries[vault.selected];
+        if (!entry.username || !entry.password) {
+          return null;
+        }
+        return {
+          service: vault.selected,
+          username: String(entry.username || ""),
+          password: String(entry.password || ""),
+        };
+      }
+
+      function saveVaultEntryFromForm() {
+        const service = normalizeServiceKey(els.vaultService.value);
+        const username = (els.vaultUsername.value || "").trim();
+        const password = (els.vaultPassword.value || "").trim();
+
+        if (!service || !username || !password) {
+          setAppStatus("error", "Preencha servico, usuario e senha para salvar.");
+          return;
+        }
+
+        if (!state.credentials) {
+          state.credentials = { selected: "", entries: {} };
+        }
+        if (!state.credentials.entries) {
+          state.credentials.entries = {};
+        }
+
+        state.credentials.entries[service] = { username, password };
+        state.credentials.selected = service;
+        saveCredentialVault();
+        refreshCredentialVaultUi();
+        setAppStatus("", `Credenciais de ${service} salvas na workspace.`);
+      }
+
+      function deleteVaultEntryFromForm() {
+        const service = normalizeServiceKey(els.vaultService.value || els.vaultServiceSelect.value);
+        if (!service || !state.credentials || !state.credentials.entries || !state.credentials.entries[service]) {
+          setAppStatus("error", "Selecione um servico salvo para excluir.");
+          return;
+        }
+
+        delete state.credentials.entries[service];
+        if (state.credentials.selected === service) {
+          state.credentials.selected = "";
+        }
+        saveCredentialVault();
+        refreshCredentialVaultUi();
+        setAppStatus("", `Credenciais de ${service} removidas.`);
+      }
+
+      function setWorkspaceVisible(visible) {
+        state.workspaceVisible = Boolean(visible);
+        els.layout.classList.toggle("workspace-open", state.workspaceVisible);
+
+        if (state.workspaceVisible) {
+          els.workspaceChatStage.classList.add("visible");
+          els.emptyState.style.display = "none";
+          els.messageList.style.display = "none";
+          els.chatScroll.scrollTop = 0;
+          requestAnimationFrame(() => {
+            if (els.workspaceChatImage.style.display !== "none") {
+              els.workspaceChatImage.focus();
+            }
+          });
+        } else {
+          els.workspaceChatStage.classList.remove("visible");
+          if (els.messageList.children.length > 0) {
+            els.messageList.style.display = "flex";
+            els.emptyState.style.display = "none";
+          } else {
+            els.messageList.style.display = "none";
+            els.emptyState.style.display = "grid";
+          }
+        }
+
+        if (state.workspaceVisible && state.live) {
+          refreshBrowserSnapshot(true);
+        }
+      }
+
+      function maybeHandleWorkspaceCommand(input) {
+        const cmd = normalizeChatCommand(input);
+        const wantsShow = WORKSPACE_SHOW_COMMANDS.has(cmd) || (cmd.includes("workspace") && /(mostrar|abrir|exibir| on\b)/.test(cmd));
+        const wantsHide = WORKSPACE_HIDE_COMMANDS.has(cmd) || (cmd.includes("workspace") && /(ocultar|fechar|esconder| off\b)/.test(cmd));
+
+        if (wantsShow) {
+          setWorkspaceVisible(true);
+          setAppStatus("", "Workspace exibida");
+          return true;
+        }
+        if (wantsHide) {
+          setWorkspaceVisible(false);
+          setAppStatus("", "Workspace ocultada");
+          return true;
+        }
+        return false;
+      }
+
+      function syncToggles() {
+        state.live = els.browserLive.checked;
+        els.sessionModeLabel.textContent = els.agentMode.checked ? "Modo agente" : "Modo assistido";
+
+        if (state.live) {
+          startLivePolling();
+        } else {
+          stopLivePolling();
+        }
+      }
+
+      function browserLabel(url, title) {
+        const source = (title || url || "Nenhuma pagina carregada").trim();
+        return source.length > 82 ? source.slice(0, 79) + "..." : source;
+      }
+
+      function showBrowserPlaceholder(title, copy, status) {
+        els.browserImage.style.display = "none";
+        els.browserPlaceholder.classList.remove("hidden");
+        els.browserPlaceholder.innerHTML = "<strong>" + title + "</strong><p>" + copy + "</p>";
+        els.workspaceChatImage.style.display = "none";
+        els.workspaceChatPlaceholder.style.display = "grid";
+        els.browserUrlLabel.textContent = title;
+        els.browserMeta.textContent = copy;
+        els.browserReadyLabel.textContent = status || "Browser aguardando";
+        els.chipBrowser.textContent = "browser: aguardando";
+      }
+
+      function renderSnapshot(data, message) {
+        const snapshot = data && data.snapshot ? data.snapshot : data;
+        if (!snapshot || !snapshot.ok || !snapshot.image_base64) {
+          showBrowserPlaceholder(
+            "Nenhuma pagina carregada",
+            message || (snapshot && snapshot.message) || "O browser ainda nao retornou uma captura valida.",
+            "Browser aguardando"
+          );
+          state.browserReady = false;
+          return;
+        }
+
+        state.browserReady = true;
+        state.snapshotWidth = Number(snapshot.width) || 0;
+        state.snapshotHeight = Number(snapshot.height) || 0;
+        state.browserZoom = Number(snapshot.zoom || data.zoom || state.browserZoom || 1);
+
+        els.browserImage.src = "data:image/png;base64," + snapshot.image_base64;
+        els.browserImage.style.display = "block";
+        els.browserPlaceholder.classList.add("hidden");
+        els.workspaceChatImage.src = els.browserImage.src;
+        els.workspaceChatImage.style.display = "block";
+        els.workspaceChatPlaceholder.style.display = "none";
+
+        const label = browserLabel(snapshot.url, snapshot.title);
+        els.browserUrlLabel.textContent = label;
+        els.browserTitle.textContent = snapshot.title || "Browser remoto";
+        els.browserSubtitle.textContent = snapshot.url || "Janela interna ativa";
+        els.browserMeta.textContent = [
+          snapshot.title || "Sem titulo",
+          snapshot.url || "sem url",
+          state.snapshotWidth && state.snapshotHeight ? state.snapshotWidth + "x" + state.snapshotHeight : null,
+        ]
+          .filter(Boolean)
+          .join(" | ");
+
+        els.browserReadyLabel.textContent = "Browser pronto";
+        els.chipBrowser.textContent = "browser: ativo";
+        els.chipZoom.textContent = "zoom: " + Math.round(state.browserZoom * 100) + "%";
+
+        // Limpa status de erro antigo quando a workspace volta a responder.
+        if (state.workspaceVisible && els.appStatus.className.includes("error")) {
+          setAppStatus("", "Workspace ativa");
+        }
+      }
+
+      function ensureConversationVisible() {
+        if (state.workspaceVisible) {
+          els.emptyState.style.display = "none";
+          els.messageList.style.display = "none";
+          return;
+        }
+        els.emptyState.style.display = "none";
+        els.messageList.style.display = "flex";
+        scrollChatToBottom(true);
+      }
+
+      function scrollChatToBottom(force) {
+        if (!force && !state.stickToBottom) {
+          return;
+        }
+
+        const doScroll = () => {
+          els.chatScroll.scrollTop = els.chatScroll.scrollHeight;
+          if (els.chatBottomAnchor) {
+            els.chatBottomAnchor.scrollIntoView({ block: "end" });
+          }
+        };
+
+        doScroll();
+        requestAnimationFrame(doScroll);
+        requestAnimationFrame(() => requestAnimationFrame(doScroll));
+        if (force) {
+          setTimeout(doScroll, 0);
+          setTimeout(doScroll, 40);
+          setTimeout(doScroll, 120);
+        }
+      }
+
+      function appendMessage(role, text) {
+        ensureConversationVisible();
+
+        const item = document.createElement("article");
+        item.className = "message " + (role === "user" ? "user" : "assistant");
+
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        avatar.textContent = role === "user" ? "VO" : "AA";
+
+        const wrap = document.createElement("div");
+        wrap.className = "message-wrap";
+
+        const roleLabel = document.createElement("span");
+        roleLabel.className = "message-role";
+        roleLabel.textContent = role === "user" ? "Voce" : "Agente";
+
+        const card = document.createElement("div");
+        card.className = "message-card";
+        card.textContent = text;
+
+        wrap.appendChild(roleLabel);
+        wrap.appendChild(card);
+
+        if (role === "user") {
+          item.appendChild(wrap);
+          item.appendChild(avatar);
+        } else {
+          item.appendChild(avatar);
+          item.appendChild(wrap);
+        }
+
+        els.messageList.appendChild(item);
+        scrollChatToBottom(true);
+        return card;
+      }
+
+      function setComposerBusy(isBusy) {
+        state.sending = isBusy;
+        els.chatSend.disabled = isBusy;
+        els.chatInput.disabled = isBusy;
+      }
+
+      function updateSessionPreview(sourceText) {
+        const text = (sourceText || "").trim();
+        if (!text) {
+          return;
+        }
+        if (els.historyCurrentTitle) {
+          els.historyCurrentTitle.textContent = "Sessao atual";
+        }
+        if (els.historyCurrentPreview) {
+          const safe = text.replace(/\s+/g, " ").slice(0, 72);
+          els.historyCurrentPreview.textContent = safe + (text.length > 72 ? "..." : "");
+        }
+      }
+
+      async function apiJson(url, options) {
+        const response = await fetch(url, options);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || "Falha na requisicao.");
+        }
+        return data;
+      }
+
+      async function refreshBrowserSnapshot(silent) {
+        try {
+          const data = await apiJson("/api/browser/snapshot");
+          renderSnapshot(data, silent ? "" : "Captura atualizada.");
+          if (!silent && state.workspaceVisible) {
+            setAppStatus("", "Workspace ativa");
+          }
+        } catch (error) {
+          state.browserReady = false;
+          if (!silent) {
+            setAppStatus("error", error.message || "Falha ao ler o browser.");
+          }
+        }
+      }
+
+      function stopLivePolling() {
+        if (state.pollTimer) {
+          clearInterval(state.pollTimer);
+          state.pollTimer = null;
+        }
+      }
+
+      function startLivePolling() {
+        stopLivePolling();
+        state.pollTimer = setInterval(() => {
+          refreshBrowserSnapshot(true);
+        }, 4000);
+      }
+
+      async function bootstrapBrowser() {
+        setAppStatus("busy", "Inicializando browser interno");
+        try {
+          const data = await apiJson("/api/browser/bootstrap", { method: "POST" });
+          renderSnapshot(data, data.message || "Area remota inicializada.");
+          setAppStatus("", data.message || "Browser interno pronto");
+        } catch (error) {
+          showBrowserPlaceholder(
+            "Bootstrap indisponivel",
+            error.message || "Nao foi possivel iniciar a janela interna.",
+            "Browser indisponivel"
+          );
+          setAppStatus("error", error.message || "Falha ao iniciar browser");
+        }
+      }
+
+      function normalizeUrl(raw) {
+        const value = (raw || "").trim();
+        if (!value) {
+          return "";
+        }
+        if (/^[a-z]+:\/\//i.test(value)) {
+          return value;
+        }
+        if (value.includes(".") && !value.includes(" ")) {
+          return "https://" + value;
+        }
+        return "https://www.google.com/search?q=" + encodeURIComponent(value);
+      }
+
+      async function openBrowserUrl() {
+        const url = normalizeUrl(els.browserUrl.value);
+        if (!url) {
+          setAppStatus("error", "Informe uma URL ou busca.");
+          return;
+        }
+
+        setAppStatus("busy", "Abrindo destino no browser interno");
+        try {
+          const data = await apiJson("/api/browser/open", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+          });
+          renderSnapshot(data, data.message || "Pagina aberta.");
+          setAppStatus("", data.message || "Pagina aberta");
+        } catch (error) {
+          setAppStatus("error", error.message || "Falha ao abrir URL.");
+        }
+      }
+
+      async function typeInBrowser(clearField) {
+        const text = (els.browserText.value || "").trim();
+        if (!text) {
+          setAppStatus("error", "Digite algum texto antes de enviar.");
+          return;
+        }
+
+        setAppStatus("busy", "Enviando texto para a pagina");
+        try {
+          const data = await apiJson("/api/browser/type", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, press_enter: false }),
+          });
+          renderSnapshot(data, data.message || "Texto enviado.");
+          if (clearField) {
+            els.browserText.value = "";
+          }
+          setAppStatus("", data.message || "Texto enviado");
+        } catch (error) {
+          setAppStatus("error", error.message || "Falha ao enviar texto.");
+        }
+      }
+
+      async function pressEnterOnly() {
+        setAppStatus("busy", "Enviando tecla Enter");
+        try {
+          const data = await apiJson("/api/browser/key", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key: "Enter" }),
+          });
+          renderSnapshot(data, data.message || "Enter enviado.");
+          setAppStatus("", data.message || "Enter enviado");
+        } catch (error) {
+          setAppStatus("error", error.message || "Falha ao enviar Enter.");
+        }
+      }
+
+      async function writeClipboard(text) {
+        if (!navigator.clipboard || !text) {
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch (error) {
+          // ignore clipboard errors
+        }
+      }
+
+      async function readClipboard() {
+        if (!navigator.clipboard) {
+          return "";
+        }
+        try {
+          return await navigator.clipboard.readText();
+        } catch (error) {
+          return "";
+        }
+      }
+
+      async function copyFromBrowser() {
+        setAppStatus("busy", "Lendo selecao da janela interna");
+        try {
+          const data = await apiJson("/api/browser/copy", { method: "POST" });
+          state.copiedText = data.copied_text || "";
+          await writeClipboard(state.copiedText);
+          renderSnapshot(data, data.message || "Texto copiado.");
+          setAppStatus("", data.message || "Texto copiado");
+        } catch (error) {
+          setAppStatus("error", error.message || "Falha ao copiar texto.");
+        }
+      }
+
+      async function pasteIntoBrowser() {
+        setAppStatus("busy", "Colando texto na janela interna");
+        try {
+          const text = (await readClipboard()) || (els.browserText.value || "").trim() || state.copiedText;
+          if (!text) {
+            setAppStatus("error", "Nao ha texto disponivel para colar.");
+            return;
+          }
+          const data = await apiJson("/api/browser/paste", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
+          renderSnapshot(data, data.message || "Texto colado.");
+          setAppStatus("", data.message || "Texto colado");
+        } catch (error) {
+          setAppStatus("error", error.message || "Falha ao colar texto.");
+        }
+      }
+
+      async function setBrowserZoom(nextZoom) {
+        const zoom = Math.min(3, Math.max(0.25, Number(nextZoom) || 1));
+        setAppStatus("busy", "Ajustando zoom do browser");
+        try {
+          const data = await apiJson("/api/browser/zoom", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ zoom }),
+          });
+          renderSnapshot(data, data.message || "Zoom ajustado.");
+          setAppStatus("", data.message || "Zoom ajustado");
+        } catch (error) {
+          setAppStatus("error", error.message || "Falha ao ajustar zoom.");
+        }
+      }
+
+      async function closeBrowserSession() {
+        setAppStatus("busy", "Encerrando janela interna");
+        try {
+          const data = await apiJson("/api/browser/disable", { method: "POST" });
+          state.browserReady = false;
+          state.browserZoom = 1;
+          els.chipZoom.textContent = "zoom: 100%";
+          showBrowserPlaceholder(
+            "Janela encerrada",
+            (data && data.message) || "A sessao visual foi encerrada.",
+            "Browser encerrado"
+          );
+          setAppStatus("", (data && data.message) || "Janela encerrada");
+        } catch (error) {
+          setAppStatus("error", error.message || "Falha ao encerrar browser.");
+        }
+      }
+
+      function mapPointerToSnapshot(event, sourceEl) {
+        if (!sourceEl || !state.snapshotWidth || !state.snapshotHeight) {
+          return null;
+        }
+
+        const rect = sourceEl.getBoundingClientRect();
+        if (!rect.width || !rect.height) {
+          return null;
+        }
+
+        const scale = Math.min(rect.width / state.snapshotWidth, rect.height / state.snapshotHeight);
+        if (!scale || !Number.isFinite(scale)) {
+          return null;
+        }
+
+        const drawWidth = state.snapshotWidth * scale;
+        const drawHeight = state.snapshotHeight * scale;
+        const offsetX = (rect.width - drawWidth) / 2;
+        const offsetY = (rect.height - drawHeight) / 2;
+
+        const localX = event.clientX - rect.left - offsetX;
+        const localY = event.clientY - rect.top - offsetY;
+
+        if (localX < 0 || localY < 0 || localX > drawWidth || localY > drawHeight) {
+          return null;
+        }
+
+        const x = Math.round(localX / scale);
+        const y = Math.round(localY / scale);
+        return {
+          x: Math.max(0, Math.min(state.snapshotWidth - 1, x)),
+          y: Math.max(0, Math.min(state.snapshotHeight - 1, y)),
+        };
+      }
+
+      async function clickInBrowser(event, sourceEl) {
+        if (!state.browserReady || !state.snapshotWidth || !state.snapshotHeight) {
+          return;
+        }
+
+        const mapped = mapPointerToSnapshot(event, sourceEl || event.currentTarget || els.browserImage);
+        if (!mapped) {
+          setAppStatus("", "Clique fora da area util da workspace");
+          return;
+        }
+
+        setAppStatus("busy", "Enviando clique para a janela interna");
+        try {
+          const data = await apiJson("/api/browser/click", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ x: mapped.x, y: mapped.y }),
+          });
+          renderSnapshot(data, data.message || "Clique enviado.");
+          setAppStatus("", data.message || "Clique enviado");
+        } catch (error) {
+          setAppStatus("error", error.message || "Falha ao clicar na janela interna.");
+        }
+      }
+
+      async function sendKeyToBrowser(key) {
+        if (!state.browserReady) {
+          return;
+        }
+        try {
+          const data = await apiJson("/api/browser/key", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key }),
+          });
+          renderSnapshot(data, data.message || "Tecla enviada.");
+        } catch (error) {
+          setAppStatus("error", error.message || "Falha ao enviar tecla.");
+        }
+      }
+
+      async function typeTextInBrowser(text) {
+        if (!state.browserReady || !text) {
+          return;
+        }
+        try {
+          const data = await apiJson("/api/browser/type", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, press_enter: false }),
+          });
+          renderSnapshot(data, data.message || "Texto enviado.");
+        } catch (error) {
+          setAppStatus("error", error.message || "Falha ao digitar no workspace.");
+        }
+      }
+
+      function handleWorkspaceKeyboard(event) {
+        if (!state.workspaceVisible || !state.browserReady) {
+          return;
+        }
+
+        const key = event.key;
+        const specialKeys = new Set([
+          "Enter",
+          "Backspace",
+          "Tab",
+          "Escape",
+          "Delete",
+          "ArrowUp",
+          "ArrowDown",
+          "ArrowLeft",
+          "ArrowRight",
+          "Home",
+          "End",
+          "PageUp",
+          "PageDown",
+        ]);
+
+        if (specialKeys.has(key)) {
+          event.preventDefault();
+          sendKeyToBrowser(key);
+          return;
+        }
+
+        if (key === " ") {
+          event.preventDefault();
+          typeTextInBrowser(" ");
+          return;
+        }
+
+        if ((event.ctrlKey || event.metaKey) && key === "c") {
+          event.preventDefault();
+          copyFromBrowser();
+          return;
+        }
+
+        if ((event.ctrlKey || event.metaKey) && key === "v") {
+          event.preventDefault();
+          pasteIntoBrowser();
+          return;
+        }
+
+        if ((event.ctrlKey || event.metaKey) && key === "a") {
+          event.preventDefault();
+          sendKeyToBrowser("Control+a");
+          return;
+        }
+
+        if ((event.ctrlKey || event.metaKey) && key === "x") {
+          event.preventDefault();
+          sendKeyToBrowser("Control+x");
+          return;
+        }
+
+        if ((event.ctrlKey || event.metaKey) && key === "z") {
+          event.preventDefault();
+          sendKeyToBrowser("Control+z");
+          return;
+        }
+
+        if (key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+          event.preventDefault();
+          typeTextInBrowser(key);
+        }
+      }
+
+      function setWorkspaceAgentBusy(busy, label) {
+        if (!els.workspaceAgentOverlay) return;
+        if (busy) {
+          if (label && els.workspaceAgentLabel) els.workspaceAgentLabel.textContent = label;
+          els.workspaceAgentOverlay.classList.add("active");
+        } else {
+          els.workspaceAgentOverlay.classList.remove("active");
+        }
+      }
+
+      async function sendChat(text) {
+        const input = (text || "").trim();
+        if (!input || state.sending) {
+          return;
+        }
+
+        appendMessage("user", input);
+        updateSessionPreview(input);
+        if (maybeHandleWorkspaceCommand(input)) {
+          els.chatInput.value = "";
+          autoResizeComposer();
+          return;
+        }
+
+        const isAgentMode = els.agentMode.checked;
+
+        // Auto-show workspace when agent mode is on so the user can watch
+        if (isAgentMode && !state.workspaceVisible) {
+          setWorkspaceVisible(true);
+        }
+
+        const pendingCard = appendMessage("assistant", "Agente pensando...");
+        pendingCard.classList.add("pending");
+        els.chatInput.value = "";
+        autoResizeComposer();
+        setComposerBusy(true);
+
+        if (isAgentMode) {
+          setAppStatus("busy", "Agente executando na workspace");
+          setWorkspaceAgentBusy(true, "Agente trabalhando...");
+        } else {
+          setAppStatus("busy", "Consultando o agente");
+        }
+
+        try {
+          const data = await apiJson("/api/command", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              input,
+              auto_accept: els.autoAccept.checked,
+              agent_mode: isAgentMode,
+              login_context: isAgentMode ? getActiveLoginContext() : null,
+            }),
+          });
+
+          setWorkspaceAgentBusy(false);
+          pendingCard.classList.remove("pending", "error");
+          pendingCard.textContent = data.reply || "Sem resposta.";
+          scrollChatToBottom();
+          if (typeof data.auto_accept === "boolean") {
+            els.autoAccept.checked = data.auto_accept;
+          }
+          if (typeof data.agent_mode === "boolean") {
+            els.agentMode.checked = data.agent_mode;
+          }
+          syncToggles();
+          setAppStatus("", isAgentMode ? "Acao concluida" : "Resposta recebida");
+
+          // Always refresh snapshot when workspace is visible or agent just acted
+          if (state.workspaceVisible || isAgentMode || state.live) {
+            refreshBrowserSnapshot(true);
+          }
+        } catch (error) {
+          setWorkspaceAgentBusy(false);
+          pendingCard.classList.remove("pending");
+          pendingCard.classList.add("error");
+          pendingCard.textContent = "Erro: " + (error.message || "Falha ao chamar o backend.");
+          scrollChatToBottom();
+          setAppStatus("error", error.message || "Falha ao chamar o backend.");
+        } finally {
+          setComposerBusy(false);
+          els.chatInput.focus();
+        }
+      }
+
+      function autoResizeComposer() {
+        els.chatInput.style.height = "auto";
+        els.chatInput.style.height = Math.min(180, els.chatInput.scrollHeight) + "px";
+        scrollChatToBottom();
+      }
+
+      function updateStickToBottom() {
+        const distanceFromBottom = els.chatScroll.scrollHeight - (els.chatScroll.scrollTop + els.chatScroll.clientHeight);
+        state.stickToBottom = distanceFromBottom <= 80;
+      }
+
+      function clearUiConversation() {
+        els.messageList.innerHTML = "";
+        els.messageList.style.display = "none";
+        els.emptyState.style.display = "grid";
+        if (els.historyCurrentTitle) {
+          els.historyCurrentTitle.textContent = "Sessao atual";
+        }
+        if (els.historyCurrentPreview) {
+          els.historyCurrentPreview.textContent = "Conversa atual.";
+        }
+        if (state.workspaceVisible) {
+          els.workspaceChatStage.classList.add("visible");
+          els.messageList.style.display = "none";
+          els.emptyState.style.display = "none";
+          return;
+        }
+        Array.from(els.historyList.querySelectorAll(".history-item")).forEach((item) => {
+          item.classList.remove("active");
+        });
+        const first = els.historyList.querySelector(".history-item");
+        if (first) {
+          first.classList.add("active");
+        }
+      }
+
+      function bindStaticActions() {
+        document.querySelectorAll("[data-chat]").forEach((element) => {
+          element.addEventListener("click", () => {
+            state.stickToBottom = true;
+            sendChat(element.getAttribute("data-chat") || "");
+          });
+        });
+
+        els.newChat.addEventListener("click", clearUiConversation);
+        els.agentMode.addEventListener("change", syncToggles);
+        els.autoAccept.addEventListener("change", syncToggles);
+        els.browserLive.addEventListener("change", syncToggles);
+
+        els.composer.addEventListener("submit", (event) => {
+          event.preventDefault();
+          state.stickToBottom = true;
+          sendChat(els.chatInput.value);
+        });
+
+        els.chatInput.addEventListener("input", autoResizeComposer);
+        els.chatInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            state.stickToBottom = true;
+            sendChat(els.chatInput.value);
+          }
+        });
+
+        els.chatScroll.addEventListener("scroll", updateStickToBottom);
+
+        document.getElementById("browser-open").addEventListener("click", openBrowserUrl);
+        document.getElementById("browser-refresh").addEventListener("click", () => refreshBrowserSnapshot(false));
+        document.getElementById("browser-type").addEventListener("click", () => typeInBrowser(false));
+        document.getElementById("browser-enter").addEventListener("click", pressEnterOnly);
+        document.getElementById("browser-copy").addEventListener("click", copyFromBrowser);
+        document.getElementById("browser-paste").addEventListener("click", pasteIntoBrowser);
+        document.getElementById("browser-zoom-out").addEventListener("click", () => setBrowserZoom(state.browserZoom - 0.1));
+        document.getElementById("browser-zoom-reset").addEventListener("click", () => setBrowserZoom(1));
+        document.getElementById("browser-zoom-in").addEventListener("click", () => setBrowserZoom(state.browserZoom + 0.1));
+        document.getElementById("browser-close").addEventListener("click", closeBrowserSession);
+        els.browserImage.addEventListener("click", (event) => clickInBrowser(event, els.browserImage));
+        els.workspaceChatImage.addEventListener("click", (event) => {
+          els.workspaceChatImage.focus();
+          clickInBrowser(event, els.workspaceChatImage);
+        });
+        els.workspaceChatImage.addEventListener("keydown", handleWorkspaceKeyboard);
+
+        els.vaultServiceSelect.addEventListener("change", () => {
+          if (!state.credentials) {
+            state.credentials = { selected: "", entries: {} };
+          }
+          state.credentials.selected = els.vaultServiceSelect.value || "";
+          saveCredentialVault();
+          refreshCredentialVaultUi();
+        });
+        els.vaultSave.addEventListener("click", saveVaultEntryFromForm);
+        els.vaultDelete.addEventListener("click", deleteVaultEntryFromForm);
+      }
+
+      bindStaticActions();
+
+      const messageObserver = new MutationObserver(() => {
+        scrollChatToBottom();
+      });
+      messageObserver.observe(els.messageList, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+
+      window.addEventListener("resize", () => {
+        scrollChatToBottom();
+      });
+
+      autoResizeComposer();
+      updateStickToBottom();
+      loadCredentialVault();
+      refreshCredentialVaultUi();
+      setWorkspaceVisible(false);
+      syncToggles();
+      bootstrapBrowser();
+      refreshBrowserSnapshot(true);
+    </script>
+  </body>
+</html>

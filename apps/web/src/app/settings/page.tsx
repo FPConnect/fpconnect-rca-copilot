@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Save, X, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
+import {
+  DEFAULT_SYSTEM_PREFS,
+  type SystemPrefs,
+  useSystemPreferences,
+} from "@/contexts/SystemPreferencesContext";
 
 interface ProfileForm {
   name: string;
@@ -22,13 +27,6 @@ interface NotificationPrefs {
   push: boolean;
 }
 
-interface SystemPrefs {
-  theme: "light" | "dark" | "system";
-  language: "pt-BR" | "en-US";
-  timezone: string;
-  refreshRate: number;
-}
-
 const TIMEZONES = [
   "America/Sao_Paulo",
   "America/New_York",
@@ -39,12 +37,6 @@ const TIMEZONES = [
 ];
 
 const INITIAL_PROFILE: ProfileForm = { name: "Admin", email: "admin@hospital.com" };
-const INITIAL_SYSTEM: SystemPrefs = {
-  theme: "light",
-  language: "pt-BR",
-  timezone: "America/Sao_Paulo",
-  refreshRate: 30,
-};
 const INITIAL_NOTIF: NotificationPrefs = {
   email: true,
   sms: false,
@@ -76,13 +68,13 @@ function StatusBanner({ status }: { status: SaveStatus }) {
   if (status === "idle" || status === "saving") return null;
   if (status === "success")
     return (
-      <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-2">
+      <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-2 dark:bg-green-950/50 dark:border-green-900 dark:text-green-300">
         <CheckCircle size={16} />
         Salvo com sucesso!
       </div>
     );
   return (
-    <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+    <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2 dark:bg-red-950/50 dark:border-red-900 dark:text-red-300">
       <AlertCircle size={16} />
       Erro ao salvar. Tente novamente.
     </div>
@@ -97,8 +89,8 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl shadow p-6 mb-6 overflow-hidden">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
+    <div className="bg-white rounded-xl shadow p-6 mb-6 overflow-hidden dark:bg-gray-900 dark:shadow-none dark:ring-1 dark:ring-gray-800">
+      <h2 className="text-lg font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100 dark:text-gray-100 dark:border-gray-800">
         {title}
       </h2>
       {children}
@@ -120,9 +112,9 @@ function Toggle({
   return (
     <div className="flex items-center justify-between py-3 gap-4">
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-gray-700">{label}</p>
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{label}</p>
         {description && (
-          <p className="text-xs text-gray-400 mt-0.5">{description}</p>
+          <p className="text-xs text-gray-400 mt-0.5 dark:text-gray-500">{description}</p>
         )}
       </div>
       <button
@@ -145,6 +137,7 @@ function Toggle({
 
 export default function SettingsPage() {
   const { addNotification } = useNotifications();
+  const { preferences, savePreferences, resetPreferences } = useSystemPreferences();
 
   /* Profile */
   const [profile, setProfile] = useState<ProfileForm>(INITIAL_PROFILE);
@@ -167,13 +160,16 @@ export default function SettingsPage() {
   };
 
   /* System */
-  const [system, setSystem] = useState<SystemPrefs>(INITIAL_SYSTEM);
-  const [systemDraft, setSystemDraft] = useState<SystemPrefs>(INITIAL_SYSTEM);
+  const [systemDraft, setSystemDraft] = useState<SystemPrefs>(preferences);
   const systemSave = useSaveStatus();
+
+  useEffect(() => {
+    setSystemDraft(preferences);
+  }, [preferences]);
 
   const handleSystemSave = () => {
     systemSave.save(() => {
-      setSystem(systemDraft);
+      savePreferences(systemDraft);
       addNotification("success", "Configurações salvas", "Preferências do sistema atualizadas.");
     });
   };
@@ -220,13 +216,13 @@ export default function SettingsPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Configurações</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6 dark:text-gray-100">Configurações</h1>
 
       {/* Profile */}
       <SectionCard title="Perfil do Usuário">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
               Nome <span className="text-red-500">*</span>
             </label>
             <input
@@ -235,12 +231,12 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setProfileDraft((p) => ({ ...p, name: e.target.value }))
               }
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
               placeholder="Seu nome"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
               Email <span className="text-red-500">*</span>
             </label>
             <input
@@ -249,7 +245,7 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setProfileDraft((p) => ({ ...p, email: e.target.value }))
               }
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
               placeholder="seu@email.com"
             />
           </div>
@@ -258,7 +254,7 @@ export default function SettingsPage() {
             <div className="flex gap-2 ml-auto">
               <button
                 onClick={() => setProfileDraft(profile)}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
               >
                 <X size={14} />
                 Cancelar
@@ -279,9 +275,12 @@ export default function SettingsPage() {
       {/* System Preferences */}
       <SectionCard title="Preferências do Sistema">
         <div className="space-y-4">
+          <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-200">
+            Essas preferências agora são salvas localmente no navegador e aplicadas ao tema, idioma, fuso horário e taxa de atualização padrão da interface.
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
                 Tema
               </label>
               <select
@@ -292,7 +291,7 @@ export default function SettingsPage() {
                     theme: e.target.value as SystemPrefs["theme"],
                   }))
                 }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
               >
                 <option value="light">Claro</option>
                 <option value="dark">Escuro</option>
@@ -300,7 +299,7 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
                 Idioma
               </label>
               <select
@@ -311,7 +310,7 @@ export default function SettingsPage() {
                     language: e.target.value as SystemPrefs["language"],
                   }))
                 }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
               >
                 <option value="pt-BR">Português (BR)</option>
                 <option value="en-US">English (US)</option>
@@ -320,7 +319,7 @@ export default function SettingsPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
                 Fuso Horário
               </label>
               <select
@@ -328,7 +327,7 @@ export default function SettingsPage() {
                 onChange={(e) =>
                   setSystemDraft((p) => ({ ...p, timezone: e.target.value }))
                 }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
               >
                 {TIMEZONES.map((tz) => (
                   <option key={tz} value={tz}>
@@ -338,7 +337,7 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
                 Taxa de Atualização (s)
               </label>
               <select
@@ -349,7 +348,7 @@ export default function SettingsPage() {
                     refreshRate: Number(e.target.value),
                   }))
                 }
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
               >
                 {[10, 15, 30, 60, 120].map((v) => (
                   <option key={v} value={v}>
@@ -363,8 +362,8 @@ export default function SettingsPage() {
             <StatusBanner status={systemSave.status} />
             <div className="flex gap-2 ml-auto">
               <button
-                onClick={() => setSystemDraft(system)}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                onClick={() => setSystemDraft(preferences)}
+                className="flex items-center gap-1.5 px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
               >
                 <X size={14} />
                 Cancelar
@@ -439,7 +438,7 @@ export default function SettingsPage() {
         </h3>
         <div className="space-y-3">
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
               Senha Atual
             </label>
             <input
@@ -448,12 +447,12 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setPasswordForm((p) => ({ ...p, current: e.target.value }))
               }
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
               placeholder="••••••••"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
               Nova Senha
             </label>
             <input
@@ -462,12 +461,12 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))
               }
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
               placeholder="Mínimo 8 caracteres"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-gray-200">
               Confirmar Nova Senha
             </label>
             <input
@@ -476,14 +475,14 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setPasswordForm((p) => ({ ...p, confirm: e.target.value }))
               }
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100"
               placeholder="Repita a nova senha"
             />
           </div>
           <button
             type="button"
             onClick={() => setShowPasswords((v) => !v)}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700"
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           >
             {showPasswords ? <EyeOff size={14} /> : <Eye size={14} />}
             {showPasswords ? "Ocultar senhas" : "Mostrar senhas"}
@@ -496,7 +495,7 @@ export default function SettingsPage() {
               onClick={() =>
                 setPasswordForm({ current: "", newPassword: "", confirm: "" })
               }
-              className="flex items-center gap-1.5 px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
               <X size={14} />
               Cancelar
@@ -516,12 +515,12 @@ export default function SettingsPage() {
       {/* Data Management */}
       <SectionCard title="Dados e Privacidade">
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-gray-950">
             <div>
-              <p className="text-sm font-medium text-gray-700">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
                 Exportar Dados
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-400 mt-0.5 dark:text-gray-500">
                 Baixe todos os seus dados em formato JSON
               </p>
             </div>
@@ -529,12 +528,12 @@ export default function SettingsPage() {
               onClick={() =>
                 addNotification("info", "Exportação iniciada", "Seus dados serão enviados por email.")
               }
-              className="text-sm px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-white transition-colors"
+              className="text-sm px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-white transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-900"
             >
               Exportar
             </button>
           </div>
-          <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg dark:bg-red-950/40">
             <div>
               <p className="text-sm font-medium text-red-700">
                 Redefinir Preferências
@@ -545,8 +544,8 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => {
-                setSystemDraft(INITIAL_SYSTEM);
-                setSystem(INITIAL_SYSTEM);
+                resetPreferences();
+                setSystemDraft(DEFAULT_SYSTEM_PREFS);
                 setNotifDraft(INITIAL_NOTIF);
                 setNotifPrefs(INITIAL_NOTIF);
                 addNotification("warning", "Preferências redefinidas", "Todas as configurações foram restauradas.");

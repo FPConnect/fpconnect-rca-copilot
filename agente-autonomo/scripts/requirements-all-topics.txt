@@ -1,0 +1,110 @@
+# Core infra / API
+pydantic
+python-dotenv
+requests
+httpx
+orjson
+ujson
+rich
+loguru
+
+# Data / numerico
+numpy
+pandas
+scipy
+pyarrow
+polars
+statsmodels
+sympy
+
+# Visualizacao
+matplotlib
+seaborn
+plotly
+altair
+bokeh
+
+# ML classico
+scikit-learn
+xgboost
+lightgbm
+catboost
+imbalanced-learn
+
+# Deep Learning / AI tooling
+torch
+torchvision
+torchaudio
+transformers
+sentence-transformers
+accelerate
+safetensors
+onnxruntime
+
+# NLP
+gensim
+spacy
+nltk
+textblob
+rapidfuzz
+
+# Series temporais
+prophet
+pmdarima
+
+# Visao computacional
+opencv-python
+imageio
+scikit-image
+Pillow
+
+# Audio / media
+librosa
+soundfile
+moviepy
+
+# Web / scraping
+beautifulsoup4
+lxml
+scrapy
+selenium
+playwright
+newspaper3k
+feedparser
+wikipedia
+duckduckgo-search
+
+# Documentos / parsing
+pypdf
+pdfplumber
+PyMuPDF
+python-docx
+openpyxl
+xlsxwriter
+markdown
+
+# Bancos / storage
+sqlalchemy
+psycopg2-binary
+redis
+pymongo
+
+# Vetores / RAG
+faiss-cpu
+chromadb
+qdrant-client
+weaviate-client
+
+# Grafos / conhecimento
+networkx
+rdflib
+
+# Geo / mapas
+geopy
+folium
+
+# Notebooks / utilidades
+jupyterlab
+ipykernel
+tqdm
+joblib

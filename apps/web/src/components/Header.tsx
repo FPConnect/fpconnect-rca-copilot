@@ -5,6 +5,7 @@ import { Bell, User, ChevronDown, LogOut, Settings, Menu } from "lucide-react";
 import Link from "next/link";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
+import FPConnectLogo from "@/components/FPConnectLogo";
 
 export default function Header() {
   const [userOpen, setUserOpen] = useState(false);
@@ -12,7 +13,7 @@ export default function Header() {
   const { toggle } = useSidebar();
 
   return (
-    <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
+    <header className="h-16 bg-white/95 backdrop-blur border-b border-gray-200 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
       <div className="flex items-center gap-3">
         <button
           onClick={toggle}
@@ -21,9 +22,18 @@ export default function Header() {
         >
           <Menu size={20} />
         </button>
-        <h1 className="text-base font-semibold text-gray-700 hidden sm:block">
-          Healthcare Equipment Monitor
-        </h1>
+        <div className="hidden sm:flex items-center gap-4">
+          <FPConnectLogo subtitle="RCA Copilot" theme="light" size="sm" />
+          <div className="h-8 w-px bg-gray-200" />
+          <div className="flex items-center gap-3">
+            <h1 className="text-base font-semibold text-gray-800">
+              FPConnect RCA Copilot
+            </h1>
+            <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
+              Demo comercial
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="flex items-center gap-4 ml-auto">

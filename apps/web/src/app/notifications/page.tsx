@@ -3,6 +3,7 @@
 import { Trash2, CheckCheck } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 import type { NotificationType } from "@/contexts/NotificationContext";
+import { useSystemPreferences } from "@/contexts/SystemPreferencesContext";
 
 const TYPE_LABELS: Record<NotificationType, string> = {
   success: "Sucesso",
@@ -37,20 +38,10 @@ const TYPE_STYLES: Record<
   },
 };
 
-function formatDate(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat("pt-BR", {
-      dateStyle: "short",
-      timeStyle: "short",
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
-}
-
 export default function NotificationsPage() {
   const { notifications, unreadCount, markAllRead, remove, clearAll } =
     useNotifications();
+  const { formatDateTime } = useSystemPreferences();
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -128,7 +119,7 @@ export default function NotificationsPage() {
                     <p className="text-xs text-gray-500 mt-0.5">{n.message}</p>
                   )}
                   <p className="text-xs text-gray-400 mt-1">
-                    {formatDate(n.createdAt)}
+                    {formatDateTime(n.createdAt)}
                   </p>
                 </div>
                 <button

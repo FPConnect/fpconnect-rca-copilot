@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>FPConnect | Investor Pitch</title>
+<style>
+*{-webkit-box-sizing:border-box;box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  font-size:15px;line-height:1.5;color:#1e293b;background:#f8fafc;
+  overflow-x:hidden;
+  padding-top:52px;
+  padding-bottom:calc(68px + env(safe-area-inset-bottom,0px));
+  padding-bottom:calc(68px + constant(safe-area-inset-bottom,0px));
+}
+ul{list-style:none}
+button{font-family:inherit;cursor:pointer;-webkit-appearance:none;appearance:none}
+#topbar{
+  position:fixed;top:0;left:0;right:0;height:52px;z-index:999;
+  background:#fff;border-bottom:1px solid #e2e8f0;
+  display:-webkit-box;display:-webkit-flex;display:flex;
+  -webkit-box-align:center;-webkit-align-items:center;align-items:center;
+  -webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;
+  padding:0 16px;
+}
+#topbar h1{font-size:1.05rem;font-weight:900}
+#topbar h1 span{color:#2563eb}
+#topbar .badge{
+  background:#eff6ff;color:#2563eb;font-size:.6rem;font-weight:700;
+  padding:3px 9px;border-radius:99px;white-space:nowrap
+}
+#bnav{
+  position:fixed;bottom:0;left:0;right:0;z-index:999;
+  background:#fff;border-top:1px solid #e2e8f0;
+  display:-webkit-box;display:-webkit-flex;display:flex;
+  overflow-x:auto;overflow-y:visible;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;-ms-overflow-style:none;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-bottom:constant(safe-area-inset-bottom,0px);
+}
+#bnav::-webkit-scrollbar{display:none}
+.bb{
+  display:-webkit-box;display:-webkit-flex;display:flex;
+  -webkit-box-orient:vertical;-webkit-box-direction:normal;
+  -webkit-flex-direction:column;flex-direction:column;
+  -webkit-box-align:center;-webkit-align-items:center;align-items:center;
+  -webkit-box-pack:center;-webkit-justify-content:center;justify-content:center;
+  flex-shrink:0;min-width:58px;padding:6px 8px;
+  background:none;border:none;border-top:2.5px solid transparent;
+  color:#94a3b8;font-size:.56rem;font-weight:600;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.bb .ic{font-size:1.2rem;line-height:1;margin-bottom:2px}
+.bb.on{color:#2563eb;border-top-color:#2563eb}
+@media(min-width:768px){
+  body{padding-top:0;padding-bottom:0;display:-webkit-box;display:-webkit-flex;display:flex}
+  #topbar{display:none}
+  #bnav{display:none}
+  #sidebar{
+    position:fixed;top:0;left:0;bottom:0;width:220px;z-index:100;
+    background:#fff;border-right:1px solid #e2e8f0;overflow-y:auto;display:block
+  }
+  #main{margin-left:220px;width:calc(100% - 220px);padding:0}
+  .panel{padding:32px 36px 40px !important}
+}
+@media(max-width:767px){#sidebar{display:none}}
+#sidebar .brand{padding:16px;border-bottom:1px solid #f1f5f9}
+#sidebar .brand .logo{font-size:1.1rem;font-weight:900}
+#sidebar .brand .logo span{color:#2563eb}
+#sidebar .brand .sub{font-size:.58rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+#sidebar nav{padding:8px}
+.sb{
+  display:block;width:100%;text-align:left;padding:9px 12px;margin-bottom:2px;
+  border-radius:10px;font-size:.82rem;font-weight:500;color:#64748b;
+  background:none;border:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation
+}
+.sb.on{background:#eff6ff;color:#1d4ed8;font-weight:700}
+.sdiv{font-size:.58rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;padding:10px 12px 4px}
+#sidebar .foot{padding:12px;border-top:1px solid #f1f5f9}
+.apill{background:#eff6ff;padding:10px;border-radius:12px;text-align:center}
+.apill .al{font-size:.63rem;color:#64748b}
+.apill .av{font-size:1rem;font-weight:900;color:#2563eb}
+#main{width:100%}
+.panel{display:none;padding:16px 16px 20px}
+.panel.on{display:block}
+@media(min-width:540px){.panel{padding:22px 22px 28px}}
+.stitle{font-size:1.28rem;font-weight:800;color:#0f172a;margin-bottom:8px}
+.ssub{font-size:.84rem;color:#475569;margin-bottom:18px;line-height:1.7}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px;
+  -webkit-box-shadow:0 1px 3px rgba(0,0,0,.04);box-shadow:0 1px 3px rgba(0,0,0,.04);margin-bottom:14px}
+.ctit{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:10px}
+.g2{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:12px}
+.g2>*{-webkit-flex:1 1 200px;flex:1 1 200px}
+.g3{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:10px}
+.g3>*{-webkit-flex:1 1 130px;flex:1 1 130px}
+.tag{display:inline-block;padding:3px 8px;border-radius:99px;font-size:.67rem;font-weight:600}
+.tb{background:#eff6ff;color:#2563eb}
+.tg{background:#f1f5f9;color:#475569}
+.cta{
+  display:block;width:100%;background:#2563eb;color:#fff;font-weight:700;
+  padding:12px;border-radius:12px;font-size:.88rem;border:none;text-align:center;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation
+}
+.hero{background:#2563eb;color:#fff;border-radius:18px;padding:18px;margin-bottom:14px}
+.hero h2{font-size:1rem;font-weight:800;margin-bottom:6px}
+.hero p{font-size:.77rem;color:#bfdbfe;margin-bottom:14px}
+.krow{display:-webkit-box;display:-webkit-flex;display:flex;gap:10px;margin-bottom:14px}
+.kbox{background:rgba(255,255,255,.16);border-radius:10px;padding:10px;text-align:center;-webkit-flex:1;flex:1}
+.kbox .kn{font-size:1.45rem;font-weight:900}
+.kbox .kl{font-size:.58rem;color:#bfdbfe;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.dk{background:#0f172a;color:#fff;border-radius:14px;padding:14px;
+  display:-webkit-box;display:-webkit-flex;display:flex;gap:12px;
+  -webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start;margin-bottom:14px}
+.dk .di{font-size:1.4rem;flex-shrink:0;margin-top:2px}
+.dk h3{font-size:.86rem;font-weight:700;margin-bottom:4px}
+.dk p{font-size:.72rem;color:#94a3b8;line-height:1.65}
+.flow{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:5px}
+@media(min-width:520px){.flow{-webkit-flex-direction:row;flex-direction:row;-webkit-box-align:center;-webkit-align-items:center;align-items:center}}
+.fb{-webkit-flex:1;flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-top:3px solid #2563eb;border-radius:10px;padding:10px;text-align:center}
+.fb.fh{background:#eff6ff;border-top-color:#1d4ed8}
+.fb .fi{font-size:1.3rem;margin-bottom:3px}
+.fb .ftt{font-size:.7rem;font-weight:700}
+.fb .fs{font-size:.62rem;color:#64748b;margin-top:2px}
+.farr{text-align:center;color:#cbd5e1;font-size:1.3rem}
+.roi{background:#1e293b;color:#fff;border-radius:14px;padding:16px}
+.roi h3{font-size:.93rem;font-weight:800;margin-bottom:3px}
+.roi .rs{font-size:.7rem;color:#94a3b8;margin-bottom:14px}
+.rrow{margin-bottom:12px}
+.rlbl{font-size:.7rem;color:#94a3b8;margin-bottom:5px}
+.rval{text-align:right;font-size:.83rem;font-weight:700;color:#60a5fa;margin-top:3px}
+input[type=range]{width:100%;height:6px;border-radius:3px;outline:none;cursor:pointer;
+  -webkit-appearance:none;appearance:none;background:#334155}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#3b82f6;border:2px solid #fff}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#3b82f6;border:2px solid #fff}
+.rsaas{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;font-size:.7rem;color:#64748b;padding-top:4px}
+.rres{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:14px;text-align:center;margin-top:12px}
+.rres .rrl{font-size:.6rem;color:#475569;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.rres .rrv{font-size:1.85rem;font-weight:900;color:#4ade80}
+.rres .rrh{font-size:.6rem;color:#475569;margin-top:4px}
+.barch{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:end;-webkit-align-items:flex-end;align-items:flex-end;gap:8px;height:155px;padding:0 4px}
+.bw{-webkit-flex:1;flex:1;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-box-align:center;-webkit-align-items:center;align-items:center;gap:3px;height:100%}
+.btr{-webkit-flex:1;flex:1;width:100%;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:end;-webkit-align-items:flex-end;align-items:flex-end}
+.bfi{width:100%;border-radius:5px 5px 0 0}
+.bvl{font-size:.6rem;font-weight:700;color:#475569;text-align:center}
+.blb{font-size:.54rem;color:#94a3b8;text-align:center}
+.mrrch{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:end;-webkit-align-items:flex-end;align-items:flex-end;gap:6px;height:135px}
+.mw{-webkit-flex:1;flex:1;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-box-align:center;-webkit-align-items:center;align-items:center;gap:3px;height:100%}
+.mtr{-webkit-flex:1;flex:1;width:100%;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:end;-webkit-align-items:flex-end;align-items:flex-end}
+.mfi{width:100%;background:#3b82f6;border-radius:4px 4px 0 0}
+.mvl{font-size:.55rem;font-weight:700;color:#2563eb;text-align:center}
+.mlb{font-size:.53rem;color:#94a3b8;text-align:center}
+.dwrap{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:center;-webkit-align-items:center;align-items:center;gap:14px;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+.dleg{-webkit-flex:1;flex:1;min-width:120px}
+.dleg li{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:center;-webkit-align-items:center;align-items:center;gap:6px;font-size:.7rem;color:#475569;padding:3px 0}
+.dleg .dd{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.dtbl{width:100%;border-collapse:collapse;font-size:.75rem}
+.dtbl th{background:#f8fafc;padding:8px 9px;text-align:left;font-weight:700;color:#475569;border-bottom:2px solid #e2e8f0}
+.dtbl td{padding:8px 9px;border-bottom:1px solid #f1f5f9}
+.dtbl tr:last-child td{border-bottom:none}
+.dtbl .hi{background:#eff6ff}
+.dtbl .hi td:first-child{color:#2563eb;font-weight:700}
+.cmp{width:100%;border-collapse:collapse;font-size:.65rem}
+.cmp th,.cmp td{padding:6px;text-align:center;border-bottom:1px solid #f1f5f9}
+.cmp th{background:#f8fafc;font-weight:700;color:#475569}
+.cmp td:first-child{text-align:left;font-weight:600;color:#1e293b}
+.cmp .us{background:#eff6ff;font-weight:700;color:#16a34a}
+.ms{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:11px 13px;
+  display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start;gap:9px;margin-bottom:8px}
+.msb{padding:3px 8px;border-radius:99px;font-size:.61rem;font-weight:800;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.msblu{background:#dbeafe;color:#1d4ed8}
+.msgry{background:#f1f5f9;color:#475569}
+.msgrn{background:#dcfce7;color:#16a34a}
+.msbd{-webkit-flex:1;flex:1;min-width:0}
+.mst{font-size:.8rem;font-weight:700}
+.msd{font-size:.7rem;color:#64748b;margin-top:2px}
+.msm{text-align:right;flex-shrink:0}
+.msm .mv{font-size:.8rem;font-weight:800;color:#2563eb}
+.msm .ml{font-size:.55rem;color:#94a3b8}
+.capg{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.capb{-webkit-flex:1 1 110px;flex:1 1 110px;border-radius:12px;padding:12px;text-align:center;color:#fff}
+.capb .cp{font-size:1.45rem;font-weight:900}
+.capb .cn{font-size:.67rem;font-weight:700;margin-top:2px}
+.capb .cu{font-size:.57rem;opacity:.75;margin-top:1px}
+.mog{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:10px}
+.moc{-webkit-flex:1 1 130px;flex:1 1 130px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:13px}
+.moc .mi{font-size:1.2rem;margin-bottom:5px}
+.moc h4{font-size:.76rem;font-weight:700;margin-bottom:3px}
+.moc p{font-size:.69rem;color:#64748b}
+.advg{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.advc{-webkit-flex:1 1 115px;flex:1 1 115px;border-radius:12px;padding:12px}
+.advc .ai{font-size:1.1rem;margin-bottom:4px}
+.advc .an{font-size:.7rem;font-weight:700;margin-bottom:3px}
+.advc p{font-size:.64rem;color:#475569}
+.ser{background:#0f172a;color:#fff;border-radius:13px;padding:13px 15px;
+  display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:center;-webkit-align-items:center;align-items:center;gap:13px}
+.ser .sn{font-size:1.75rem;font-weight:900;color:#60a5fa;flex-shrink:0;text-align:center;min-width:48px}
+.ser .sn span{display:block;font-size:.54rem;color:#64748b;font-weight:500}
+.ser p{font-size:.7rem;color:#94a3b8;line-height:1.6}
+.feat{border-top:3px solid #2563eb}
+.feat .fic{font-size:1.7rem;margin-bottom:6px}
+</style>
+</head>
+<body>
+<div id="topbar">
+  <h1><span>FP</span>Connect</h1>
+  <div class="badge">Pre-Seed · US$0.8–1.6M</div>
+</div>
+<div id="sidebar">
+  <div class="brand">
+    <div class="logo"><span>FP</span>Connect</div>
+    <div class="sub">Investor Memo v3.0</div>
+  </div>
+  <nav>
+    <button class="sb on" id="sb-resumo"      onclick="goTo('resumo')">📋 Executive Summary</button>
+    <button class="sb"    id="sb-problema"    onclick="goTo('problema')">⚠️ Problem</button>
+    <button class="sb"    id="sb-solucao"     onclick="goTo('solucao')">🧠 Product & Solution</button>
+    <button class="sb"    id="sb-mercado"     onclick="goTo('mercado')">📈 Market (TAM)</button>
+    <button class="sb"    id="sb-financeiro"  onclick="goTo('financeiro')">💰 Fundraise & Projections</button>
+    <div class="sdiv">Due Diligence</div>
+    <button class="sb"    id="sb-time"        onclick="goTo('time')">👤 Team & Advisors</button>
+    <button class="sb"    id="sb-compet"      onclick="goTo('compet')">🏁 Competitive Landscape</button>
+    <button class="sb"    id="sb-roadmap"     onclick="goTo('roadmap')">📅 Milestones & Roadmap</button>
+  </nav>
+  <div class="foot">
+    <div class="apill">
+      <div class="al">Current Round</div>
+      <div class="av">US$0.8M–1.6M</div>
+      <div class="al">Pre-Seed / Seed</div>
+    </div>
+  </div>
+</div>
+<div id="main">
+  <div class="panel on" id="p-resumo">
+    <div class="stitle">Uptime Engine for Critical Equipment</div>
+    <div class="ssub">FPConnect turns support tickets, logs and technical evidence into <strong>AI-suggested Root Cause Analysis</strong>, checklists and predictive dashboards. We reduce MTTR and downtime for hospitals, labs and OEMs.</div>
+    <div class="g3" style="margin-bottom:14px">
+      <div class="card feat">
+        <div class="fic">⏱️</div>
+        <div class="ctit">MTTR Reduction</div>
+        <p style="font-size:.75rem;color:#475569">AI reads logs in seconds, removing reliance on tacit knowledge.</p>
+      </div>
+      <div class="card feat">
+        <div class="fic">🛡️</div>
+        <div class="ctit">Compliance</div>
+        <p style="font-size:.75rem;color:#475569">FDA/ANVISA-ready audit trails without extra burden for field teams.</p>
+      </div>
+      <div class="card feat">
+        <div class="fic">📈</div>
+        <div class="ctit">Uptime-as-a-Service</div>
+        <p style="font-size:.75rem;color:#475569">Move from break-fix to availability-based contracts.</p>
+      </div>
+    </div>
+    <div class="hero">
+      <h2>Operational MVP Live</h2>
+      <p>Web (Next.js) · API (FastAPI) · Mobile (Expo) · Docker · CI/CD · HL7/FHIR</p>
+      <div class="krow">
+        <div class="kbox"><div class="kn">72h</div><div class="kl">Pilot Demo</div></div>
+        <div class="kbox"><div class="kn">21d</div><div class="kl">Go-Live</div></div>
+        <div class="kbox"><div class="kn">MVP</div><div class="kl">In Production</div></div>
+      </div>
+      <button class="cta" onclick="goTo('financeiro')">See Investment Opportunity →</button>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="ctit">Why now?</div>
+      <ul style="display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:8px;font-size:.76rem;color:#475569">
+        <li>🔴 Hospitals lose <strong style="color:#1e293b">US$1.7M/hour</strong> to downtime (2024)</li>
+        <li>🔴 78% of RCAs are still done in spreadsheets or paper</li>
+        <li>🔴 Regulators demand traceability – market is under-served</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel" id="p-problema">
+    <div class="stitle">The Hidden Cost of Downtime</div>
+    <div class="ssub">In healthcare and MedTech, downtime is a clinical risk and a massive revenue leak.</div>
+    <div class="card">
+      <div class="ctit" style="text-align:center">Financial Impact of Downtime (USD)</div>
+      <div class="barch" id="bc-dt"></div>
+      <p style="font-size:.6rem;color:#94a3b8;text-align:center;margin-top:8px">Source: Censinet 2024</p>
+    </div>
+    <div class="g2">
+      <div class="card" style="border-top:3px solid #ef4444;background:#fff5f5;margin-bottom:0">
+        <div class="ctit" style="color:#b91c1c">Operational Pain</div>
+        <ul style="font-size:.76rem;color:#475569;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:7px">
+          <li>📌 Growing ticket backlog</li>
+          <li>📌 Senior engineers overloaded</li>
+          <li>📌 Recurring symptoms with no codified RCA</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid #f97316;background:#fff7ed;margin-bottom:0">
+        <div class="ctit" style="color:#c2410c">Financial Pain</div>
+        <ul style="font-size:.76rem;color:#475569;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:7px">
+          <li>📌 SLA penalties and lost renewals</li>
+          <li>📌 Low win-rate on new OEM contracts</li>
+          <li>📌 Failed audits without proper RCA trail</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="panel" id="p-solucao">
+    <div class="stitle">RCA Copilot & Workflow Automation</div>
+    <div class="ssub">FPConnect does not replace the engineer – it arms them with analytics superpowers, turning unstructured data into standardised actions.</div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="ctit" style="text-align:center">How the Engine Works</div>
+      <div class="flow">
+        <div class="fb"><div class="fi">📂</div><div class="ftt">1. DATA</div><div class="fs">Logs CSV, HL7, DICOM + Tickets</div></div>
+        <div class="farr">↓</div>
+        <div class="fb fh"><div class="fi">🧠</div><div class="ftt" style="color:#1d4ed8">2. RCA COPILOT</div><div class="fs" style="color:#3b82f6">AI suggests Root Cause via RAG</div></div>
+        <div class="farr">↓</div>
+        <div class="fb"><div class="fi">⚡</div><div class="ftt">3. ACTION</div><div class="fs">n8n triggers automated playbooks</div></div>
+        <div class="farr">↓</div>
+        <div class="fb"><div class="fi">📚</div><div class="ftt">4. LEARNING</div><div class="fs">Validated fix → RAG knowledge base</div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="ctit">Tech Stack</div>
+      <div style="display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:6px">
+        <span class="tag tg">Next.js</span>
+        <span class="tag tg">FastAPI (Python)</span>
+        <span class="tag tg">React Native / Expo</span>
+        <span class="tag tb">PostgreSQL + pgvector RAG</span>
+        <span class="tag tg">Redis & MinIO</span>
+        <span class="tag tb">Docker + GitHub Actions</span>
+      </div>
+    </div>
+    <div class="roi">
+      <h3>🧮 ROI Calculator</h3>
+      <div class="rs">Simulate monthly savings by reducing MTTR with FPConnect.</div>
+      <div class="rrow">
+        <div class="rlbl">Cost per hour of downtime (R$)</div>
+        <input type="range" id="rcost" min="1000" max="50000" step="1000" value="8000" oninput="calcROI()">
+        <div class="rval" id="rcostv">R$ 8.000</div>
+      </div>
+      <div class="rrow">
+        <div class="rlbl">MTTR hours reduced per month</div>
+        <input type="range" id="rhours" min="1" max="50" step="1" value="5" oninput="calcROI()">
+        <div class="rval" id="rhoursv">5 hours</div>
+      </div>
+      <div class="rsaas">
+        <span>FPConnect SaaS cost</span>
+        <strong style="color:#94a3b8">R$ 9.900 / month</strong>
+      </div>
+      <div class="rres">
+        <div class="rrl">Estimated Net Monthly Return</div>
+        <div class="rrv" id="rresv">R$ 30.100</div>
+        <div class="rrh">Gross savings minus SaaS license</div>
+      </div>
+    </div>
+  </div>
+  <div class="panel" id="p-mercado">
+    <div class="stitle">Digital Health & DHS Market</div>
+    <div class="ssub">Digital Health TAM growing fast. 22.2% CAGR – global transition to data-driven operations in healthcare. Source: Grand View Research 2024.</div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="ctit" style="text-align:center">Global Digital Health TAM 2024–2030 (Bn USD)</div>
+      <div id="bc-tam"></div>
+    </div>
+    <div class="g2">
+      <div class="card" style="margin-bottom:0;background:#eff6ff;border-color:#bfdbfe">
+        <div class="ctit" style="color:#1d4ed8">Target B2B Segments</div>
+        <ul style="font-size:.75rem;color:#1e40af;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:9px">
+          <li>🏥 <strong>Hospital Networks</strong><br><span style="color:#475569">6,400+ in Brazil, 6,100+ in the US</span></li>
+          <li>🧪 <strong>Diagnostic Labs (IVD)</strong><br><span style="color:#475569">High volume, zero tolerance to downtime</span></li>
+          <li>⚙️ <strong>MedTech OEMs</strong><br><span style="color:#475569">Scale support & outcome-based contracts</span></li>
+        </ul>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="ctit">DHS Framework</div>
+        <div style="display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:7px;font-size:.73rem">
+          <div style="display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;padding-bottom:5px;border-bottom:1px solid #f1f5f9"><span style="color:#64748b">Interoperability</span><strong>HL7/DICOM/FHIR</strong></div>
+          <div style="display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;padding-bottom:5px;border-bottom:1px solid #f1f5f9"><span style="color:#64748b">Governance</span><strong>FDA-grade Audit Trails</strong></div>
+          <div style="display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between"><span style="color:#64748b">Security</span><strong>RBAC + LGPD</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="panel" id="p-financeiro">
+    <div class="stitle">Fundraise & Projections</div>
+    <div class="ssub">Pre-Seed / Seed capital to scale GTM, enterprise integrations and global regulatory compliance.</div>
+    <div class="dk">
+      <div class="di">💰</div>
+      <div>
+        <div style="font-size:.65rem;color:#60a5fa;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Target Raise</div>
+        <div style="font-size:1.65rem;font-weight:900;line-height:1">US$0.8M–1.6M</div>
+        <div style="font-size:.7rem;color:#64748b;margin-top:3px">12–18 month runway · Seed benchmarks LatAm</div>
+      </div>
+    </div>
+    <div class="g2" style="margin-bottom:14px">
+      <div class="card" style="margin-bottom:0">
+        <div class="ctit" style="text-align:center">Use of Funds</div>
+        <div id="bc-funds"></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="ctit" style="text-align:center">Projected MRR (K BRL)</div>
+        <div class="mrrch" id="bc-mrr"></div>
+        <p style="font-size:.6rem;color:#94a3b8;text-align:center;margin-top:6px">Gross Retention 90% · NRR 101%</p>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:0;overflow-x:auto">
+      <div class="ctit">Revenue Model</div>
+      <table class="dtbl">
+        <thead><tr><th>Package</th><th style="text-align:right;white-space:nowrap">Ticket (BRL)</th></tr></thead>
+        <tbody>
+          <tr><td>RCA Copilot Demo (72h)</td><td style="text-align:right;white-space:nowrap;font-weight:600">R$ 1.500</td></tr>
+          <tr><td>Express Audit (48h)</td><td style="text-align:right;white-space:nowrap;font-weight:600">R$ 9.900</td></tr>
+          <tr class="hi"><td>SaaS Retainer (MRR)</td><td style="text-align:right;white-space:nowrap;font-weight:800;color:#2563eb">R$35k + 4–12k/month</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="panel" id="p-time">
+    <div class="stitle">Founding Team & Structure</div>
+    <div class="ssub">Led by a founder who lived the problem inside clinical engineering. Team under construction – room for investors to help shape the org from day zero.</div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:-webkit-box;display:-webkit-flex;display:flex;gap:13px;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start">
+        <div style="width:50px;height:50px;border-radius:50%;background:#2563eb;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-align:center;-webkit-align-items:center;align-items:center;-webkit-box-pack:center;-webkit-justify-content:center;justify-content:center;color:#fff;font-size:1.2rem;font-weight:900;flex-shrink:0">F</div>
+        <div style="-webkit-flex:1;flex:1;min-width:0">
+          <div style="font-size:.95rem;font-weight:800">Flavio</div>
+          <div style="font-size:.75rem;color:#2563eb;font-weight:600;margin-bottom:6px">Founder & CEO</div>
+          <p style="font-size:.74rem;color:#475569;margin-bottom:8px;line-height:1.65">Background in Clinical Engineering and medical equipment support. Lived the high-MTTR problem first-hand and built the MVP from scratch – from architecture to deploy.</p>
+          <div style="display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:5px">
+            <span class="tag tb">Clinical Engineering</span>
+            <span class="tag tb">Product Development</span>
+            <span class="tag tb">Full-Stack MVP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;margin-bottom:8px">Key Hires (Post-Raise)</div>
+      <div style="display:-webkit-box;display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:10px">
+        <div style="-webkit-flex:1 1 148px;flex:1 1 148px;border:2px dashed #bfdbfe;border-radius:13px;padding:13px">
+          <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">Technical Co-Founder / CTO</div>
+          <div style="font-size:.62rem;font-weight:700;color:#2563eb;margin-bottom:6px">🔹 Priority Role</div>
+          <p style="font-size:.7rem;color:#64748b">Python/FastAPI · LLMs/RAG · pgvector · HL7/FHIR</p>
+        </div>
+        <div style="-webkit-flex:1 1 148px;flex:1 1 148px;border:2px dashed #e2e8f0;border-radius:13px;padding:13px">
+          <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">Head of Enterprise Sales</div>
+          <div style="font-size:.62rem;font-weight:700;color:#94a3b8;margin-bottom:6px">● After Seed Round</div>
+          <p style="font-size:.7rem;color:#64748b">Complex B2B cycles · Network in Clinical Engineering</p>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;margin-bottom:8px">Advisory Board – in Formation</div>
+    <div class="advg">
+      <div class="advc" style="background:#f0fdf4;border:1px solid #bbf7d0"><div class="ai">🏥</div><div class="an" style="color:#166534">Clinical Engineering / Hospital</div><p>Validates product and opens doors in hospital networks.</p></div>
+      <div class="advc" style="background:#faf5ff;border:1px solid #e9d5ff"><div class="ai">📋</div><div class="an" style="color:#6b21a8">Regulatory ANVISA–FDA</div><p>Guides SaMD strategy and global certifications.</p></div>
+      <div class="advc" style="background:#fff7ed;border:1px solid #fed7aa"><div class="ai">💼</div><div class="an" style="color:#9a3412">VC / Operator LatAm</div><p>Fundraising, benchmarks and intros for next round.</p></div>
+    </div>
+    <div class="dk" style="margin-top:2px;margin-bottom:0">
+      <div class="di">🤝</div>
+      <div>
+        <h3>Why invest now with team still forming?</h3>
+        <p>We are entering with product – not just a slide deck. Pre-Seed capital is used to build the core team. Early investors help shape the first crucial hires.</p>
+      </div>
+    </div>
+  </div>
+  <div class="panel" id="p-compet">
+    <div class="stitle">Competitive Landscape</div>
+    <div class="ssub">Market split between expensive enterprise tools and manual processes. FPConnect fills the gap with outcome-focused, LatAm-first AI.</div>
+    <div style="background:#2563eb;color:#fff;border-radius:13px;padding:12px 14px;margin-bottom:14px">
+      <p style="font-size:.8rem;color:#bfdbfe;font-style:italic">“The only RCA platform with AI, RAG and FHIR-ready compliance designed for hospitals and OEMs in Latin America.”</p>
+    </div>
+    <div class="card" style="overflow-x:auto;margin-bottom:14px">
+      <div class="ctit">Solution Comparison</div>
+      <table class="cmp" style="min-width:330px">
+        <thead>
+          <tr>
+            <th style="text-align:left">Criteria</th>
+            <th>ServiceMax</th><th>Nuvolo</th><th>IBM</th><th>Spreadsheets</th>
+            <th style="background:#eff6ff;color:#1d4ed8">FPConnect</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>AI-driven RCA</td><td>Partial</td><td>✗</td><td>✗</td><td>✗</td><td class="us">✔ Native</td></tr>
+          <tr><td>RAG Knowledge Base</td><td>✗</td><td>✗</td><td>✗</td><td>✗</td><td class="us">✔ pgvector</td></tr>
+          <tr><td>HL7 / FHIR</td><td>✔</td><td>✔</td><td>Partial</td><td>✗</td><td class="us">✔ Q2 roadmap</td></tr>
+          <tr><td>Deployment &lt;30 days</td><td>✗</td><td>✗</td><td>✗</td><td>✔</td><td class="us">✔ 21 days</td></tr>
+          <tr><td>LatAm-friendly pricing</td><td>✗ $$$</td><td>✗ $$$</td><td>✗ $$$</td><td>✔</td><td class="us">✔ SaaS</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="mog">
+      <div class="moc"><div class="mi">💎</div><h4>Data Moat</h4><p>Every ticket enriches the RAG base. More usage → smarter AI → positive lock-in.</p></div>
+      <div class="moc"><div class="mi">🔗</div><h4>Switching Cost</h4><p>Customer-specific playbooks and knowledge. Switching means rebuilding everything.</p></div>
+      <div class="moc"><div class="mi">🌎</div><h4>LatAm First</h4><p>Native to ANVISA/LGPD context. Global players deprioritise this segment.</p></div>
+    </div>
+  </div>
+  <div class="panel" id="p-roadmap">
+    <div class="stitle">Milestones & Capital Use</div>
+    <div class="ssub">Clear, measurable quarterly milestones. Capital allocated with explicit jobs-to-be-done.</div>
+    <div class="capg">
+      <div class="capb" style="background:#2563eb"><div class="cp">45%</div><div class="cn">Product & Engineering</div><div class="cu">~US$360–720k</div></div>
+      <div class="capb" style="background:#3b82f6"><div class="cp">35%</div><div class="cn">GTM & Sales</div><div class="cu">~US$280–560k</div></div>
+      <div class="capb" style="background:#475569"><div class="cp">10%</div><div class="cn">Operations</div><div class="cu">~US$80–160k</div></div>
+      <div class="capb" style="background:#64748b"><div class="cp">10%</div><div class="cn">Compliance</div><div class="cu">~US$80–160k</div></div>
+    </div>
+    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;margin-bottom:8px">Post-Raise Roadmap (12 Months)</div>
+    <div class="ms"><span class="msb msblu">M1–M3</span><div class="msbd"><div class="mst">Q1 – Foundation</div><div class="msd">Harden MVP · 3 paid pilots · LOI with 1 hospital network</div></div><div class="msm"><div class="mv">R$15k</div><div class="ml">MRR</div></div></div>
+    <div class="ms"><span class="msb msblu">M4–M6</span><div class="msbd"><div class="mst">Q2 – Integration</div><div class="msd">HL7/FHIR v1 · Mobile GA · 10 customers · 1st OEM deal</div></div><div class="msm"><div class="mv">R$45k</div><div class="ml">MRR</div></div></div>
+    <div class="ms"><span class="msb msgry">M7–M9</span><div class="msbd"><div class="mst">Q3 – Scale</div><div class="msd">Predictive module · SOC 2 · 25 customers · 2+ LatAm countries</div></div><div class="msm"><div class="mv">R$110k</div><div class="ml">MRR</div></div></div>
+    <div class="ms" style="border:2px solid #bbf7d0"><span class="msb msgrn">M10–M12</span><div class="msbd"><div class="mst">Q4 – Series A Prep</div><div class="msd">Public API · OEM white-label · 40+ customers · ARR >R$2.6M</div></div><div class="msm"><div class="mv" style="color:#16a34a">R$220k</div><div class="ml">MRR</div></div></div>
+    <div class="ser" style="margin-top:12px">
+      <div class="sn">12<span>months</span></div>
+      <p>Positioned for a <strong style="color:#fff">US$4M–8M Series A</strong> with proven ARR, NRR >100% and presence in 3+ countries.</p>
+    </div>
+  </div>
+</div>
+<nav id="bnav">
+  <button class="bb on" id="bb-resumo"     onclick="goTo('resumo')"><span class="ic">📋</span>Summary</button>
+  <button class="bb"    id="bb-problema"   onclick="goTo('problema')"><span class="ic">⚠️</span>Problem</button>
+  <button class="bb"    id="bb-solucao"    onclick="goTo('solucao')"><span class="ic">🧠</span>Solution</button>
+  <button class="bb"    id="bb-mercado"    onclick="goTo('mercado')"><span class="ic">📈</span>Market</button>
+  <button class="bb"    id="bb-financeiro" onclick="goTo('financeiro')"><span class="ic">💰</span>Capital</button>
+  <button class="bb"    id="bb-time"       onclick="goTo('time')"><span class="ic">👤</span>Team</button>
+  <button class="bb"    id="bb-compet"     onclick="goTo('compet')"><span class="ic">🏁</span>Comp.</button>
+  <button class="bb"    id="bb-roadmap"    onclick="goTo('roadmap')"><span class="ic">📅</span>Roadmap</button>
+</nav>
+<script>
+var TABS = ['resumo','problema','solucao','mercado','financeiro','time','compet','roadmap'];
+var BUILT = {};
+function goTo(id) {
+  var i, p, el;
+  for (i = 0; i < TABS.length; i++) {
+    p = document.getElementById('p-' + TABS[i]);
+    if (p) { p.className = (TABS[i] === id) ? 'panel on' : 'panel'; }
+  }
+  for (i = 0; i < TABS.length; i++) {
+    el = document.getElementById('sb-' + TABS[i]);
+    if (el) { el.className = (TABS[i] === id) ? 'sb on' : 'sb'; }
+  }
+  for (i = 0; i < TABS.length; i++) {
+    el = document.getElementById('bb-' + TABS[i]);
+    if (el) { el.className = (TABS[i] === id) ? 'bb on' : 'bb'; }
+  }
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
+  if (!BUILT[id]) {
+    BUILT[id] = true;
+    buildTab(id);
+  }
+}
+function calcROI() {
+  var costEl  = document.getElementById('rcost');
+  var hourEl  = document.getElementById('rhours');
+  if (!costEl || !hourEl) return;
+  var cost  = parseInt(costEl.value, 10);
+  var hours = parseInt(hourEl.value, 10);
+  var net   = cost * hours - 9900;
+  var cv = document.getElementById('rcostv');
+  var hv = document.getElementById('rhoursv');
+  var rv = document.getElementById('rresv');
+  if (cv) cv.textContent = 'R$ ' + cost.toLocaleString('pt-BR');
+  if (hv) hv.textContent = hours + ' hours';
+  if (rv) {
+    rv.textContent = 'R$ ' + net.toLocaleString('pt-BR');
+    rv.style.color = net >= 0 ? '#4ade80' : '#f87171';
+  }
+}
+function buildTab(id) {
+  if (id === 'problema')   { buildDowntime(); }
+  if (id === 'mercado')    { buildTAM(); }
+  if (id === 'financeiro') { buildFunds(); buildMRR(); }
+}
+function buildDowntime() {
+  var el = document.getElementById('bc-dt');
+  if (!el || el.children.length) return;
+  var bars = [
+    {lb:'Cost/min', vl:'$7.5k', p:45, c:'#94a3b8'},
+    {lb:'Mid hospital/h', vl:'$1.7M', p:76, c:'#3b82f6'},
+    {lb:'Large hospital/h', vl:'$3.2M', p:100, c:'#1d4ed8'}
+  ];
+  var h = '';
+  for (var i = 0; i < bars.length; i++) {
+    var b = bars[i];
+    h += '<div class="bw">'
+       + '<div class="btr"><div class="bfi" style="height:' + b.p + '%;background:' + b.c + '"></div></div>'
+       + '<div class="bvl">' + b.vl + '</div>'
+       + '<div class="blb">' + b.lb + '</div>'
+       + '</div>';
+  }
+  el.innerHTML = h;
+}
+function buildTAM() {
+  var el = document.getElementById('bc-tam');
+  if (!el || el.children.length) return;
+  var pts  = [288.55, 352.6, 430.8, 526.4, 643.2, 786.0, 946.04];
+  var lbls = ['2024','2025','2026','2027','2028','2029','2030'];
+  var W=300,H=165,pL=36,pR=8,pT=12,pB=22;
+  var cW=W-pL-pR, cH=H-pT-pB, mn=200, mx=1000;
+  function xp(i) { return pL + i*(cW/(pts.length-1)); }
+  function yp(v) { return pT + cH - (v-mn)/(mx-mn)*cH; }
+  var grid='';
+  var gv=[300,500,700,900];
+  for (var g=0;g<gv.length;g++) {
+    var yg=yp(gv[g]);
+    grid+='<line x1="'+pL+'" y1="'+yg+'" x2="'+(W-pR)+'" y2="'+yg+'" stroke="#f1f5f9" stroke-width="1"/>';
+    grid+='<text x="'+(pL-3)+'" y="'+(yg+4)+'" text-anchor="end" font-size="7" fill="#94a3b8">'+gv[g]+'</text>';
+  }
+  var area='M '+xp(0)+' '+yp(pts[0]);
+  var line='M '+xp(0)+' '+yp(pts[0]);
+  for (var a=0;a<pts.length;a++) { area+=' L '+xp(a)+' '+yp(pts[a]); line+=' L '+xp(a)+' '+yp(pts[a]); }
+  area+=' L '+xp(pts.length-1)+' '+(pT+cH)+' L '+xp(0)+' '+(pT+cH)+' Z';
+  var dots='', xlbls='';
+  for (var d=0;d<pts.length;d++) {
+    dots +='<circle cx="'+xp(d)+'" cy="'+yp(pts[d])+'" r="3.5" fill="#1d4ed8" stroke="white" stroke-width="1.5"/>';
+    xlbls+='<text x="'+xp(d)+'" y="'+(H-5)+'" text-anchor="middle" font-size="7" fill="#94a3b8">'+lbls[d]+'</text>';
+  }
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">'
+    +'<defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0%" stop-color="#2563eb" stop-opacity=".15"/>'
+    +'<stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>'
+    +'</linearGradient></defs>'
+    +grid+'<path d="'+area+'" fill="url(#tg)"/>'
+    +'<path d="'+line+'" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+    +dots+xlbls+'</svg>';
+}
+function buildFunds() {
+  var el = document.getElementById('bc-funds');
+  if (!el || el.children.length) return;
+  var items = [
+    {lb:'Product', pct:45, c:'#2563eb'},
+    {lb:'GTM',     pct:35, c:'#60a5fa'},
+    {lb:'Ops',     pct:10, c:'#94a3b8'},
+    {lb:'Reg.',    pct:10, c:'#475569'}
+  ];
+  var R=46,r=28,cx=60,cy=60,angle=-Math.PI/2,paths='';
+  for (var i=0;i<items.length;i++) {
+    var it=items[i], a=2*Math.PI*(it.pct/100), eA=angle+a;
+    var x1=cx+R*Math.cos(angle),y1=cy+R*Math.sin(angle);
+    var x2=cx+R*Math.cos(eA),  y2=cy+R*Math.sin(eA);
+    var i1=cx+r*Math.cos(angle),j1=cy+r*Math.sin(angle);
+    var i2=cx+r*Math.cos(eA),  j2=cy+r*Math.sin(eA);
+    var lg=a>Math.PI?1:0;
+    paths+='<path d="M'+i1+','+j1+' L'+x1+','+y1
+      +' A'+R+','+R+' 0 '+lg+',1 '+x2+','+y2
+      +' L'+i2+','+j2+' A'+r+','+r+' 0 '+lg+',0 '+i1+','+j1+' Z" fill="'+it.c+'"/>';
+    angle=eA;
+  }
+  var leg='';
+  for (var li=0;li<items.length;li++) {
+    leg+='<li><span class="dd" style="background:'+items[li].c+'"></span>'+items[li].lb+' - '+items[li].pct+'%</li>';
+  }
+  el.innerHTML='<div class="dwrap">'
+    +'<svg width="120" height="120" viewBox="0 0 120 120" style="flex-shrink:0">'+paths
+    +'<text x="60" y="56" text-anchor="middle" font-size="9" fill="#64748b">Capital</text>'
+    +'<text x="60" y="68" text-anchor="middle" font-size="10" font-weight="bold" fill="#1e293b">Allocation</text>'
+    +'</svg><ul class="dleg">'+leg+'</ul></div>';
+}
+function buildMRR() {
+  var el = document.getElementById('bc-mrr');
+  if (!el || el.children.length) return;
+  var data=[{l:'M6',v:15},{l:'M12',v:45},{l:'M18',v:110},{l:'M24',v:220},{l:'M30',v:380},{l:'M36',v:600}];
+  var max=600, h='';
+  for (var i=0;i<data.length;i++) {
+    var p=Math.round(data[i].v/max*100);
+    h+='<div class="mw"><div class="mtr"><div class="mfi" style="height:'+p+'%"></div></div>'
+      +'<div class="mvl">'+data[i].v+'k</div><div class="mlb">'+data[i].l+'</div></div>';
+  }
+  el.innerHTML=h;
+}
+window.onload = function() {
+  BUILT['resumo'] = true;
+  buildTab('resumo');
+  calcROI();
+};
+</script>
+</body>
+</html>

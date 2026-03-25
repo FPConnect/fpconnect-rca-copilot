@@ -5,6 +5,7 @@ import { RefreshCw, Radar, Languages, Filter } from "lucide-react";
 
 import { api, IntelItem } from "@/services/api";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { useSystemPreferences } from "@/contexts/SystemPreferencesContext";
 
 type Lang = "pt" | "en";
 
@@ -15,6 +16,7 @@ export default function IntelPanel() {
   const [lang, setLang] = useState<Lang>("pt");
   const [busy, setBusy] = useState(false);
   const { addNotification } = useNotifications();
+  const { preferences, formatDateTime } = useSystemPreferences();
 
   async function loadTopics() {
     try {
@@ -30,7 +32,7 @@ export default function IntelPanel() {
     try {
       const data = await api.getIntelItems(topic || undefined, 50);
       setItems(data);
-    } catch (e) {
+    } catch {
       addNotification(
         "error",
         "Radar indisponível",
@@ -69,14 +71,31 @@ export default function IntelPanel() {
   }, []);
 
   useEffect(() => {
+    setLang(preferences.language === "en-US" ? "en" : "pt");
+  }, [preferences.language]);
+
+  useEffect(() => {
     loadItems();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topic]);
 
+  useEffect(() => {
+    if (!preferences.refreshRate || preferences.refreshRate <= 0) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      loadItems();
+    }, preferences.refreshRate * 1000);
+
+    return () => window.clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferences.refreshRate, topic]);
+
   const rendered = useMemo(() => {
     return items.map((it) => {
       const summary = lang === "pt" ? it.summary_pt : it.summary_en;
-      const when = it.published_at ? new Date(it.published_at).toLocaleString() : "";
+      const when = it.published_at ? formatDateTime(it.published_at) : "";
       return (
         <div key={it.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
           <div className="flex items-start justify-between gap-3">
@@ -109,7 +128,7 @@ export default function IntelPanel() {
         </div>
       );
     });
-  }, [items, lang]);
+  }, [formatDateTime, items, lang]);
 
   return (
     <div className="space-y-4">

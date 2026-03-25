@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FPConnect Intel Engine — Test UI</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #121a33;
+      --muted: #9fb0ff;
+      --text: #eef2ff;
+      --accent: #6ee7ff;
+      --good: #34d399;
+      --warn: #fbbf24;
+      --bad: #fb7185;
+      --border: rgba(255,255,255,.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(110,231,255,.15), transparent 60%),
+                  radial-gradient(900px 500px at 90% 20%, rgba(159,176,255,.12), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+    }
+    header {
+      padding: 22px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(18,26,51,.6);
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(8px);
+      z-index: 10;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    .title {
+      display: flex;
+      gap: 14px;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+    h1 { font-size: 20px; margin: 0; letter-spacing: .2px; }
+    .tag {
+      font-size: 12px;
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255,255,255,.04);
+    }
+    main { padding: 18px; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 980px) {
+      .grid { grid-template-columns: 360px 1fr; }
+    }
+    .card {
+      background: rgba(18,26,51,.72);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    label { font-size: 12px; color: var(--muted); }
+    select, input {
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      outline: none;
+    }
+    button {
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: linear-gradient(180deg, rgba(110,231,255,.14), rgba(110,231,255,.06));
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.secondary { background: rgba(255,255,255,.05); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .status {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+      white-space: pre-wrap;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      font-size: 13px;
+    }
+    th { color: var(--muted); font-weight: 600; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .pill {
+      display: inline-block;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      margin-right: 6px;
+      margin-top: 4px;
+    }
+    .muted { color: var(--muted); font-size: 12px; }
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="title">
+        <h1>FPConnect Intel Engine — Test UI</h1>
+        <span class="tag">RSS/APIs públicas • Postgres • Bilingue</span>
+        <span class="tag">Abra: <span class="kbd">/</span> • API: <span class="kbd">/items</span></span>
+      </div>
+      <div class="muted" style="margin-top:6px;">
+        Use esta página para rodar ingestão e visualizar itens. Sem scraping/login (LinkedIn exige APIs oficiais).
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="grid">
+        <div class="card">
+          <div class="row">
+            <div style="flex:1; min-width: 180px;">
+              <label>Topic</label><br/>
+              <select id="topicSelect" style="width:100%"></select>
+            </div>
+            <div>
+              <label>Language</label><br/>
+              <select id="langSelect">
+                <option value="pt">PT</option>
+                <option value="en">EN</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <button id="btnIngest">Run ingest now</button>
+            <button id="btnRefresh" class="secondary">Refresh</button>
+          </div>
+
+          <div class="status" id="statusBox">Status: ready</div>
+        </div>
+
+        <div class="card">
+          <div class="row" style="justify-content: space-between;">
+            <div>
+              <strong>Latest items</strong>
+              <div class="muted">Filtro por tópico e idioma do resumo.</div>
+            </div>
+            <div class="muted" id="countBox"></div>
+          </div>
+
+          <div style="margin-top: 12px; overflow:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="min-width: 170px;">Title</th>
+                  <th style="min-width: 120px;">Source</th>
+                  <th style="min-width: 110px;">Topic</th>
+                  <th style="min-width: 260px;">Summary</th>
+                  <th style="min-width: 160px;">Tags</th>
+                </tr>
+              </thead>
+              <tbody id="itemsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<script>
+  const statusBox = document.getElementById('statusBox');
+  const topicSelect = document.getElementById('topicSelect');
+  const langSelect = document.getElementById('langSelect');
+  const itemsBody = document.getElementById('itemsBody');
+  const countBox = document.getElementById('countBox');
+
+  const btnIngest = document.getElementById('btnIngest');
+  const btnRefresh = document.getElementById('btnRefresh');
+
+  function setStatus(msg) {
+    statusBox.textContent = 'Status: ' + msg;
+  }
+
+  function escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  async function loadTopics() {
+    const res = await fetch('/topics');
+    const data = await res.json();
+    const topics = data.topics || [];
+
+    topicSelect.innerHTML = '';
+    const optAll = document.createElement('option');
+    optAll.value = '';
+    optAll.textContent = 'All topics';
+    topicSelect.appendChild(optAll);
+
+    for (const t of topics) {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t;
+      topicSelect.appendChild(opt);
+    }
+  }
+
+  function renderItems(items, lang) {
+    itemsBody.innerHTML = '';
+    countBox.textContent = items.length ? `${items.length} items` : 'No items';
+
+    for (const it of items) {
+      const tr = document.createElement('tr');
+      const title = escapeHtml(it.title);
+      const link = escapeHtml(it.url);
+      const source = escapeHtml(it.source);
+      const topic = escapeHtml(it.topic || '');
+      const summary = escapeHtml(lang === 'en' ? (it.summary_en || it.summary_pt || '') : (it.summary_pt || it.summary_en || ''));
+
+      let tagsHtml = '';
+      try {
+        const tags = Array.isArray(it.tags) ? it.tags : (it.tags ? JSON.parse(it.tags) : []);
+        if (Array.isArray(tags)) {
+          tagsHtml = tags.slice(0, 8).map(t => `<span class="pill">${escapeHtml(String(t))}</span>`).join('');
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      tr.innerHTML = `
+        <td><a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a></td>
+        <td>${source}</td>
+        <td>${topic}</td>
+        <td>${summary}</td>
+        <td>${tagsHtml}</td>
+      `;
+
+      itemsBody.appendChild(tr);
+    }
+  }
+
+  async function loadItems() {
+    const topic = topicSelect.value;
+    const lang = langSelect.value;
+
+    const url = new URL('/items', window.location.origin);
+    if (topic) url.searchParams.set('topic', topic);
+    url.searchParams.set('limit', '50');
+
+    const res = await fetch(url.toString());
+    const items = await res.json();
+    renderItems(items, lang);
+  }
+
+  async function ingestOnce() {
+    btnIngest.disabled = true;
+    setStatus('ingesting…');
+    try {
+      const res = await fetch('/ingest/once', { method: 'POST' });
+      const data = await res.json();
+      setStatus('ingest complete: ' + JSON.stringify(data, null, 2));
+      await loadTopics();
+      await loadItems();
+    } catch (e) {
+      setStatus('error: ' + (e?.message || String(e)));
+    } finally {
+      btnIngest.disabled = false;
+    }
+  }
+
+  btnIngest.addEventListener('click', ingestOnce);
+  btnRefresh.addEventListener('click', async () => {
+    setStatus('refreshing…');
+    await loadTopics();
+    await loadItems();
+    setStatus('ready');
+  });
+
+  topicSelect.addEventListener('change', loadItems);
+  langSelect.addEventListener('change', loadItems);
+
+  (async function init() {
+    setStatus('loading…');
+    await loadTopics();
+    await loadItems();
+    setStatus('ready');
+  })();
+</script>
+</body>
+</html>

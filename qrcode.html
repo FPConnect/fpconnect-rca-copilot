@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Expo QR Code</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #1a1a2e; color: white; }
+    canvas { margin: 20px; border-radius: 12px; }
+    p { font-size: 18px; }
+    code { background: #333; padding: 6px 12px; border-radius: 6px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>📱 FPConnect Web</h1>
+  <p>Escaneie com a câmera do celular</p>
+  <canvas id="qr"></canvas>
+  <p>ou abra manualmente: <code>http://192.168.1.8:3000</code></p>
+  <script>
+    QRCode.toCanvas(document.getElementById('qr'), 'http://192.168.1.8:3000', { width: 300, margin: 2 });
+  </script>
+</body>
+</html>

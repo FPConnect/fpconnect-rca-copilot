@@ -37,6 +37,8 @@ class Ticket(Base):
     location = Column(String, nullable=True)
     creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     assignee_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    # Optional escalation level for SLA workflows (e.g., 0, 1, 2...)
+    escalation_level = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     resolved_at = Column(DateTime(timezone=True), nullable=True)

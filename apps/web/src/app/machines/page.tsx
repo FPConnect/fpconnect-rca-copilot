@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Pagination from "@/components/Pagination";
 import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
 
-const MACHINES = [
+const INITIAL_MACHINES = [
   { id: "M001", name: "MRI Scanner", location: "Ward A", status: "online", lastCheck: "2 min ago", type: "imaging" },
   { id: "M002", name: "ECG Monitor", location: "ICU", status: "warning", lastCheck: "5 min ago", type: "monitoring" },
   { id: "M003", name: "Ventilator", location: "Ward B", status: "online", lastCheck: "1 min ago", type: "life-support" },
@@ -45,13 +45,35 @@ const FILTERS = [
 const PAGE_SIZE = 4;
 
 export default function MachinesPage() {
+  const [machines, setMachines] = useState(INITIAL_MACHINES);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
 
+  // Simulação IoT: atualiza status e lastCheck periodicamente
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMachines((prev) =>
+        prev.map((m) => {
+          // Simula status aleatório
+          const statuses = ["online", "warning", "offline"];
+          const newStatus = statuses[Math.floor(Math.random() * statuses.length)];
+          // Simula tempo de último check
+          const minutes = Math.floor(Math.random() * 60);
+          return {
+            ...m,
+            status: newStatus,
+            lastCheck: `${minutes} min ago`,
+          };
+        })
+      );
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return MACHINES.filter((m) => {
+    return machines.filter((m) => {
       const matchSearch =
         !q ||
         m.name.toLowerCase().includes(q) ||
@@ -61,7 +83,7 @@ export default function MachinesPage() {
       const matchType = !filters.type || m.type === filters.type;
       return matchSearch && matchStatus && matchType;
     });
-  }, [search, filters]);
+  }, [machines, search, filters]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);

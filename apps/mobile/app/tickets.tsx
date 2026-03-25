@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -14,18 +14,23 @@ import {
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
-interface Ticket {
-  id: string;
+interface ApiTicket {
+  id: number;
   title: string;
-  status: "open" | "in_progress" | "resolved";
+  status: "open" | "in_progress" | "resolved" | "closed";
   priority: "critical" | "high" | "medium" | "low";
 }
 
-const INITIAL_TICKETS: Ticket[] = [
-  { id: "1", title: "MRI Scanner offline - Ward A", status: "open", priority: "critical" },
-  { id: "2", title: "ECG Monitor slow response", status: "in_progress", priority: "high" },
-  { id: "3", title: "Patient monitor alarm", status: "open", priority: "medium" },
-];
+interface Ticket {
+  id: string;
+  title: string;
+  status: "open" | "in_progress" | "resolved" | "closed";
+  priority: "critical" | "high" | "medium" | "low";
+}
+
+// Mesma URL da API usada no web; pode ser sobrescrita via variável de ambiente Expo
+const API_URL =
+  (process.env.EXPO_PUBLIC_API_URL as string | undefined) ?? "http://localhost:8000";
 
 const PRIORITY_COLORS: Record<string, { bg: string; text: string }> = {
   critical: { bg: "#fee2e2", text: "#991b1b" },
@@ -38,32 +43,113 @@ const STATUS_LABELS: Record<string, string> = {
   open: "Open",
   in_progress: "In Progress",
   resolved: "Resolved",
+  closed: "Closed",
 };
 
 export default function TicketsScreen() {
-  const [tickets, setTickets] = useState<Ticket[]>(INITIAL_TICKETS);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Ticket["priority"]>("medium");
   const [search, setSearch] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const PRIORITIES: Ticket["priority"][] = ["low", "medium", "high", "critical"];
 
-  const handleCreate = () => {
+  // Carrega tickets reais da API quando a tela abre
+  useEffect(() => {
+    let mounted = true;
+    const loadTickets = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_URL}/tickets/`);
+        if (!res.ok) {
+          throw new Error(`Status ${res.status}`);
+        }
+        const data = (await res.json()) as ApiTicket[];
+        if (!mounted) return;
+        const mapped: Ticket[] = data.map((t) => ({
+          id: String(t.id),
+          title: t.title,
+          status: t.status === "closed" ? "resolved" : t.status,
+          priority: t.priority,
+        }));
+        setTickets(mapped);
+      } catch (error) {
+        if (mounted && tickets.length === 0) {
+          // Fallback: exemplo local se a API não estiver acessível
+          setTickets([
+            {
+              id: "1",
+              title: "MRI Scanner offline - Ward A",
+              status: "open",
+              priority: "critical",
+            },
+            {
+              id: "2",
+              title: "ECG Monitor slow response",
+              status: "in_progress",
+              priority: "high",
+            },
+            {
+              id: "3",
+              title: "Patient monitor alarm",
+              status: "open",
+              priority: "medium",
+            },
+          ]);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadTickets();
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleCreate = async () => {
     if (!title.trim()) {
       Alert.alert("Error", "Please enter a ticket title.");
       return;
     }
-    const newTicket: Ticket = {
-      id: String(Date.now()),
-      title: title.trim(),
-      status: "open",
-      priority,
-    };
-    setTickets([newTicket, ...tickets]);
-    setTitle("");
-    setPriority("medium");
-    setModalVisible(false);
+    try {
+      const body = JSON.stringify({
+        title: title.trim(),
+        priority,
+      });
+
+      const res = await fetch(`${API_URL}/tickets/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+
+      if (!res.ok) {
+        throw new Error(`Status ${res.status}`);
+      }
+
+      const created = (await res.json()) as ApiTicket;
+      const newTicket: Ticket = {
+        id: String(created.id),
+        title: created.title,
+        status: created.status === "closed" ? "resolved" : created.status,
+        priority: created.priority,
+      };
+
+      setTickets([newTicket, ...tickets]);
+      setTitle("");
+      setPriority("medium");
+      setModalVisible(false);
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "Could not create ticket in the server. Check your connection and try again.",
+      );
+    }
   };
 
   const filtered = useMemo(() => {
@@ -88,7 +174,12 @@ export default function TicketsScreen() {
 
       {/* Ticket list */}
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {filtered.length === 0 ? (
+        {loading ? (
+          <View style={styles.empty}>
+            <Ionicons name="time-outline" size={32} color="#d1d5db" />
+            <Text style={styles.emptyText}>Loading tickets...</Text>
+          </View>
+        ) : filtered.length === 0 ? (
           <View style={styles.empty}>
             <Ionicons name="ticket-outline" size={40} color="#d1d5db" />
             <Text style={styles.emptyText}>No tickets found.</Text>
