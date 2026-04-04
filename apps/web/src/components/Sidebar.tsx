@@ -19,7 +19,7 @@ import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
   { href: "/machines", label: "Máquinas", icon: Monitor },
   { href: "/health-checks", label: "Health Checks", icon: HeartPulse },
   { href: "/alerts", label: "Alertas", icon: Bell },
