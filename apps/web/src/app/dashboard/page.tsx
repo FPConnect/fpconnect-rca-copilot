@@ -14,6 +14,13 @@ const PerformanceStat = ({ title, value, unit, trend }: PerformanceStatProps) =>
   </div>
 );
 
+const TICKET_CARDS = [
+  { label: "Tickets Abertos", value: 12, color: "bg-yellow-100 text-yellow-800", href: "/tickets" },
+  { label: "Em Progresso", value: 5, color: "bg-blue-100 text-blue-800", href: "/tickets" },
+  { label: "Resolvidos Hoje", value: 8, color: "bg-green-100 text-green-800", href: "/tickets" },
+  { label: "Críticos", value: 2, color: "bg-red-100 text-red-800", href: "/tickets" },
+];
+
 const ONBOARDING_STEPS = [
   { href: "/machines", icon: Monitor, title: "Cadastre suas máquinas", description: "Adicione os equipamentos hospitalares que deseja monitorar." },
   { href: "/health-checks", icon: HeartPulse, title: "Configure verificações de saúde", description: "Defina verificações periódicas de disponibilidade para cada equipamento." },
@@ -26,6 +33,23 @@ const ONBOARDING_STEPS = [
 export default function DashboardPage() {
   return (
     <div className="max-w-5xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Home</h1>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {TICKET_CARDS.map((m) => (
+          <Link key={m.label} href={m.href} className={`rounded-xl p-6 ${m.color} shadow hover:opacity-90 transition-opacity`}>
+            <div className="text-4xl font-bold">{m.value}</div>
+            <div className="text-sm font-medium mt-1">{m.label}</div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <PerformanceStat title="MTTR (Reparo)" value="3.2" unit="horas" trend="-12%" />
+        <PerformanceStat title="MTBF (Estabilidade)" value="45" unit="dias" trend="+5%" />
+        <PerformanceStat title="Disponibilidade" value="98.8" unit="%" trend="+0.2%" />
+      </div>
+
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <PerformanceStat title="MTTR (Reparo)" value="3.2" unit="horas" trend="-12%" />
