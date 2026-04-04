@@ -1,22 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
 import { useNotifications } from "@/contexts/NotificationContext";
-
-interface Ticket {
-  id: number;
-  title: string;
-  status: string;
-  priority: string;
-}
-
-const MOCK_TICKETS: Ticket[] = [
-  { id: 1, title: "MRI Scanner offline - Ward A", status: "open", priority: "critical" },
-  { id: 2, title: "ECG Monitor slow response", status: "in_progress", priority: "high" },
-  { id: 3, title: "Patient monitor alarm", status: "open", priority: "medium" },
-];
+import { api, Ticket } from "@/services/api";
 
 const FILTERS = [
   {
@@ -42,22 +30,26 @@ const FILTERS = [
 
 export default function TicketsPage() {
   const { addNotification } = useNotifications();
-  const [tickets, setTickets] = useState<Ticket[]>(MOCK_TICKETS);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("medium");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
 
-  const handleCreate = (e: React.FormEvent) => {
+  const loadTickets = async () => {
+    const data = await api.getTickets();
+    setTickets(data);
+  };
+
+  useEffect(() => {
+    loadTickets().catch(() => setTickets([]));
+  }, []);
+
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    const newTicket: Ticket = {
-      id: tickets.length + 1,
-      title: title.trim(),
-      status: "open",
-      priority,
-    };
-    setTickets([newTicket, ...tickets]);
+    const newTicket = await api.createTicket({ title: title.trim(), priority });
+    setTickets((prev) => [newTicket, ...prev]);
     setTitle("");
     setPriority("medium");
     addNotification("success", "Ticket criado", `"${newTicket.title}" foi criado com sucesso.`);
@@ -83,86 +75,33 @@ export default function TicketsPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Tickets</h1>
-
-        {/* Create Form */}
-        <form
-          onSubmit={handleCreate}
-          className="bg-white rounded-xl shadow p-6 mb-6"
-        >
-          <h2 className="text-lg font-semibold mb-4">Create Ticket</h2>
-          <div className="flex gap-3">
-            <input
-              type="text"
-              placeholder="Ticket title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <select
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              className="border rounded-lg px-3 py-2"
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
-            >
-              Create
-            </button>
-          </div>
-        </form>
-
-        {/* Search & Filters */}
-        <div className="flex flex-wrap gap-3 mb-4">
-          <SearchBar
-            placeholder="Pesquisar tickets..."
-            value={search}
-            onChange={setSearch}
-            className="w-64"
-          />
-          <FilterBar
-            filters={FILTERS}
-            values={filters}
-            onChange={(key, value) => setFilters((p) => ({ ...p, [key]: value }))}
-            onClear={() => setFilters({})}
-          />
+      <form onSubmit={handleCreate} className="bg-white rounded-xl shadow p-6 mb-6">
+        <h2 className="text-lg font-semibold mb-4">Create Ticket</h2>
+        <div className="flex gap-3">
+          <input type="text" placeholder="Ticket title" value={title} onChange={(e) => setTitle(e.target.value)} className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <select value={priority} onChange={(e) => setPriority(e.target.value)} className="border rounded-lg px-3 py-2">
+            <option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option>
+          </select>
+          <button type="submit" className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition">Create</button>
         </div>
-
-        {/* Ticket List */}
-        {filtered.length === 0 ? (
-          <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">
-            Nenhum ticket encontrado.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filtered.map((t) => (
-              <div
-                key={t.id}
-                className="bg-white rounded-xl shadow p-4 flex items-center justify-between"
-              >
-                <div>
-                  <span className="font-medium text-gray-900">{t.title}</span>
-                  <span className="ml-2 text-sm text-gray-500">#{t.id}</span>
-                </div>
-                <div className="flex gap-2">
-                  <span
-                    className={`text-xs font-semibold px-2 py-1 rounded-full ${priorityColors[t.priority]}`}
-                  >
-                    {t.priority}
-                  </span>
-                  <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-                    {t.status}
-                  </span>
-                </div>
+      </form>
+      <div className="flex flex-wrap gap-3 mb-4">
+        <SearchBar placeholder="Pesquisar tickets..." value={search} onChange={setSearch} className="w-64" />
+        <FilterBar filters={FILTERS} values={filters} onChange={(key, value) => setFilters((p) => ({ ...p, [key]: value }))} onClear={() => setFilters({})} />
+      </div>
+      {filtered.length === 0 ? <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">Nenhum ticket encontrado.</div> : (
+        <div className="space-y-3">
+          {filtered.map((t) => (
+            <div key={t.id} className="bg-white rounded-xl shadow p-4 flex items-center justify-between">
+              <div><span className="font-medium text-gray-900">{t.title}</span><span className="ml-2 text-sm text-gray-500">#{t.id}</span></div>
+              <div className="flex gap-2">
+                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${priorityColors[t.priority]}`}>{t.priority}</span>
+                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700">{t.status}</span>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

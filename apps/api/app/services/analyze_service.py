@@ -1,63 +1,44 @@
-"""Mock RCA analyzer service.
+"""RCA analyzer service using semantic search with pgvector."""
 
-In production this would integrate with OpenAI embeddings and pgvector
-for semantic similarity search. For MVP, it returns rule-based suggestions.
-"""
-
+from functools import lru_cache
 from typing import List
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.models.ticket import Ticket
 from app.schemas.ticket import AnalyzeTicketRequest, RCASuggestionResponse
 
-# Simple keyword-to-cause mapping for mock RCA
-KEYWORD_RULES = [
-    {
-        "keywords": ["offline", "unreachable", "network", "connection"],
-        "cause": "Network connectivity failure",
-        "confidence": 0.85,
-        "resolution": "Check network cables, switch port, and device IP configuration.",
-        "similar_incidents": ["TKT-001", "TKT-007"],
-    },
-    {
-        "keywords": ["power", "shutdown", "restart", "reboot"],
-        "cause": "Power supply or firmware issue",
-        "confidence": 0.80,
-        "resolution": "Check power supply unit and run firmware diagnostic.",
-        "similar_incidents": ["TKT-012", "TKT-019"],
-    },
-    {
-        "keywords": ["slow", "performance", "lag", "timeout"],
-        "cause": "Resource exhaustion (CPU/memory)",
-        "confidence": 0.75,
-        "resolution": "Review resource utilization and restart offending processes.",
-        "similar_incidents": ["TKT-034"],
-    },
-    {
-        "keywords": ["error", "alarm", "alert", "fault"],
-        "cause": "Hardware fault or sensor alarm",
-        "confidence": 0.70,
-        "resolution": "Run hardware self-test and review event log.",
-        "similar_incidents": ["TKT-022", "TKT-041"],
-    },
-]
+
+@lru_cache(maxsize=1)
+def get_model():
+    """Load embedding model once per process."""
+    from sentence_transformers import SentenceTransformer
+
+    return SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+
+
+def get_root_cause_analysis(db: Session, description: str):
+    """Return top matching KB articles by embedding similarity."""
+    vector = get_model().encode(description).tolist()
+    query = text(
+        """
+        SELECT title, content, 1 - (embedding <=> :v) as similarity
+        FROM kb_articles
+        WHERE embedding IS NOT NULL
+          AND 1 - (embedding <=> :v) > 0.7
+        ORDER BY similarity DESC
+        LIMIT 3
+    """
+    )
+    return db.execute(query, {"v": str(vector)}).fetchall()
 
 
 def analyze_ticket(
     db: Session, ticket: Ticket, request: AnalyzeTicketRequest
 ) -> List[RCASuggestionResponse]:
-    """Generate RCA suggestions for a ticket using keyword matching.
-
-    Args:
-        db: Database session (reserved for future vector search).
-        ticket: The ticket to analyze.
-        request: Additional context provided by the user.
-
-    Returns:
-        A list of RCA suggestion objects ordered by confidence.
-    """
-    text = " ".join(
+    """Generate RCA suggestions for a ticket using semantic KB search."""
+    description = " ".join(
         filter(
             None,
             [
@@ -66,30 +47,39 @@ def analyze_ticket(
                 request.context or "",
             ],
         )
-    ).lower()
+    ).strip()
 
-    suggestions: List[RCASuggestionResponse] = []
-
-    for rule in KEYWORD_RULES:
-        if any(kw in text for kw in rule["keywords"]):
-            suggestions.append(
-                RCASuggestionResponse(
-                    cause=rule["cause"],
-                    confidence=rule["confidence"],
-                    resolution=rule["resolution"],
-                    similar_incidents=rule["similar_incidents"],
-                )
-            )
-
-    # If no keyword matches, return a generic suggestion
-    if not suggestions:
-        suggestions.append(
+    if not description:
+        return [
             RCASuggestionResponse(
-                cause="Unknown root cause",
-                confidence=0.50,
-                resolution="Escalate to Level 2 support and gather additional logs.",
+                cause="Dados insuficientes para análise",
+                confidence=0.0,
+                resolution="Adicione descrição detalhada e contexto técnico do incidente.",
                 similar_incidents=[],
             )
-        )
+        ]
 
-    return sorted(suggestions, key=lambda s: s.confidence, reverse=True)
+    try:
+        rows = get_root_cause_analysis(db, description)
+    except Exception:
+        rows = []
+
+    if not rows:
+        return [
+            RCASuggestionResponse(
+                cause="Nenhuma causa semelhante encontrada na base de conhecimento",
+                confidence=0.5,
+                resolution="Escalone para N2 e inclua logs para enriquecer a base.",
+                similar_incidents=[],
+            )
+        ]
+
+    return [
+        RCASuggestionResponse(
+            cause=row.title,
+            confidence=float(row.similarity),
+            resolution=row.content,
+            similar_incidents=[],
+        )
+        for row in rows
+    ]

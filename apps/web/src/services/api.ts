@@ -10,9 +10,19 @@ export class ApiError extends Error {
   }
 }
 
+function getAuthToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("auth_token");
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = getAuthToken();
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...options?.headers },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options?.headers,
+    },
     ...options,
   });
   if (!res.ok) {
@@ -23,11 +33,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export interface Machine {
-  id: string;
+  id: number;
+  code: string;
   name: string;
   location: string;
   status: "online" | "offline" | "warning";
-  lastCheck: string;
+  type: string;
+  last_check: string;
 }
 
 export interface Ticket {
@@ -47,8 +59,20 @@ export interface HealthStatus {
   version?: string;
 }
 
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+}
+
 export const api = {
   health: () => request<HealthStatus>("/health"),
+  login: (data: LoginPayload) =>
+    request<LoginResponse>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
   getMachines: () => request<Machine[]>("/machines"),
   getTickets: () => request<Ticket[]>("/tickets"),
   createTicket: (data: CreateTicketPayload) =>
