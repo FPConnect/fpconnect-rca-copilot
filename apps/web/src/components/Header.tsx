@@ -5,11 +5,13 @@ import { Bell, User, ChevronDown, LogOut, Settings, Menu } from "lucide-react";
 import Link from "next/link";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
   const [userOpen, setUserOpen] = useState(false);
   const { unreadCount, markAllRead } = useNotifications();
   const { toggle } = useSidebar();
+  const { logout } = useAuth();
 
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
@@ -65,7 +67,10 @@ export default function Header() {
                 <Settings size={16} />
                 Configurações
               </Link>
-              <button className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-50">
+              <button
+                onClick={() => { logout(); setUserOpen(false); }}
+                className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+              >
                 <LogOut size={16} />
                 Sair
               </button>

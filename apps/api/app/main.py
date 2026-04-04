@@ -3,8 +3,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, tickets
+from app.api.routes import auth, machines, tickets
 from app.core.database import Base, engine
+from app.models import machine, ticket, user  # noqa: F401
 
 # Create database tables on startup
 Base.metadata.create_all(bind=engine)
@@ -27,6 +28,7 @@ app.add_middleware(
 # Routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
+app.include_router(machines.router, prefix="/machines", tags=["machines"])
 
 
 @app.get("/health")

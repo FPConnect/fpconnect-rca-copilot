@@ -78,4 +78,5 @@ class KBArticle(Base):
     title = Column(String, nullable=False)
     content = Column(Text, nullable=False)
     tags = Column(String, nullable=True)
+    embedding = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
