@@ -50,6 +50,13 @@ export default function DashboardPage() {
         <PerformanceStat title="Disponibilidade" value="98.8" unit="%" trend="+0.2%" />
       </div>
 
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <PerformanceStat title="MTTR (Reparo)" value="3.2" unit="horas" trend="-12%" />
+        <PerformanceStat title="MTBF (Estabilidade)" value="45" unit="dias" trend="+5%" />
+        <PerformanceStat title="Disponibilidade" value="98.8" unit="%" trend="+0.2%" />
+      </div>
+
       <div className="bg-white rounded-xl shadow p-6 mb-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-1">Primeiros Passos</h2>
         <p className="text-sm text-gray-500 mb-5">Bem-vindo ao FPConnect! Siga as etapas abaixo para começar a monitorar seus equipamentos.</p>
