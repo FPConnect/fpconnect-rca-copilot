@@ -5,9 +5,9 @@ import Pagination from "@/components/Pagination";
 import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
 import jsPDF from "jspdf";
-import * as XLSX from "xlsx";
 import html2canvas from "html2canvas";
 import { addReportBranding } from "@/lib/report-branding";
+import { downloadCsv } from "@/utils/downloadCsv";
 
 const EVENTS = [
   { id: 1, action: "Ticket criado", user: "João Silva", resource: "MRI Scanner offline", time: "2026-02-26 14:32", type: "ticket" },
@@ -63,7 +63,7 @@ export default function HistoryPage() {
 
   async function exportPDF() {
     const doc = new jsPDF();
-    let currentY = await addReportBranding(doc, {
+    const currentY = await addReportBranding(doc, {
       title: "Histórico de Incidentes FPConnect",
       subtitle: "Linha do tempo operacional com eventos, usuários envolvidos e recursos afetados.",
       rightLabel: "Trilha auditável",
@@ -85,10 +85,7 @@ export default function HistoryPage() {
   }
 
   function exportExcel() {
-    const ws = XLSX.utils.json_to_sheet(filtered);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Histórico");
-    XLSX.writeFile(wb, "historico-incidentes.xlsx");
+    downloadCsv("historico-incidentes.csv", filtered);
   }
 
   async function exportPNG() {

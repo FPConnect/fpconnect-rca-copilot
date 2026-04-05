@@ -1,5 +1,24 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+function isLocalApi(url: string): boolean {
+  return url.includes("localhost") || url.includes("127.0.0.1");
+}
+
+function ensureSecureApiUrl(): void {
+  if (!isLocalApi(API_URL) && !API_URL.startsWith("https://")) {
+    throw new ApiError(400, "Remote API URLs must use HTTPS.");
+  }
+}
+
+function getAuthHeaders(): HeadersInit {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  const token = window.sessionStorage.getItem("access_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -276,8 +295,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   try {
+    ensureSecureApiUrl();
     const res = await fetch(`${API_URL}${path}`, {
-      headers: { "Content-Type": "application/json", ...options?.headers },
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+        ...options?.headers,
+      },
       ...options,
     });
     if (!res.ok) {

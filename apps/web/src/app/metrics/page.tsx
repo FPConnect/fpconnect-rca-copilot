@@ -15,9 +15,9 @@ import {
   Legend,
 } from "chart.js";
 import jsPDF from "jspdf";
-import * as XLSX from "xlsx";
 import { useNotification } from "../../contexts/NotificationContext";
 import { addReportBranding } from "@/lib/report-branding";
+import { downloadCsv, type CsvRow } from "@/utils/downloadCsv";
 Chart.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend);
 
 const METRICS = [
@@ -89,14 +89,23 @@ async function exportPDF() {
 }
 
 function exportExcel() {
-  const ws = XLSX.utils.json_to_sheet([
-    ...METRICS,
-    {},
-    ...PERFORMANCE.map((p) => ({ Equipamento: p.machine, Uptime: p.uptime, Incidentes: p.incidents })),
-  ]);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Métricas");
-  XLSX.writeFile(wb, "relatorio-metricas.xlsx");
+  const rows: CsvRow[] = [
+    ...METRICS.map((metric) => ({
+      secao: "metricas",
+      indicador: metric.label,
+      valor: metric.value,
+      variacao: metric.change,
+      positivo: metric.positive,
+    })),
+    ...PERFORMANCE.map((item) => ({
+      secao: "equipamentos",
+      equipamento: item.machine,
+      uptime_pct: item.uptime,
+      incidentes: item.incidents,
+    })),
+  ];
+
+  downloadCsv("relatorio-metricas.csv", rows);
 }
 
 function exportPNG(chartId: string) {

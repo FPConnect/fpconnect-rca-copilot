@@ -8,12 +8,12 @@ In production, enable auth and restrict access to admin/manager roles.
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
-from app.core.security import decode_access_token
+from app.core.security import decode_access_token, get_current_user_payload
 from app.models.intel_item import IntelItem
 from app.schemas.intel import IntelIngestResponse, IntelItemResponse, IntelTopicsResponse
 from app.services.intel_service import ingest_once, list_topics
@@ -42,7 +42,7 @@ def _require_user_if_enabled(authorization: Optional[str] = Header(None)) -> Opt
 @router.get("/items", response_model=List[IntelItemResponse])
 def get_items(
     topic: Optional[str] = None,
-    limit: int = 50,
+    limit: int = Query(default=50, ge=1, le=200),
     db: Session = Depends(get_db),
     _payload: Optional[dict] = Depends(_require_user_if_enabled),
 ):
@@ -64,7 +64,7 @@ def get_topics(
 @router.post("/ingest/once", response_model=IntelIngestResponse)
 def run_ingest_once(
     db: Session = Depends(get_db),
-    _payload: Optional[dict] = Depends(_require_user_if_enabled),
+    _payload: dict = Depends(get_current_user_payload),
 ):
     result = ingest_once(db)
     return IntelIngestResponse(**result)

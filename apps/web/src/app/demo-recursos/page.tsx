@@ -33,9 +33,9 @@ import React, { useState, useEffect } from "react";
 import { Bar, Line, Pie } from "react-chartjs-2";
 import { Chart, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend } from "chart.js";
 import jsPDF from "jspdf";
-import * as XLSX from "xlsx";
 import html2canvas from "html2canvas";
 import { addReportBranding } from "@/lib/report-branding";
+import { downloadCsv, type CsvRow } from "@/utils/downloadCsv";
 Chart.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend);
 
 const METRICS = [
@@ -200,10 +200,31 @@ export default function DemoRecursosPage() {
     doc.save("relatorio-metricas.pdf");
   }
   function exportExcel() {
-    const ws = XLSX.utils.json_to_sheet(METRICS);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Métricas");
-    XLSX.writeFile(wb, "relatorio-metricas.xlsx");
+    const rows: CsvRow[] = [
+      ...METRICS.map((metric) => ({
+        secao: "metricas",
+        indicador: metric.label,
+        valor: metric.value,
+        variacao: metric.change,
+      })),
+      ...EVENTS.map((event) => ({
+        secao: "historico",
+        acao: event.action,
+        usuario: event.user,
+        recurso: event.resource,
+        horario: event.time,
+      })),
+      ...machines.map((machine) => ({
+        secao: "maquinas",
+        id: machine.id,
+        nome: machine.name,
+        localizacao: machine.location,
+        status: machine.status,
+        ultimo_check: machine.lastCheck,
+      })),
+    ];
+
+    downloadCsv("relatorio-metricas.csv", rows);
   }
   async function exportPNG() {
     const chart = document.getElementById("barChart");

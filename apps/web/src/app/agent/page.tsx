@@ -16,7 +16,6 @@ import {
   Tooltip,
 } from "chart.js";
 import jsPDF from "jspdf";
-import * as XLSX from "xlsx";
 import {
   ArrowRight,
   BellRing,
@@ -39,6 +38,7 @@ import {
   type SimulatorScenario,
 } from "@/lib/simulator-data";
 import { addReportBranding, getReportContentBox } from "@/lib/report-branding";
+import { downloadMultiSectionCsv } from "@/utils/downloadCsv";
 
 Chart.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
@@ -177,33 +177,32 @@ function PdfFooter({
 }
 
 function exportScenarioExcel(scenario: SimulatorScenario) {
-  const workbook = XLSX.utils.book_new();
-
-  const kpiSheet = XLSX.utils.json_to_sheet([
+  downloadMultiSectionCsv(`fpconnect-simulador-${scenario.id}.csv`, [
     {
-      facility: scenario.facility,
-      scenario: scenario.name,
-      uptime_pct: scenario.uptime,
-      mttr_minutes: scenario.mttrMinutes,
-      mtbf_hours: scenario.mtbfHours,
-      pm_compliance_pct: scenario.pmCompliance,
-      sla_compliance_pct: scenario.slaCompliance,
-      open_tickets: scenario.openTickets,
-      critical_alerts: scenario.criticalAlerts,
-      prevented_downtime_hours: scenario.preventedDowntimeHours,
-      estimated_savings_brl: scenario.estimatedSavingsBRL,
-      avoided_loss_brl: scenario.avoidedLossBRL,
+      title: "KPIs",
+      rows: [
+        {
+          facility: scenario.facility,
+          scenario: scenario.name,
+          uptime_pct: scenario.uptime,
+          mttr_minutes: scenario.mttrMinutes,
+          mtbf_hours: scenario.mtbfHours,
+          pm_compliance_pct: scenario.pmCompliance,
+          sla_compliance_pct: scenario.slaCompliance,
+          open_tickets: scenario.openTickets,
+          critical_alerts: scenario.criticalAlerts,
+          prevented_downtime_hours: scenario.preventedDowntimeHours,
+          estimated_savings_brl: scenario.estimatedSavingsBRL,
+          avoided_loss_brl: scenario.avoidedLossBRL,
+        },
+      ],
     },
+    { title: "Machines", rows: scenario.machines.map((item) => ({ ...item })) },
+    { title: "Alerts", rows: scenario.alerts.map((item) => ({ ...item })) },
+    { title: "Tickets", rows: scenario.tickets.map((item) => ({ ...item })) },
+    { title: "Maintenance", rows: scenario.maintenance.map((item) => ({ ...item })) },
+    { title: "Reports", rows: scenario.reports.map((report) => ({ ...report, sections: report.sections.join(" | ") })) },
   ]);
-
-  XLSX.utils.book_append_sheet(workbook, kpiSheet, "KPIs");
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(scenario.machines), "Machines");
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(scenario.alerts), "Alerts");
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(scenario.tickets), "Tickets");
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(scenario.maintenance), "Maintenance");
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(scenario.reports), "Reports");
-
-  XLSX.writeFile(workbook, `fpconnect-simulador-${scenario.id}.xlsx`);
 }
 
 function exportScenarioJson(scenario: SimulatorScenario) {
@@ -368,11 +367,6 @@ function SimulationCenterContent() {
       if (pages.length === 0) return;
 
       const doc = new jsPDF("p", "mm", "a4");
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 8;
-      const maxWidth = pageWidth - margin * 2;
-      const maxHeight = pageHeight - margin * 2;
 
       for (const [index, page] of pages.entries()) {
         const canvas = await html2canvas(page, {
@@ -390,7 +384,7 @@ function SimulationCenterContent() {
         }
 
         await addReportBranding(doc, {
-          title: `Pacote executivo FPConnect | ${scenario.label}`,
+          title: `Pacote executivo FPConnect | ${scenario.name}`,
           subtitle: `Visão preparada para ${PDF_AUDIENCE_PROFILES[pdfAudience].label.toLowerCase()}.`,
           rightLabel: PDF_AUDIENCE_PROFILES[pdfAudience].shortLabel,
           pageNumber: index + 1,

@@ -1,13 +1,12 @@
 """Ticket CRUD routes and RCA analysis endpoint."""
 
-from typing import List, Optional
+from typing import List
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.config import settings
-from app.core.security import decode_access_token
+from app.core.security import get_current_user_id
 from app.crud.ticket import (
     create_ticket,
     delete_ticket,
@@ -15,7 +14,6 @@ from app.crud.ticket import (
     get_tickets,
     update_ticket,
 )
-from app.crud.user import get_user_by_id
 from app.schemas.ticket import (
     AnalyzeTicketRequest,
     AnalyzeTicketResponse,
@@ -29,35 +27,10 @@ from app.services.n8n_service import notify_sla_workflow
 router = APIRouter()
 
 
-def get_current_user_id(authorization: Optional[str] = Header(None)) -> int:
-    """Extract and validate the current user ID.
-
-    For production, we require a valid Bearer token. For local development,
-    we allow anonymous access and bind all actions to the demo user with ID 1.
-    """
-    if settings.app_env == "development" and not authorization:
-        # Anonymous/dev access: use demo admin user (created by setup script).
-        return 1
-
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
-    token = authorization.split(" ", 1)[1]
-    payload = decode_access_token(token)
-    if not payload or "sub" not in payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-        )
-    return int(payload["sub"])
-
-
 @router.get("/", response_model=List[TicketResponse])
 def list_tickets(
-    skip: int = 0,
-    limit: int = 100,
+    skip: int = Query(default=0, ge=0, le=10000),
+    limit: int = Query(default=100, ge=1, le=100),
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):

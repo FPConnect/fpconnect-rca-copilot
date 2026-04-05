@@ -2,14 +2,18 @@
 
 from fastapi.testclient import TestClient
 
+from app.core.security import create_access_token
 from app.main import app
 
 
 client = TestClient(app)
+AUTH_HEADERS = {
+    "Authorization": f"Bearer {create_access_token({'sub': '1', 'role': 'technician'})}"
+}
 
 
 def test_agent_chat_basic():
-    response = client.post("/agent/chat", json={"message": "Oi agente"})
+    response = client.post("/agent/chat", json={"message": "Oi agente"}, headers=AUTH_HEADERS)
     assert response.status_code == 200
     data = response.json()
     assert "reply" in data
@@ -28,7 +32,7 @@ def test_agent_ticket_analyze():
         },
         "question": "Quais próximos passos devo seguir?",
     }
-    response = client.post("/agent/tickets/analyze", json=payload)
+    response = client.post("/agent/tickets/analyze", json=payload, headers=AUTH_HEADERS)
     assert response.status_code == 200
     data = response.json()
     assert data.get("backend") in {"rules", "openai"}

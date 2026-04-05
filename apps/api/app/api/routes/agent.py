@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
+from app.core.security import get_current_user_payload
 from app.services.agent_service import handle_message, analyze_ticket
 
 
@@ -38,7 +39,10 @@ class TicketAgentResponse(BaseModel):
 
 
 @router.post("/chat", response_model=AgentChatResponse)
-def chat_endpoint(payload: AgentChatRequest) -> AgentChatResponse:
+def chat_endpoint(
+    payload: AgentChatRequest,
+    _current_user: dict = Depends(get_current_user_payload),
+) -> AgentChatResponse:
     """Envia uma mensagem para o agente e retorna a resposta.
 
     O backend (regras ou OpenAI) é determinado pelas variáveis de ambiente
@@ -50,7 +54,10 @@ def chat_endpoint(payload: AgentChatRequest) -> AgentChatResponse:
 
 
 @router.post("/tickets/analyze", response_model=TicketAgentResponse)
-def analyze_ticket_endpoint(payload: TicketAgentRequest) -> TicketAgentResponse:
+def analyze_ticket_endpoint(
+    payload: TicketAgentRequest,
+    _current_user: dict = Depends(get_current_user_payload),
+) -> TicketAgentResponse:
     """Endpoint específico para análise de tickets.
 
     Recebe os campos principais do ticket + uma pergunta do técnico

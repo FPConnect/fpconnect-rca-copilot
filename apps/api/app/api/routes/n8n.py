@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.security import secrets_match
 from app.models.ticket import Ticket, TicketLog
 from app.schemas.n8n import N8nSlaEvent, N8nSlaUpdate
 
@@ -32,7 +33,7 @@ def _verify_internal_key(x_internal_key: Optional[str] = Header(None)) -> None:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="n8n internal key not configured",
         )
-    if x_internal_key != expected:
+    if not secrets_match(expected, x_internal_key):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid n8n internal key",

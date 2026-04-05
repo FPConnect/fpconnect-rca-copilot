@@ -20,7 +20,8 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
-    return create_user(db, user_data)
+    safe_user_data = user_data.model_copy(update={"role": "technician"})
+    return create_user(db, safe_user_data)
 
 
 @router.post("/login", response_model=TokenResponse)

@@ -2,14 +2,14 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserCreate(BaseModel):
     """Schema for creating a new user."""
 
     email: EmailStr
-    password: str
+    password: str = Field(min_length=12, max_length=128)
     full_name: Optional[str] = None
     role: str = "technician"
 
@@ -18,7 +18,7 @@ class UserLogin(BaseModel):
     """Schema for user login."""
 
     email: EmailStr
-    password: str
+    password: str = Field(max_length=128)
 
 
 class UserResponse(BaseModel):

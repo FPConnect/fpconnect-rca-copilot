@@ -31,6 +31,27 @@ interface Ticket {
 // Mesma URL da API usada no web; pode ser sobrescrita via variável de ambiente Expo
 const API_URL =
   (process.env.EXPO_PUBLIC_API_URL as string | undefined) ?? "http://localhost:8000";
+const API_TOKEN = (process.env.EXPO_PUBLIC_API_TOKEN as string | undefined)?.trim();
+
+function isLocalApi(url: string) {
+  return url.includes("localhost") || url.includes("127.0.0.1");
+}
+
+function buildApiHeaders() {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (API_TOKEN) {
+    headers.Authorization = `Bearer ${API_TOKEN}`;
+  }
+
+  return headers;
+}
+
+function canUseRemoteApi() {
+  return isLocalApi(API_URL) || API_URL.startsWith("https://");
+}
 
 const PRIORITY_COLORS: Record<string, { bg: string; text: string }> = {
   critical: { bg: "#fee2e2", text: "#991b1b" },
@@ -61,8 +82,13 @@ export default function TicketsScreen() {
     let mounted = true;
     const loadTickets = async () => {
       try {
+        if (!canUseRemoteApi()) {
+          throw new Error("Insecure API URL blocked");
+        }
         setLoading(true);
-        const res = await fetch(`${API_URL}/tickets/`);
+        const res = await fetch(`${API_URL}/tickets/`, {
+          headers: buildApiHeaders(),
+        });
         if (!res.ok) {
           throw new Error(`Status ${res.status}`);
         }
@@ -117,6 +143,9 @@ export default function TicketsScreen() {
       return;
     }
     try {
+      if (!canUseRemoteApi()) {
+        throw new Error("Insecure API URL blocked");
+      }
       const body = JSON.stringify({
         title: title.trim(),
         priority,
@@ -124,7 +153,7 @@ export default function TicketsScreen() {
 
       const res = await fetch(`${API_URL}/tickets/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: buildApiHeaders(),
         body,
       });
 

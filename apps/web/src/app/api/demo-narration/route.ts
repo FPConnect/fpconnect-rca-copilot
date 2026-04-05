@@ -72,7 +72,7 @@ async function readLocalNarration(stepId: string) {
 
 export async function GET(request: NextRequest) {
   const stepId = request.nextUrl.searchParams.get("step")?.trim();
-  if (!stepId) {
+  if (!stepId || stepId.length > 64 || !/^[a-z0-9-]+$/i.test(stepId)) {
     return new Response(JSON.stringify({ error: "Missing step parameter" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 
   const cached = audioCache.get(step.id);
   if (cached) {
-    return new Response(cached, {
+    return new Response(cached.slice().buffer, {
       headers: {
         "Content-Type": "audio/mpeg",
         "Cache-Control": "public, max-age=86400",
@@ -120,27 +120,23 @@ export async function GET(request: NextRequest) {
     }
 
     if (!audio) {
-      const message =
-        lastError instanceof Error
-          ? lastError.message
-          : "Human narration provider not configured";
-
-      return new Response(JSON.stringify({ error: message }), {
+      console.error("Narration generation failed", lastError);
+      return new Response(JSON.stringify({ error: "Human narration provider unavailable" }), {
         status: 503,
         headers: { "Content-Type": "application/json" },
       });
     }
 
     audioCache.set(step.id, audio);
-    return new Response(audio, {
+    return new Response(audio.slice().buffer, {
       headers: {
         "Content-Type": "audio/mpeg",
         "Cache-Control": "public, max-age=86400",
       },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unexpected TTS error";
-    return new Response(JSON.stringify({ error: message }), {
+    console.error("Unexpected narration route error", error);
+    return new Response(JSON.stringify({ error: "Unexpected narration error" }), {
       status: 502,
       headers: { "Content-Type": "application/json" },
     });
