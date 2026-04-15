@@ -43,12 +43,14 @@ def test_register_success():
             "email": "tech@example.com",
             "password": "SecurePass123",
             "full_name": "Tech User",
+            "phone_number": "+55 47 99678-9861",
             "role": "technician",
         },
     )
     assert response.status_code == 201
     data = response.json()
     assert data["email"] == "tech@example.com"
+    assert data["phone_number"] == "+55 47 99678-9861"
     assert "id" in data
 
 
@@ -81,6 +83,42 @@ def test_login_invalid_credentials():
         json={"email": "nobody@example.com", "password": "wrong"},
     )
     assert response.status_code == 401
+
+
+def test_me_update_phone_and_sms_notification():
+    client.post(
+        "/auth/register",
+        json={
+            "email": "sms@example.com",
+            "password": "SecurePass123",
+            "full_name": "SMS User",
+            "phone_number": "+55 47 99678-9861",
+        },
+    )
+    login_response = client.post(
+        "/auth/login",
+        json={"email": "sms@example.com", "password": "SecurePass123"},
+    )
+    token = login_response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    profile_response = client.patch(
+        "/auth/me",
+        json={"phone_number": "+55 47 98888-7777"},
+        headers=headers,
+    )
+    assert profile_response.status_code == 200
+    assert profile_response.json()["phone_number"] == "+55 47 98888-7777"
+
+    sms_response = client.post(
+        "/notifications/sms",
+        json={"message": "Teste FPConnect"},
+        headers=headers,
+    )
+    assert sms_response.status_code == 200
+    data = sms_response.json()
+    assert data["to"] == "+5547988887777"
+    assert data["delivered"] is False
 
 
 def test_health():

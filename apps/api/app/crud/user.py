@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
 from app.models.user import User
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, UserUpdate
 
 
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
@@ -25,8 +25,20 @@ def create_user(db: Session, user_data: UserCreate) -> User:
         email=user_data.email,
         hashed_password=hash_password(user_data.password),
         full_name=user_data.full_name,
+        phone_number=user_data.phone_number,
         role=user_data.role,
     )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def update_user(db: Session, db_user: User, user_data: UserUpdate) -> User:
+    """Update mutable profile fields for a user."""
+    data = user_data.model_dump(exclude_unset=True)
+    for field, value in data.items():
+        setattr(db_user, field, value)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)

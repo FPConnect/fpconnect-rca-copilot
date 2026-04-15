@@ -69,7 +69,37 @@ export interface LoginResponse {
   token_type: string;
 }
 
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  full_name?: string;
+  phone_number?: string;
+}
+
+export interface UserProfile {
+  id: number;
+  email: string;
+  full_name?: string | null;
+  phone_number?: string | null;
+  role: string;
+}
+
+export interface UpdateProfilePayload {
+  email?: string;
+  full_name?: string;
+  phone_number?: string;
+}
+
+export interface SmsResponse {
+  status: string;
+  to: string;
+  provider: string;
+  delivered: boolean;
+}
+
 const TICKETS_STORAGE_KEY = "fpconnect_preview_tickets";
+const PREVIEW_USERS_KEY = "fpconnect_preview_users";
+const PREVIEW_PROFILE_KEY = "fpconnect_profile";
 
 const FALLBACK_MACHINES: Machine[] = [
   {
@@ -131,6 +161,21 @@ function writePreviewTickets(tickets: Ticket[]) {
   localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(tickets));
 }
 
+function readPreviewUsers(): RegisterPayload[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(PREVIEW_USERS_KEY);
+    return raw ? (JSON.parse(raw) as RegisterPayload[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writePreviewUsers(users: RegisterPayload[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(PREVIEW_USERS_KEY, JSON.stringify(users));
+}
+
 async function login(data: LoginPayload): Promise<LoginResponse> {
   try {
     return await request<LoginResponse>("/auth/login", {
@@ -141,9 +186,25 @@ async function login(data: LoginPayload): Promise<LoginResponse> {
     const isPreviewAccess =
       data.email.trim().toLowerCase() === "admin@fpconnect.com" &&
       data.password === "admin123";
+    const previewUser = readPreviewUsers().find(
+      (user) =>
+        user.email.trim().toLowerCase() === data.email.trim().toLowerCase() &&
+        user.password === data.password,
+    );
 
-    if (!isPreviewAccess) {
+    if (!isPreviewAccess && !previewUser) {
       throw error;
+    }
+
+    if (previewUser) {
+      localStorage.setItem(
+        PREVIEW_PROFILE_KEY,
+        JSON.stringify({
+          name: previewUser.full_name || previewUser.email.split("@")[0],
+          email: previewUser.email,
+          phone: previewUser.phone_number || "",
+        }),
+      );
     }
 
     return {
@@ -151,6 +212,56 @@ async function login(data: LoginPayload): Promise<LoginResponse> {
       token_type: "bearer",
     };
   }
+}
+
+async function register(data: RegisterPayload): Promise<UserProfile> {
+  try {
+    return await request<UserProfile>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  } catch {
+    const users = readPreviewUsers();
+    const email = data.email.trim().toLowerCase();
+    if (users.some((user) => user.email.trim().toLowerCase() === email)) {
+      throw new ApiError(400, "Email already registered");
+    }
+    const nextUser = { ...data, email };
+    writePreviewUsers([nextUser, ...users]);
+    localStorage.setItem(
+      PREVIEW_PROFILE_KEY,
+      JSON.stringify({
+        name: data.full_name || email.split("@")[0],
+        email,
+        phone: data.phone_number || "",
+      }),
+    );
+    return {
+      id: Date.now(),
+      email,
+      full_name: data.full_name,
+      phone_number: data.phone_number,
+      role: "technician",
+    };
+  }
+}
+
+async function getMe(): Promise<UserProfile> {
+  return request<UserProfile>("/auth/me");
+}
+
+async function updateMe(data: UpdateProfilePayload): Promise<UserProfile> {
+  return request<UserProfile>("/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+async function sendSmsNotification(message: string): Promise<SmsResponse> {
+  return request<SmsResponse>("/notifications/sms", {
+    method: "POST",
+    body: JSON.stringify({ message }),
+  });
 }
 
 async function withFallback<T>(requestFn: () => Promise<T>, fallbackFn: () => T): Promise<T> {
@@ -181,6 +292,10 @@ async function createTicket(data: CreateTicketPayload): Promise<Ticket> {
 export const api = {
   health: () => withFallback(() => request<HealthStatus>("/health"), () => ({ status: "ok", version: "preview" })),
   login,
+  register,
+  getMe,
+  updateMe,
+  sendSmsNotification,
   getMachines: () => withFallback(() => request<Machine[]>("/machines"), () => FALLBACK_MACHINES),
   getTickets: () => withFallback(() => request<Ticket[]>("/tickets"), readPreviewTickets),
   createTicket,

@@ -19,6 +19,12 @@ class Settings(BaseSettings):
 
     openai_api_key: str = "sk-placeholder"
 
+    sms_provider: str = "console"
+    sms_enabled: bool = False
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_from_number: str = ""
+
     @model_validator(mode="after")
     def validate_security(self):
         """Prevent insecure key defaults outside development and enforce minimum key size."""

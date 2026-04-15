@@ -11,6 +11,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: Optional[str] = None
+    phone_number: Optional[str] = None
     role: str = "technician"
 
 
@@ -27,10 +28,19 @@ class UserResponse(BaseModel):
     id: int
     email: str
     full_name: Optional[str] = None
+    phone_number: Optional[str] = None
     role: str
 
     class Config:
         from_attributes = True
+
+
+class UserUpdate(BaseModel):
+    """Schema for updating the current user's profile."""
+
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
+    phone_number: Optional[str] = None
 
 
 class TokenResponse(BaseModel):

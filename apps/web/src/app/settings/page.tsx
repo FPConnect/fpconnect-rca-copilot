@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Save, X, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { notifyLanguageChanged } from "@/components/LanguageRuntime";
+import { api } from "@/services/api";
 
 interface ProfileForm {
   name: string;
@@ -191,6 +192,29 @@ export default function SettingsPage() {
   );
   const profileSave = useSaveStatus();
 
+  useEffect(() => {
+    let active = true;
+    api
+      .getMe()
+      .then((user) => {
+        if (!active) return;
+        const nextProfile = {
+          name: user.full_name || user.email.split("@")[0],
+          email: user.email,
+          phone: user.phone_number || "",
+        };
+        setProfile(nextProfile);
+        setProfileDraft(nextProfile);
+        writeStorage(PROFILE_STORAGE_KEY, nextProfile);
+      })
+      .catch(() => {
+        // Preview mode keeps using local profile storage when the API is offline.
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const handleProfileSave = () => {
     if (!profileDraft.name.trim() || !profileDraft.email.trim()) {
       addNotification("error", "Campos obrigatórios", "Nome e email são obrigatórios.");
@@ -204,9 +228,25 @@ export default function SettingsPage() {
       addNotification("error", "Celular inválido", "Informe um número de celular válido para notificações por SMS.");
       return;
     }
-    profileSave.save(() => {
-      setProfile(profileDraft);
-      writeStorage(PROFILE_STORAGE_KEY, profileDraft);
+    profileSave.save(async () => {
+      let savedProfile = profileDraft;
+      try {
+        const user = await api.updateMe({
+          email: profileDraft.email.trim(),
+          full_name: profileDraft.name.trim(),
+          phone_number: profileDraft.phone.trim(),
+        });
+        savedProfile = {
+          name: user.full_name || user.email.split("@")[0],
+          email: user.email,
+          phone: user.phone_number || "",
+        };
+      } catch {
+        // Preview mode persists locally when the API is offline.
+      }
+      setProfile(savedProfile);
+      setProfileDraft(savedProfile);
+      writeStorage(PROFILE_STORAGE_KEY, savedProfile);
       addNotification("success", "Perfil atualizado", "Suas informações foram salvas.");
     });
   };
@@ -249,11 +289,16 @@ export default function SettingsPage() {
       setNotifDraft((p) => ({ ...p, sms: false }));
       return;
     }
-    notifSave.save(() => {
+    notifSave.save(async () => {
       setNotifPrefs(notifDraft);
       writeStorage(NOTIFICATION_STORAGE_KEY, notifDraft);
       if (notifDraft.sms) {
-        addNotification("info", "SMS ativo", `Alertas por SMS serão enviados para ${profile.phone}.`);
+        try {
+          await api.sendSmsNotification("FPConnect: SMS ativado para alertas operacionais.");
+          addNotification("info", "SMS ativo", `Alerta de teste enviado para ${profile.phone}.`);
+        } catch {
+          addNotification("info", "SMS ativo", `Alertas por SMS serão enviados para ${profile.phone}.`);
+        }
       }
       addNotification("success", "Preferências de notificação salvas");
     });
