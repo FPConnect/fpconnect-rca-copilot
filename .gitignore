@@ -8,3 +8,5 @@ apps/mobile/node_modules/
 apps/mobile/.expo/
 apps/mobile/.expo-shared/
 apps/mobile/dist/
+.vercel
+apps/web/.vercel/

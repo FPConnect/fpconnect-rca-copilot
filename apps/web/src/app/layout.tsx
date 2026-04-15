@@ -18,7 +18,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var raw = localStorage.getItem('fpconnect_system_preferences');
+                var theme = raw ? JSON.parse(raw).theme : 'light';
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var useDark = theme === 'dark' || (theme === 'system' && prefersDark);
+                document.documentElement.classList.toggle('dark', useDark);
+                document.documentElement.dataset.theme = theme;
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
       <body>
         <AuthProvider>
           <AuthGuard>
