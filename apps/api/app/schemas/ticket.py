@@ -37,6 +37,7 @@ class TicketResponse(BaseModel):
     location: Optional[str] = None
     creator_id: int
     assignee_id: Optional[int] = None
+    escalation_level: Optional[int] = None
 
     class Config:
         from_attributes = True

@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.core.config import settings
 from app.core.database import Base, get_db
 from app.main import app
 
@@ -119,6 +120,51 @@ def test_me_update_phone_and_sms_notification():
     data = sms_response.json()
     assert data["to"] == "+5547988887777"
     assert data["delivered"] is False
+
+
+def test_n8n_internal_callbacks_update_and_log_ticket(monkeypatch):
+    monkeypatch.setattr(settings, "n8n_sla_api_key", "test-internal-key")
+    client.post(
+        "/auth/register",
+        json={"email": "n8n@example.com", "password": "SecurePass123"},
+    )
+    login_response = client.post(
+        "/auth/login",
+        json={"email": "n8n@example.com", "password": "SecurePass123"},
+    )
+    auth_headers = {"Authorization": f"Bearer {login_response.json()['access_token']}"}
+
+    ticket_response = client.post(
+        "/tickets/",
+        json={"title": "Ventilador UTI offline", "priority": "critical"},
+        headers=auth_headers,
+    )
+    assert ticket_response.status_code == 201
+    ticket_id = ticket_response.json()["id"]
+
+    internal_headers = {"X-Internal-Key": "test-internal-key"}
+    event_response = client.post(
+        "/internal/n8n/sla/event",
+        json={
+            "ticket_id": ticket_id,
+            "event_type": "n8n.critical_ticket.detected",
+            "details": {"message": "n8n iniciou escalonamento."},
+        },
+        headers=internal_headers,
+    )
+    assert event_response.status_code == 200
+
+    update_response = client.post(
+        "/internal/n8n/sla/update",
+        json={"ticket_id": ticket_id, "escalation_level": 1},
+        headers=internal_headers,
+    )
+    assert update_response.status_code == 200
+    assert update_response.json()["changed"] is True
+
+    refreshed = client.get(f"/tickets/{ticket_id}", headers=auth_headers)
+    assert refreshed.status_code == 200
+    assert refreshed.json()["escalation_level"] == 1
 
 
 def test_health():

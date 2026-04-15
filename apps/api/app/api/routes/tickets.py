@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Header, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -23,6 +23,7 @@ from app.schemas.ticket import (
     TicketUpdate,
 )
 from app.services.analyze_service import analyze_ticket
+from app.services.n8n_service import notify_sla_workflow
 
 router = APIRouter()
 
@@ -71,17 +72,21 @@ def get_ticket(
 @router.post("/", response_model=TicketResponse, status_code=status.HTTP_201_CREATED)
 def create_new_ticket(
     ticket_data: TicketCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):
     """Create a new support ticket."""
-    return create_ticket(db, ticket_data, creator_id=user_id)
+    ticket = create_ticket(db, ticket_data, creator_id=user_id)
+    background_tasks.add_task(notify_sla_workflow, ticket, "ticket.created", user_id)
+    return ticket
 
 
 @router.patch("/{ticket_id}", response_model=TicketResponse)
 def update_existing_ticket(
     ticket_id: int,
     ticket_data: TicketUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):
@@ -89,6 +94,7 @@ def update_existing_ticket(
     ticket = update_ticket(db, ticket_id, ticket_data)
     if not ticket:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+    background_tasks.add_task(notify_sla_workflow, ticket, "ticket.updated", user_id)
     return ticket
 
 

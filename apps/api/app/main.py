@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, machines, notifications, tickets
+from app.api.routes import auth, machines, n8n, notifications, tickets
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.models import machine, ticket, user  # noqa: F401
@@ -31,6 +31,7 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
 app.include_router(machines.router, prefix="/machines", tags=["machines"])
 app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+app.include_router(n8n.router)
 
 
 @app.get("/health")

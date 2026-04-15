@@ -10,8 +10,12 @@ the API remains the source of truth for users, tickets, assets, and audit logs.
 - `N8N_SLA_API_KEY`: shared key for FPConnect -> n8n calls and n8n -> FPConnect
   callbacks.
 - `N8N_SLA_TIMEOUT_SECONDS`: short timeout so automations never block API usage.
+- `POST /internal/n8n/sla/event`: n8n callback to log automation events.
+- `POST /internal/n8n/sla/update`: n8n callback to update escalation fields.
 - `POST /notifications/sms`: sends SMS to the authenticated user's registered
   phone number.
+- Importable workflow template:
+  `infra/n8n/critical-ticket-escalation.workflow.json`.
 
 ## High-value workflows
 
@@ -44,6 +48,19 @@ the API remains the source of truth for users, tickets, assets, and audit logs.
    - Trigger: status, priority, assignment, or notification event.
    - n8n actions: write structured audit events back to FPConnect and optionally
      archive to Google Drive/SharePoint.
+
+## Suggested first production workflow
+
+1. Import `infra/n8n/critical-ticket-escalation.workflow.json` into n8n.
+2. Set these n8n environment variables:
+   - `FPCONNECT_API_URL`: public API URL, for example `https://api.example.com`.
+   - `FPCONNECT_INTERNAL_KEY`: same value as `N8N_SLA_API_KEY`.
+3. Copy the workflow production webhook URL into `N8N_SLA_WORKFLOW_URL`.
+4. FPConnect sends ticket events to n8n when tickets are created or updated.
+5. n8n checks priority and starts the critical escalation path.
+6. If no acknowledgement after 15 minutes, n8n calls `/internal/n8n/sla/update`
+   with a higher `escalation_level`.
+7. n8n calls `/internal/n8n/sla/event` with a human-readable audit message.
 
 ## Security rules
 

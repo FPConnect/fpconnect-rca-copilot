@@ -1,0 +1,193 @@
+{
+  "name": "FPConnect - Critical Ticket Escalation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fpconnect-ticket-event",
+        "responseMode": "responseNode"
+      },
+      "id": "ticket-event-webhook",
+      "name": "FPConnect Ticket Event",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.priority}}",
+              "operation": "equals",
+              "value2": "critical"
+            }
+          ]
+        }
+      },
+      "id": "is-critical-ticket",
+      "name": "Is Critical?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [240, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.FPCONNECT_API_URL}}/internal/n8n/sla/event",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Key",
+              "value": "={{$env.FPCONNECT_INTERNAL_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"ticket_id\": {{$json.ticket_id}}, \"event_type\": \"n8n.critical_ticket.detected\", \"actor_user_id\": {{$json.triggered_by_user_id || null}}, \"details\": {\"message\": \"n8n detectou ticket crítico e iniciou escalonamento automático.\"}}"
+      },
+      "id": "log-critical-detected",
+      "name": "Log Critical Detection",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, -120]
+    },
+    {
+      "parameters": {
+        "amount": 15,
+        "unit": "minutes"
+      },
+      "id": "wait-ack-window",
+      "name": "Wait 15 Minutes",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [760, -120]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.FPCONNECT_API_URL}}/internal/n8n/sla/update",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Key",
+              "value": "={{$env.FPCONNECT_INTERNAL_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"ticket_id\": {{$json.ticket_id}}, \"escalation_level\": 1}"
+      },
+      "id": "escalate-ticket",
+      "name": "Escalate Ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1000, -120]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.FPCONNECT_API_URL}}/internal/n8n/sla/event",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Internal-Key",
+              "value": "={{$env.FPCONNECT_INTERNAL_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"ticket_id\": {{$json.ticket_id}}, \"event_type\": \"n8n.critical_ticket.escalated\", \"actor_user_id\": {{$json.triggered_by_user_id || null}}, \"details\": {\"message\": \"n8n elevou o ticket crítico para nível 1 após janela inicial de resposta.\"}}"
+      },
+      "id": "log-escalation",
+      "name": "Log Escalation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1240, -120]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\":\"accepted\",\"ticket_id\":{{$json.ticket_id}},\"handled_by\":\"fpconnect-critical-escalation\"}"
+      },
+      "id": "respond-accepted",
+      "name": "Respond Accepted",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [520, 160]
+    }
+  ],
+  "connections": {
+    "FPConnect Ticket Event": {
+      "main": [
+        [
+          {
+            "node": "Is Critical?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Critical?": {
+      "main": [
+        [
+          {
+            "node": "Log Critical Detection",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Critical Detection": {
+      "main": [
+        [
+          {
+            "node": "Wait 15 Minutes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Escalate Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escalate Ticket": {
+      "main": [
+        [
+          {
+            "node": "Log Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
