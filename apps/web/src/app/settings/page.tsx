@@ -8,6 +8,7 @@ import { notifyLanguageChanged } from "@/components/LanguageRuntime";
 interface ProfileForm {
   name: string;
   email: string;
+  phone: string;
 }
 
 interface PasswordForm {
@@ -39,7 +40,11 @@ const TIMEZONES = [
   "UTC",
 ];
 
-const INITIAL_PROFILE: ProfileForm = { name: "Admin", email: "admin@hospital.com" };
+const INITIAL_PROFILE: ProfileForm = {
+  name: "Admin",
+  email: "admin@hospital.com",
+  phone: "+55 47 99678-9861",
+};
 const INITIAL_SYSTEM: SystemPrefs = {
   theme: "light",
   language: "pt-BR",
@@ -77,6 +82,10 @@ function applyThemePreference(theme: SystemPrefs["theme"]) {
   const shouldUseDark = theme === "dark" || (theme === "system" && prefersDark);
   document.documentElement.classList.toggle("dark", shouldUseDark);
   document.documentElement.dataset.theme = theme;
+}
+
+function hasValidPhone(phone: string) {
+  return phone.replace(/\D/g, "").length >= 10;
 }
 
 type SaveStatus = "idle" | "saving" | "success" | "error";
@@ -191,6 +200,10 @@ export default function SettingsPage() {
       addNotification("error", "Email inválido", "Por favor, insira um email válido.");
       return;
     }
+    if (profileDraft.phone.trim() && !hasValidPhone(profileDraft.phone)) {
+      addNotification("error", "Celular inválido", "Informe um número de celular válido para notificações por SMS.");
+      return;
+    }
     profileSave.save(() => {
       setProfile(profileDraft);
       writeStorage(PROFILE_STORAGE_KEY, profileDraft);
@@ -231,9 +244,17 @@ export default function SettingsPage() {
   const notifSave = useSaveStatus();
 
   const handleNotifSave = () => {
+    if (notifDraft.sms && !hasValidPhone(profile.phone)) {
+      addNotification("error", "Celular obrigatório", "Cadastre um celular válido no perfil antes de ativar SMS.");
+      setNotifDraft((p) => ({ ...p, sms: false }));
+      return;
+    }
     notifSave.save(() => {
       setNotifPrefs(notifDraft);
       writeStorage(NOTIFICATION_STORAGE_KEY, notifDraft);
+      if (notifDraft.sms) {
+        addNotification("info", "SMS ativo", `Alertas por SMS serão enviados para ${profile.phone}.`);
+      }
       addNotification("success", "Preferências de notificação salvas");
     });
   };
@@ -319,6 +340,23 @@ export default function SettingsPage() {
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="seu@email.com"
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Celular para SMS
+            </label>
+            <input
+              type="tel"
+              value={profileDraft.phone}
+              onChange={(e) =>
+                setProfileDraft((p) => ({ ...p, phone: e.target.value }))
+              }
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="+55 47 99678-9861"
+            />
+            <p className="mt-1 text-xs text-gray-400">
+              Usado como destino das notificações por SMS quando esse canal estiver ativo.
+            </p>
           </div>
           <div className="flex items-center justify-between pt-2">
             <StatusBanner status={profileSave.status} />
@@ -460,9 +498,19 @@ export default function SettingsPage() {
           />
           <Toggle
             label="SMS"
-            description="Receba alertas por SMS"
+            description={
+              hasValidPhone(profile.phone)
+                ? `Receba alertas por SMS em ${profile.phone}`
+                : "Cadastre um celular no perfil para ativar SMS"
+            }
             checked={notifDraft.sms}
-            onChange={(v) => setNotifDraft((p) => ({ ...p, sms: v }))}
+            onChange={(v) => {
+              if (v && !hasValidPhone(profile.phone)) {
+                addNotification("error", "Celular obrigatório", "Cadastre um celular válido no perfil antes de ativar SMS.");
+                return;
+              }
+              setNotifDraft((p) => ({ ...p, sms: v }));
+            }}
           />
           <Toggle
             label="In-app"
