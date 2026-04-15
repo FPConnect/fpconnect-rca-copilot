@@ -43,6 +43,14 @@ Deploy the full stack for free using managed cloud services — no server manage
    ALGORITHM=HS256
    ACCESS_TOKEN_EXPIRE_MINUTES=30
    OPENAI_API_KEY=sk-...
+   SMS_ENABLED=true
+   SMS_PROVIDER=twilio
+   TWILIO_ACCOUNT_SID=<twilio-account-sid>
+   TWILIO_AUTH_TOKEN=<twilio-auth-token>
+   TWILIO_FROM_NUMBER=<twilio-e164-number>
+   N8N_SLA_WORKFLOW_URL=<n8n-webhook-url>
+   N8N_SLA_API_KEY=<shared-internal-key>
+   N8N_SLA_TIMEOUT_SECONDS=5
    MINIO_ENDPOINT=<s3-endpoint>
    MINIO_ACCESS_KEY=<access-key>
    MINIO_SECRET_KEY=<secret-key>
@@ -66,6 +74,7 @@ Deploy the full stack for free using managed cloud services — no server manage
    NEXT_PUBLIC_API_URL=https://fpconnect-api.up.railway.app
    NEXT_PUBLIC_APP_NAME=FPConnect
    NEXT_PUBLIC_APP_VERSION=1.0.0
+   NEXT_PUBLIC_DEMO_MODE=false
    ```
 
 5. Click **Deploy**. The app goes live at `https://<project>.vercel.app`.
@@ -147,4 +156,17 @@ certbot --nginx -d api.yourapp.com -d yourapp.com
 - API logs: `docker-compose logs -f api`
 - Database: `docker-compose exec db psql -U fpconnect`
 - All logs: `make logs`
+
+### SMS provider notes
+
+Use Twilio numbers in E.164 format, for example `+15551234567`. The backend reads
+`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_FROM_NUMBER`; no Twilio
+secret should ever be exposed through `NEXT_PUBLIC_*` variables.
+
+### n8n automation notes
+
+Create an n8n workflow with a Webhook trigger and set its production URL as
+`N8N_SLA_WORKFLOW_URL`. If `N8N_SLA_API_KEY` is present, FPConnect sends it in
+the `X-Api-Key` header. Use the same value as `X-Internal-Key` when n8n calls
+back into FPConnect internal endpoints.
 

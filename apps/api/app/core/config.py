@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     twilio_auth_token: str = ""
     twilio_from_number: str = ""
 
+    n8n_sla_workflow_url: str | None = None
+    n8n_sla_api_key: str | None = None
+    n8n_sla_timeout_seconds: int = 5
+
     @model_validator(mode="after")
     def validate_security(self):
         """Prevent insecure key defaults outside development and enforce minimum key size."""
