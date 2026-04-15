@@ -14,7 +14,6 @@ from app.crud.ticket import (
     get_tickets,
     update_ticket,
 )
-from app.crud.user import get_user_by_id
 from app.schemas.ticket import (
     AnalyzeTicketRequest,
     AnalyzeTicketResponse,
