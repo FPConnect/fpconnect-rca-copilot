@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Save, X, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 
@@ -51,6 +51,32 @@ const INITIAL_NOTIF: NotificationPrefs = {
   inApp: true,
   push: false,
 };
+
+const PROFILE_STORAGE_KEY = "fpconnect_profile";
+const SYSTEM_STORAGE_KEY = "fpconnect_system_preferences";
+const NOTIFICATION_STORAGE_KEY = "fpconnect_notification_preferences";
+
+function readStorage<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? ({ ...fallback, ...JSON.parse(raw) } as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStorage<T>(key: string, value: T) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function applyThemePreference(theme: SystemPrefs["theme"]) {
+  if (typeof window === "undefined") return;
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const shouldUseDark = theme === "dark" || (theme === "system" && prefersDark);
+  document.documentElement.classList.toggle("dark", shouldUseDark);
+  document.documentElement.dataset.theme = theme;
+}
 
 type SaveStatus = "idle" | "saving" | "success" | "error";
 
@@ -147,8 +173,12 @@ export default function SettingsPage() {
   const { addNotification } = useNotifications();
 
   /* Profile */
-  const [profile, setProfile] = useState<ProfileForm>(INITIAL_PROFILE);
-  const [profileDraft, setProfileDraft] = useState<ProfileForm>(INITIAL_PROFILE);
+  const [profile, setProfile] = useState<ProfileForm>(() =>
+    readStorage(PROFILE_STORAGE_KEY, INITIAL_PROFILE),
+  );
+  const [profileDraft, setProfileDraft] = useState<ProfileForm>(() =>
+    readStorage(PROFILE_STORAGE_KEY, INITIAL_PROFILE),
+  );
   const profileSave = useSaveStatus();
 
   const handleProfileSave = () => {
@@ -162,30 +192,46 @@ export default function SettingsPage() {
     }
     profileSave.save(() => {
       setProfile(profileDraft);
+      writeStorage(PROFILE_STORAGE_KEY, profileDraft);
       addNotification("success", "Perfil atualizado", "Suas informações foram salvas.");
     });
   };
 
   /* System */
-  const [system, setSystem] = useState<SystemPrefs>(INITIAL_SYSTEM);
-  const [systemDraft, setSystemDraft] = useState<SystemPrefs>(INITIAL_SYSTEM);
+  const [system, setSystem] = useState<SystemPrefs>(() =>
+    readStorage(SYSTEM_STORAGE_KEY, INITIAL_SYSTEM),
+  );
+  const [systemDraft, setSystemDraft] = useState<SystemPrefs>(() =>
+    readStorage(SYSTEM_STORAGE_KEY, INITIAL_SYSTEM),
+  );
   const systemSave = useSaveStatus();
+
+  useEffect(() => {
+    applyThemePreference(system.theme);
+  }, [system.theme]);
 
   const handleSystemSave = () => {
     systemSave.save(() => {
       setSystem(systemDraft);
+      writeStorage(SYSTEM_STORAGE_KEY, systemDraft);
+      applyThemePreference(systemDraft.theme);
       addNotification("success", "Configurações salvas", "Preferências do sistema atualizadas.");
     });
   };
 
   /* Notifications */
-  const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>(INITIAL_NOTIF);
-  const [notifDraft, setNotifDraft] = useState<NotificationPrefs>(INITIAL_NOTIF);
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>(() =>
+    readStorage(NOTIFICATION_STORAGE_KEY, INITIAL_NOTIF),
+  );
+  const [notifDraft, setNotifDraft] = useState<NotificationPrefs>(() =>
+    readStorage(NOTIFICATION_STORAGE_KEY, INITIAL_NOTIF),
+  );
   const notifSave = useSaveStatus();
 
   const handleNotifSave = () => {
     notifSave.save(() => {
       setNotifPrefs(notifDraft);
+      writeStorage(NOTIFICATION_STORAGE_KEY, notifDraft);
       addNotification("success", "Preferências de notificação salvas");
     });
   };
@@ -216,6 +262,25 @@ export default function SettingsPage() {
       setPasswordForm({ current: "", newPassword: "", confirm: "" });
       addNotification("success", "Senha alterada", "Sua senha foi atualizada com sucesso.");
     });
+  };
+
+  const handleExportData = () => {
+    const exportPayload = {
+      profile,
+      system,
+      notifications: notifPrefs,
+      exportedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], {
+      type: "application/json;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "fpconnect-configuracoes.json";
+    link.click();
+    URL.revokeObjectURL(url);
+    addNotification("success", "Exportação concluída", "O arquivo JSON foi gerado.");
   };
 
   return (
@@ -526,9 +591,7 @@ export default function SettingsPage() {
               </p>
             </div>
             <button
-              onClick={() =>
-                addNotification("info", "Exportação iniciada", "Seus dados serão enviados por email.")
-              }
+              onClick={handleExportData}
               className="text-sm px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-white transition-colors"
             >
               Exportar
@@ -549,6 +612,12 @@ export default function SettingsPage() {
                 setSystem(INITIAL_SYSTEM);
                 setNotifDraft(INITIAL_NOTIF);
                 setNotifPrefs(INITIAL_NOTIF);
+                setProfileDraft(INITIAL_PROFILE);
+                setProfile(INITIAL_PROFILE);
+                writeStorage(PROFILE_STORAGE_KEY, INITIAL_PROFILE);
+                writeStorage(SYSTEM_STORAGE_KEY, INITIAL_SYSTEM);
+                writeStorage(NOTIFICATION_STORAGE_KEY, INITIAL_NOTIF);
+                applyThemePreference(INITIAL_SYSTEM.theme);
                 addNotification("warning", "Preferências redefinidas", "Todas as configurações foram restauradas.");
               }}
               className="text-sm px-4 py-2 border border-red-200 rounded-lg text-red-600 hover:bg-red-100 transition-colors"

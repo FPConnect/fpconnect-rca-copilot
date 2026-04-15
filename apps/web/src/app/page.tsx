@@ -58,7 +58,7 @@ export default function LandingPage() {
                 href="/dashboard"
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-600 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-cyan-300 hover:text-cyan-200"
               >
-                Ver dashboard demo
+                Ver painel operacional
               </Link>
             </div>
           </div>

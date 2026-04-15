@@ -15,10 +15,10 @@ const PerformanceStat = ({ title, value, unit, trend }: PerformanceStatProps) =>
 );
 
 const TICKET_CARDS = [
-  { label: "Tickets Abertos", value: 12, color: "from-amber-400/25 to-amber-200/10 text-amber-100", href: "/tickets" },
-  { label: "Em Progresso", value: 5, color: "from-sky-500/25 to-sky-200/10 text-sky-100", href: "/tickets" },
-  { label: "Resolvidos Hoje", value: 8, color: "from-emerald-500/25 to-emerald-200/10 text-emerald-100", href: "/tickets" },
-  { label: "Críticos", value: 2, color: "from-rose-500/25 to-rose-200/10 text-rose-100", href: "/tickets" },
+  { label: "Tickets Abertos", value: 12, color: "border-amber-200 bg-amber-50 text-amber-950", accent: "text-amber-700", href: "/tickets" },
+  { label: "Em Progresso", value: 5, color: "border-sky-200 bg-sky-50 text-sky-950", accent: "text-sky-700", href: "/tickets" },
+  { label: "Resolvidos Hoje", value: 8, color: "border-emerald-200 bg-emerald-50 text-emerald-950", accent: "text-emerald-700", href: "/tickets" },
+  { label: "Críticos", value: 2, color: "border-rose-200 bg-rose-50 text-rose-950", accent: "text-rose-700", href: "/tickets" },
 ];
 
 const ONBOARDING_STEPS = [
@@ -45,10 +45,10 @@ export default function DashboardPage() {
           <Link
             key={m.label}
             href={m.href}
-            className={`rounded-2xl border border-slate-700 bg-gradient-to-br ${m.color} p-5 shadow-md transition hover:scale-[1.01]`}
+            className={`rounded-2xl border ${m.color} p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
           >
-            <div className="text-4xl font-bold">{m.value}</div>
-            <div className="mt-1 text-sm font-semibold">{m.label}</div>
+            <div className={`text-4xl font-black ${m.accent}`}>{m.value}</div>
+            <div className="mt-2 text-sm font-semibold">{m.label}</div>
           </Link>
         ))}
       </div>
