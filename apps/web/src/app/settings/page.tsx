@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Save, X, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { notifyLanguageChanged } from "@/components/LanguageRuntime";
 
 interface ProfileForm {
   name: string;
@@ -215,6 +216,7 @@ export default function SettingsPage() {
       setSystem(systemDraft);
       writeStorage(SYSTEM_STORAGE_KEY, systemDraft);
       applyThemePreference(systemDraft.theme);
+      notifyLanguageChanged();
       addNotification("success", "Configurações salvas", "Preferências do sistema atualizadas.");
     });
   };
@@ -618,6 +620,7 @@ export default function SettingsPage() {
                 writeStorage(SYSTEM_STORAGE_KEY, INITIAL_SYSTEM);
                 writeStorage(NOTIFICATION_STORAGE_KEY, INITIAL_NOTIF);
                 applyThemePreference(INITIAL_SYSTEM.theme);
+                notifyLanguageChanged();
                 addNotification("warning", "Preferências redefinidas", "Todas as configurações foram restauradas.");
               }}
               className="text-sm px-4 py-2 border border-red-200 rounded-lg text-red-600 hover:bg-red-100 transition-colors"

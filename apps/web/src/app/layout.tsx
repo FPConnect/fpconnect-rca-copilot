@@ -6,6 +6,7 @@ import ToastManager from "@/components/ToastManager";
 import AppShell from "@/components/AppShell";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthGuard from "@/components/AuthGuard";
+import LanguageRuntime from "@/components/LanguageRuntime";
 
 export const metadata: Metadata = {
   title: "FPConnect RCA Copilot",
@@ -42,6 +43,7 @@ export default function RootLayout({
               <SidebarProvider>
                 <AppShell>{children}</AppShell>
                 <ToastManager />
+                <LanguageRuntime />
               </SidebarProvider>
             </NotificationProvider>
           </AuthGuard>
