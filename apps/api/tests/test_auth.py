@@ -167,6 +167,26 @@ def test_n8n_internal_callbacks_update_and_log_ticket(monkeypatch):
     assert refreshed.json()["escalation_level"] == 1
 
 
+def test_intelligence_summary_returns_risk_governance_and_insights():
+    client.post(
+        "/auth/register",
+        json={"email": "intel@example.com", "password": "SecurePass123"},
+    )
+    login_response = client.post(
+        "/auth/login",
+        json={"email": "intel@example.com", "password": "SecurePass123"},
+    )
+    headers = {"Authorization": f"Bearer {login_response.json()['access_token']}"}
+
+    response = client.get("/intelligence/summary", headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["asset_risks"]
+    assert data["governance_checks"]
+    assert data["insights"]
+    assert {"code", "risk_score", "risk_level", "drivers"}.issubset(data["asset_risks"][0])
+
+
 def test_health():
     response = client.get("/health")
     assert response.status_code == 200
