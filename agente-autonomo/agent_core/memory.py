@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List
 import json
 import os
+import tempfile
 import time
 from datetime import datetime
 
@@ -40,7 +41,12 @@ class ConversationState:
 class MemoryStore:
     def __init__(self, path: Path) -> None:
         self.path = path
-        self.path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            fallback_dir = Path(tempfile.gettempdir()) / "agente_autonomo"
+            fallback_dir.mkdir(parents=True, exist_ok=True)
+            self.path = fallback_dir / self.path.name
 
     def load(self) -> ConversationState:
         if not self.path.exists():

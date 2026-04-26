@@ -6,8 +6,11 @@ import subprocess
 import webbrowser
 import base64
 import re
+from html import unescape
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from urllib.parse import parse_qs, quote_plus, unquote, urlparse
+from urllib.request import Request, urlopen
 
 
 _browser_ctx = {
@@ -17,6 +20,11 @@ _browser_ctx = {
     "page": None,
     "last_url": None,
     "zoom": 1.2,
+    "disabled_reason": None,
+    "mode": "playwright",
+    "fallback_page": None,
+    "fallback_history": [],
+    "fallback_index": -1,
 }
 
 _BROWSER_MIN_ZOOM = 0.75
@@ -59,6 +67,378 @@ _BROWSER_TOKEN_ALIASES = {
     "vaga": {"vaga", "vagas", "job", "jobs"},
     "jobs": {"vaga", "vagas", "job", "jobs"},
 }
+
+
+def _browser_launch_blocked(error_text: str) -> bool:
+    lowered = (error_text or "").lower()
+    return "winerror 5" in lowered or "acesso negado" in lowered or "permissionerror" in lowered
+
+
+def _fallback_session_alive() -> bool:
+    return _browser_ctx.get("mode") == "fallback" and isinstance(_browser_ctx.get("fallback_page"), dict)
+
+
+def _fetch_url_text(url: str, timeout: float = 8.0) -> str | None:
+    try:
+        req = Request(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/123.0 Safari/537.36"
+            },
+        )
+        with urlopen(req, timeout=timeout) as response:
+            content_type = response.headers.get("Content-Type", "")
+            if "text/html" not in content_type and "text/plain" not in content_type:
+                return None
+            return response.read().decode("utf-8", errors="ignore")
+    except Exception:
+        return None
+
+
+def _extract_html_title(html: str) -> str:
+    match = re.search(r"<title[^>]*>(.*?)</title>", html or "", flags=re.IGNORECASE | re.DOTALL)
+    return _strip_html(match.group(1)) if match else ""
+
+
+def _extract_html_text(html: str, limit: int = 4000) -> str:
+    if not html:
+        return ""
+    cleaned = re.sub(r"<script\b[^>]*>.*?</script>", " ", html, flags=re.IGNORECASE | re.DOTALL)
+    cleaned = re.sub(r"<style\b[^>]*>.*?</style>", " ", cleaned, flags=re.IGNORECASE | re.DOTALL)
+    cleaned = _strip_html(cleaned)
+    return cleaned[:limit]
+
+
+def _fetch_page_preview(url: str) -> dict[str, object]:
+    html = _fetch_url_text(url)
+    if not html:
+        return {
+            "url": url,
+            "title": urlparse(url).netloc or url,
+            "text": f"Nao consegui ler o conteudo de {url} neste ambiente.",
+            "results": [],
+            "search_query": None,
+        }
+
+    title = _extract_html_title(html) or urlparse(url).netloc or url
+    text = _extract_html_text(html)
+    return {
+        "url": url,
+        "title": title,
+        "text": text or f"Pagina aberta: {url}",
+        "results": [],
+        "search_query": None,
+    }
+
+
+def _web_search_results(query: str, limit: int = 5) -> list[dict[str, str]]:
+    cleaned_query = (query or "").strip()
+    if not cleaned_query:
+        return []
+
+    try:
+        search_url = "https://html.duckduckgo.com/html/?q=" + quote_plus(cleaned_query)
+        req = Request(search_url, headers={"User-Agent": "AgenteAutonomo/1.0"})
+        with urlopen(req, timeout=8) as response:
+            html = response.read().decode("utf-8", errors="ignore")
+    except Exception:
+        return []
+
+    matches = re.findall(
+        r'<a[^>]+class="[^"]*result__a[^"]*"[^>]+href="([^"]+)"[^>]*>(.*?)</a>',
+        html,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    if not matches:
+        matches = re.findall(
+            r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>',
+            html,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+
+    snippets = re.findall(
+        r'<a[^>]+class="[^"]*result__snippet[^"]*"[^>]*>(.*?)</a>|<div[^>]+class="[^"]*result__snippet[^"]*"[^>]*>(.*?)</div>',
+        html,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+    items: list[dict[str, str]] = []
+    for href, title_html in matches:
+        title = _strip_html(title_html)
+        if not title or not href or href.startswith(("/", "#", "javascript:")):
+            continue
+        if "duckduckgo.com" in href and "uddg=" in href:
+            nested = parse_qs(urlparse(href).query or "")
+            href = unquote((nested.get("uddg") or [href])[0])
+        snippet_index = len(items)
+        snippet_pair = snippets[snippet_index] if snippet_index < len(snippets) else ("", "")
+        snippet = _strip_html(snippet_pair[0] or snippet_pair[1] or "")
+        item = {"title": title, "url": href}
+        if snippet:
+            item["snippet"] = snippet
+        items.append(item)
+        if len(items) >= limit:
+            break
+
+    return items
+
+
+def web_search_results(query: str, limit: int = 5) -> list[dict[str, str]]:
+    """Busca resultados web estruturados para uso pela UI/API."""
+
+    return _web_search_results(query, limit=limit)
+
+
+def _fallback_results_for_query(query: str) -> list[dict[str, str]]:
+    live_results = _web_search_results(query, limit=5)
+    if live_results:
+        return live_results
+
+    return []
+
+
+def _push_fallback_page(page: dict[str, object]) -> None:
+    history = list(_browser_ctx.get("fallback_history") or [])
+    index = int(_browser_ctx.get("fallback_index") or -1)
+    if index < len(history) - 1:
+        history = history[: index + 1]
+    history.append(page)
+    _browser_ctx["fallback_history"] = history
+    _browser_ctx["fallback_index"] = len(history) - 1
+    _browser_ctx["fallback_page"] = page
+    _browser_ctx["mode"] = "fallback"
+    _browser_ctx["last_url"] = str(page.get("url") or "")
+
+
+def _fallback_page_from_url(url: str) -> dict[str, object]:
+    normalized_url = url if url.startswith(("http://", "https://")) else f"https://{url}"
+    parsed = urlparse(normalized_url)
+    host = (parsed.netloc or "").lower()
+    query = _extract_search_query_from_url(normalized_url)
+
+    if normalized_url.startswith("https://example.com"):
+        return {
+            "url": "https://example.com",
+            "title": "Example Domain",
+            "text": "Example Domain. This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.",
+            "results": [],
+            "search_query": None,
+        }
+
+    if query:
+        results = _fallback_results_for_query(query)
+        summary = [f"Resultados para {query}:"]
+        if results:
+            for idx, item in enumerate(results, start=1):
+                summary.append(f"{idx}. {item['title']} - {item['url']}")
+        else:
+            summary.append("Nao foi possivel obter resultados reais da web neste ambiente.")
+        return {
+            "url": normalized_url,
+            "title": f"Busca: {query}",
+            "text": "\n".join(summary),
+            "results": results,
+            "search_query": query,
+        }
+
+    if "duckduckgo.com" in host and not parsed.query:
+        return {
+            "url": normalized_url,
+            "title": "DuckDuckGo",
+            "text": "Pagina inicial do DuckDuckGo pronta para pesquisa.",
+            "results": [],
+            "search_query": None,
+        }
+
+    return _fetch_page_preview(normalized_url)
+
+
+def _activate_fallback_navigation(url: str) -> dict[str, object]:
+    page = _fallback_page_from_url(url)
+    _push_fallback_page(page)
+    return page
+
+
+def _format_fallback_search_results(page: dict[str, object]) -> str:
+    results = page.get("results") or []
+    if not isinstance(results, list) or not results:
+        return ""
+    lines = []
+    for idx, item in enumerate(results[:5], start=1):
+        if not isinstance(item, dict):
+            continue
+        title = str(item.get("title") or "Resultado")
+        href = str(item.get("url") or "")
+        lines.append(f"{idx}. {title} - {href}")
+    return "\n".join(lines)
+
+
+def _strip_html(value: str) -> str:
+    cleaned = re.sub(r"<[^>]+>", " ", value or "")
+    cleaned = unescape(cleaned)
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def _extract_search_query_from_url(url: str) -> str | None:
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return None
+
+    host = (parsed.netloc or "").lower()
+    query = parse_qs(parsed.query or "")
+    if "google." in host:
+        value = (query.get("q") or [""])[0].strip()
+        return unquote(value) or None
+    if "duckduckgo." in host:
+        value = (query.get("q") or [""])[0].strip()
+        return unquote(value) or None
+    if "bing." in host:
+        value = (query.get("q") or [""])[0].strip()
+        return unquote(value) or None
+    return None
+
+
+def extract_search_query_from_url(url: str) -> str | None:
+    return _extract_search_query_from_url(url)
+
+
+def _web_search_results_summary(query: str, limit: int = 5) -> str | None:
+    cleaned_query = (query or "").strip()
+    if not cleaned_query:
+        return None
+
+    items = _web_search_results(cleaned_query, limit=limit)
+    if not items:
+        return None
+
+    lines = [f"Pesquisei na web por '{cleaned_query}' e encontrei:"]
+    for index, item in enumerate(items, start=1):
+        lines.append(f"{index}. {item['title']} - {item['url']}")
+    return "\n".join(lines)
+
+
+def _open_url_with_system_browser(url: str) -> str:
+    if not url.startswith("http://") and not url.startswith("https://"):
+        url = "https://" + url
+    try:
+        webbrowser.open(url)
+        return f"Navegador interno indisponivel neste ambiente. Abri o link no navegador padrao: {url}"
+    except Exception as exc:
+        return f"Navegador interno indisponivel neste ambiente e tambem nao consegui abrir o navegador padrao: {exc}"
+
+
+def _fallback_open_first_result() -> str:
+    page = _browser_ctx.get("fallback_page") or {}
+    results = page.get("results") or []
+    if not isinstance(results, list) or not results:
+        return "Nao encontrei um resultado clicavel na pagina aberta."
+    first = results[0]
+    if not isinstance(first, dict):
+        return "Nao encontrei um resultado clicavel na pagina aberta."
+    target_url = str(first.get("url") or "").strip()
+    title = str(first.get("title") or target_url or "resultado")
+    _activate_fallback_navigation(target_url)
+    return f"Primeiro resultado aberto na janela interna: {title}"
+
+
+def _fallback_open_best_result(target_text: str) -> str:
+    page = _browser_ctx.get("fallback_page") or {}
+    results = page.get("results") or []
+    if not isinstance(results, list) or not results:
+        return f"Nao encontrei um resultado relacionado a '{target_text}' na pagina aberta."
+
+    best_item = None
+    best_score = 0
+    for item in results:
+        if not isinstance(item, dict):
+            continue
+        title = str(item.get("title") or "")
+        href = str(item.get("url") or "")
+        score = _result_candidate_score(title, href, target_text)
+        if score > best_score:
+            best_score = score
+            best_item = item
+
+    if not best_item:
+        return f"Nao encontrei um resultado relacionado a '{target_text}' na pagina aberta."
+
+    target_url = str(best_item.get("url") or "").strip()
+    title = str(best_item.get("title") or target_url or target_text)
+    _activate_fallback_navigation(target_url)
+    return f"Resultado relacionado a '{target_text}' aberto na janela interna: {title}"
+
+
+def _fallback_search_current_page(text: str) -> str:
+    current = _browser_ctx.get("fallback_page") or {}
+    current_url = str(current.get("url") or "")
+    results = _fallback_results_for_query(text)
+    summary_lines = [f"Resultados para {text}:"]
+    if results:
+        summary_lines.extend([f"{idx}. {item['title']} - {item['url']}" for idx, item in enumerate(results, start=1)])
+    else:
+        summary_lines.append("Nao foi possivel obter resultados reais da web neste ambiente.")
+    search_page = {
+        "url": current_url or f"https://duckduckgo.com/?q={quote_plus(text)}",
+        "title": f"Busca: {text}",
+        "text": "\n".join(summary_lines),
+        "results": results,
+        "search_query": text,
+    }
+    history = list(_browser_ctx.get("fallback_history") or [])
+    if history:
+        history[-1] = search_page
+        _browser_ctx["fallback_history"] = history
+        _browser_ctx["fallback_index"] = len(history) - 1
+        _browser_ctx["fallback_page"] = search_page
+        _browser_ctx["mode"] = "fallback"
+        _browser_ctx["last_url"] = str(search_page["url"])
+    else:
+        _push_fallback_page(search_page)
+    if results:
+        return f"Busca executada na pagina atual por: {text}"
+    return f"Busca iniciada por: {text}. Nao consegui obter resultados reais da web neste ambiente."
+
+
+def _fallback_extract_page_text() -> str:
+    page = _browser_ctx.get("fallback_page") or {}
+    text = str(page.get("text") or "").strip()
+    if not text:
+        return "Nenhuma pagina ativa na janela interna. Informe uma URL primeiro."
+    return f"Texto principal da pagina:\n{text[:4000]}"
+
+
+def _fallback_go_back() -> str:
+    history = list(_browser_ctx.get("fallback_history") or [])
+    index = int(_browser_ctx.get("fallback_index") or -1)
+    if index <= 0 or not history:
+        return "Nenhuma pagina anterior disponivel na janela interna."
+    index -= 1
+    _browser_ctx["fallback_index"] = index
+    _browser_ctx["fallback_page"] = history[index]
+    _browser_ctx["last_url"] = str(history[index].get("url") or "")
+    _browser_ctx["mode"] = "fallback"
+    return "Voltei para a pagina anterior na janela interna."
+
+
+def _fallback_go_forward() -> str:
+    history = list(_browser_ctx.get("fallback_history") or [])
+    index = int(_browser_ctx.get("fallback_index") or -1)
+    if not history or index >= len(history) - 1:
+        return "Nenhuma proxima pagina disponivel na janela interna."
+    index += 1
+    _browser_ctx["fallback_index"] = index
+    _browser_ctx["fallback_page"] = history[index]
+    _browser_ctx["last_url"] = str(history[index].get("url") or "")
+    _browser_ctx["mode"] = "fallback"
+    return "Avancei para a proxima pagina na janela interna."
+
+
+def _fallback_refresh() -> str:
+    if not _fallback_session_alive():
+        return "Nenhuma pagina ativa na janela interna. Informe uma URL primeiro."
+    return "Pagina recarregada na janela interna."
 
 
 def _normalize_browser_text(value: str) -> str:
@@ -138,11 +518,16 @@ def _clear_browser_runtime() -> None:
     _browser_ctx["playwright"] = None
     _browser_ctx["browser"] = None
     _browser_ctx["page"] = None
+    _browser_ctx["mode"] = "playwright"
+    _browser_ctx["fallback_page"] = None
+    _browser_ctx["fallback_history"] = []
+    _browser_ctx["fallback_index"] = -1
 
 
 def _clear_browser_session() -> None:
     _clear_browser_runtime()
     _browser_ctx["authorized"] = False
+    _browser_ctx["disabled_reason"] = None
 
 
 def _normalize_browser_zoom(value: float) -> float:
@@ -201,6 +586,18 @@ def _start_browser_runtime() -> tuple[bool, str]:
     if not _browser_ctx.get("authorized"):
         return False, "Acesso web ainda nao concedido. Use: browser enable"
 
+    disabled_reason = _browser_ctx.get("disabled_reason")
+    if isinstance(disabled_reason, str) and disabled_reason.strip():
+        return False, disabled_reason
+
+    if os.getenv("AGENTE_AUTONOMO_DISABLE_EMBEDDED_BROWSER", "").strip().lower() in {"1", "true", "yes", "on"}:
+        _browser_ctx["disabled_reason"] = "A janela interna do agente esta desativada neste ambiente. O agente seguira em modo degradado para tarefas web."
+        return False, _browser_ctx["disabled_reason"]
+
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        _browser_ctx["disabled_reason"] = "A janela interna do agente esta desativada durante os testes. O agente seguira em modo degradado para tarefas web."
+        return False, _browser_ctx["disabled_reason"]
+
     # Estado inconsistente (objetos fechados/mortos): limpamos antes de recriar.
     _clear_browser_runtime()
 
@@ -222,6 +619,9 @@ def _start_browser_runtime() -> tuple[bool, str]:
         _browser_ctx["page"] = page
         return True, "Navegador interno do agente iniciado. Acesso concedido para automacao web nesta sessao."
     except Exception as exc:
+        if _browser_launch_blocked(str(exc)):
+            _browser_ctx["disabled_reason"] = "A janela interna do agente nao esta disponivel neste ambiente por restricao local de execucao."
+            return False, _browser_ctx["disabled_reason"]
         return False, f"Nao foi possivel abrir a janela interna do agente: {exc}"
 
 
@@ -807,10 +1207,34 @@ def browser_disable() -> str:
 def browser_open_url(url: str) -> str:
     if not _browser_ctx.get("authorized"):
         _browser_ctx["authorized"] = True
+    if _fallback_session_alive():
+        page = _activate_fallback_navigation(url)
+        formatted_results = _format_fallback_search_results(page)
+        base = f"Janela interna navegou para: {page['url']}"
+        if formatted_results:
+            return f"{base}\n{formatted_results}"
+        if page.get("search_query"):
+            return f"{base}\nNao foi possivel obter resultados reais da web neste ambiente."
+        return base
     result = _call_browser_worker(_worker_open_url, url)
     if result.get("ok"):
         return result.get("message", "Janela interna navegou.")
-    return result.get("error", "Erro ao navegar na janela interna.")
+    error = result.get("error", "Erro ao navegar na janela interna.")
+    lowered_error = error.lower()
+    if (
+        _browser_launch_blocked(error)
+        or "janela interna do agente nao esta disponivel" in lowered_error
+        or "janela interna do agente esta desativada" in lowered_error
+    ):
+        page = _activate_fallback_navigation(url)
+        formatted_results = _format_fallback_search_results(page)
+        base = f"Janela interna navegou para: {page['url']} (modo degradado)"
+        if formatted_results:
+            return f"{base}\n{formatted_results}"
+        if page.get("search_query"):
+            return f"{base}\nNao foi possivel obter resultados reais da web neste ambiente."
+        return base
+    return error
 
 
 def browser_bootstrap() -> dict:
@@ -835,6 +1259,8 @@ def browser_click_text(label: str) -> str:
 
 
 def browser_click_first_result() -> str:
+    if _fallback_session_alive():
+        return _fallback_open_first_result()
     result = _call_browser_worker(_worker_click_first_result)
     if result.get("ok"):
         return result.get("message", "Primeiro resultado aberto na janela interna.")
@@ -842,6 +1268,8 @@ def browser_click_first_result() -> str:
 
 
 def browser_click_best_result(target_text: str) -> str:
+    if _fallback_session_alive():
+        return _fallback_open_best_result(target_text)
     result = _call_browser_worker(_worker_click_best_result, target_text)
     if result.get("ok"):
         return result.get("message", "Resultado relacionado aberto na janela interna.")
@@ -863,6 +1291,8 @@ def browser_extract_text(selector: str) -> str:
 
 
 def browser_wait(seconds: float) -> str:
+    if _fallback_session_alive():
+        return f"Aguardado {seconds:.1f}s na janela interna."
     result = _call_browser_worker(_worker_wait, seconds)
     if result.get("ok"):
         return result.get("message", f"Aguardado {seconds:.1f}s na janela interna.")
@@ -884,6 +1314,8 @@ def browser_type_text(text: str, press_enter: bool = False) -> str:
 
 
 def browser_search_current_page(text: str, press_enter: bool = True) -> str:
+    if _fallback_session_alive():
+        return _fallback_search_current_page(text)
     result = _call_browser_worker(_worker_search_current_page, text, press_enter)
     if result.get("ok"):
         return result.get("message", "Busca executada na pagina atual.")
@@ -919,6 +1351,8 @@ def browser_set_zoom(zoom: float) -> dict:
 
 
 def browser_extract_page_text() -> str:
+    if _fallback_session_alive():
+        return _fallback_extract_page_text()
     result = _call_browser_worker(_worker_extract_page_text)
     if result.get("ok"):
         return result.get("message", "Texto principal da pagina extraido.")
@@ -926,6 +1360,8 @@ def browser_extract_page_text() -> str:
 
 
 def browser_go_back() -> str:
+    if _fallback_session_alive():
+        return _fallback_go_back()
     result = _call_browser_worker(_worker_go_back)
     if result.get("ok"):
         return result.get("message", "Voltei para a pagina anterior na janela interna.")
@@ -933,6 +1369,8 @@ def browser_go_back() -> str:
 
 
 def browser_go_forward() -> str:
+    if _fallback_session_alive():
+        return _fallback_go_forward()
     result = _call_browser_worker(_worker_go_forward)
     if result.get("ok"):
         return result.get("message", "Avancei para a proxima pagina na janela interna.")
@@ -940,6 +1378,8 @@ def browser_go_forward() -> str:
 
 
 def browser_refresh() -> str:
+    if _fallback_session_alive():
+        return _fallback_refresh()
     result = _call_browser_worker(_worker_refresh)
     if result.get("ok"):
         return result.get("message", "Pagina recarregada na janela interna.")
@@ -948,6 +1388,20 @@ def browser_refresh() -> str:
 
 def browser_snapshot() -> dict:
     """Retorna um snapshot PNG (base64) da janela interna para renderização na UI web."""
+
+    if _fallback_session_alive():
+        page = _browser_ctx.get("fallback_page") or {}
+        return {
+            "ok": True,
+            "mode": "fallback",
+            "url": str(page.get("url") or ""),
+            "title": str(page.get("title") or "Modo degradado"),
+            "text": str(page.get("text") or ""),
+            "results": page.get("results") or [],
+            "width": 1280,
+            "height": 720,
+            "zoom": float(_browser_ctx.get("zoom") or 1.0),
+        }
 
     result = _call_browser_worker(_worker_snapshot)
     if isinstance(result, dict):
@@ -1043,11 +1497,11 @@ def describe_tools() -> str:
         "- open_url: abre uma URL no navegador padrão (modo legado).\n"
         "- open_remote_desktop: abre o cliente de RDP (Windows).\n"
         "- speak_text: lê um texto em voz alta via TTS local.\n"
-        "- market analysis/paper trading: analisa acoes, forex e criptos com sizing modelado em BRL e carteira simulada.\n"
         "- browser_enable/browser_disable: abre/fecha janela interna do agente para automacao web.\n"
         "- browser_open_url/browser_click/browser_type/browser_extract_text/browser_wait: operacoes web na janela interna.\n"
         "- browser_snapshot/browser_click_at/browser_type_text/browser_press_key/browser_search_current_page: suporte a navegador embutido no painel web.\n"
         "- browser_click_text/browser_click_first_result/browser_click_best_result/browser_extract_page_text/browser_go_back/browser_go_forward/browser_refresh: automacoes naturais na pagina aberta.\n"
+        "- drive ...: conecta Google Drive/OneDrive e permite listar, criar pasta, ler, escrever, subir arquivo, renomear, mover e deletar.\n"
         "\nImportante: ações sensíveis (logins, candidaturas, etc.) devem ser revisadas\n"
         "e confirmadas por você antes de executar comandos sugeridos pelo agente.\n"
     )

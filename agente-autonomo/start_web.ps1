@@ -1,18 +1,30 @@
 param(
-  [int]$Port = 8012
+  [int]$Port = 8012,
+  [string]$ListenHost = "127.0.0.1"
 )
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 $env:PIP_DISABLE_PIP_VERSION_CHECK = "1"
-if (Get-Variable -Name PSNativeCommandUseErrorActionPreference -ErrorAction SilentlyContinue) {
-  $PSNativeCommandUseErrorActionPreference = $false
-}
-
-Write-Host "[agente-autonomo] Iniciando servidor web na porta $Port..." -ForegroundColor Cyan
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $root
+
+$PythonExe = $env:AGENTE_AUTONOMO_PYTHON
+if (-not $PythonExe) {
+  $cmd = Get-Command python -ErrorAction SilentlyContinue
+  if ($cmd) {
+    $PythonExe = $cmd.Source
+  }
+}
+if (-not $PythonExe) {
+  throw "Python nao encontrado. Instale Python 3.10+ ou defina AGENTE_AUTONOMO_PYTHON."
+}
+
+function Test-PythonImport([string]$Module) {
+  & $PythonExe -W ignore -c "import $Module" *> $null
+  return $LASTEXITCODE -eq 0
+}
 
 # Carrega variaveis de ambiente a partir de .env (se existir)
 if (Test-Path ".env") {
@@ -31,51 +43,47 @@ if (Test-Path ".env") {
   if ($env:PORT -and -not $PSBoundParameters.ContainsKey("Port")) {
     [int]$Port = $env:PORT
   }
+  if ($env:AGENTE_AUTONOMO_HOST -and -not $PSBoundParameters.ContainsKey("ListenHost")) {
+    $ListenHost = $env:AGENTE_AUTONOMO_HOST
+  }
 }
+
+Write-Host "[agente-autonomo] Iniciando servidor web em $ListenHost`:$Port..." -ForegroundColor Cyan
 
 # Ativa venv se existir (opcional)
 if (Test-Path ".venv/Scripts/Activate.ps1") {
   . .\.venv\Scripts\Activate.ps1
 }
 
-$pythonExe = "c:/python314/python.exe"
-if (-not (Test-Path $pythonExe)) {
-  $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
-  if ($pythonCmd) {
-    $pythonExe = $pythonCmd.Source
-  }
-  else {
-    throw "Python nao encontrado. Configure c:/python314/python.exe ou instale python no PATH."
-  }
-}
-
-function Invoke-NativeInstallStep {
-  param(
-    [Parameter(Mandatory = $true)]
-    [string[]]$Args,
-    [Parameter(Mandatory = $true)]
-    [string]$FailureMessage
-  )
-
-  $previousPreference = $ErrorActionPreference
-  $ErrorActionPreference = "Continue"
-  try {
-    & $pythonExe @Args 1> $null 2> $null
-  }
-  finally {
-    $ErrorActionPreference = $previousPreference
-  }
-
-  if ($LASTEXITCODE -ne 0) {
-    throw $FailureMessage
-  }
+if (-not $env:AGENTE_AUTONOMO_DISABLE_EMBEDDED_BROWSER) {
+  $env:AGENTE_AUTONOMO_DISABLE_EMBEDDED_BROWSER = "0"
 }
 
 # Garante dependências mínimas
-Invoke-NativeInstallStep -Args @("-m", "pip", "install", "--disable-pip-version-check", "--no-warn-script-location", "-q", "-e", ".") -FailureMessage "Falha ao instalar dependencias base."
-Invoke-NativeInstallStep -Args @("-m", "pip", "install", "--disable-pip-version-check", "--no-warn-script-location", "-q", "-e", ".[llms]") -FailureMessage "Falha ao instalar dependencias opcionais de LLM."
-Invoke-NativeInstallStep -Args @("-m", "pip", "install", "--disable-pip-version-check", "--no-warn-script-location", "-q", "fastapi", "uvicorn") -FailureMessage "Falha ao instalar dependencias do servidor web."
-Invoke-NativeInstallStep -Args @("-m", "pip", "install", "--disable-pip-version-check", "--no-warn-script-location", "-q", "playwright") -FailureMessage "Falha ao instalar Playwright."
-Invoke-NativeInstallStep -Args @("-m", "playwright", "install", "chromium") -FailureMessage "Falha ao instalar o Chromium do Playwright."
+if (-not (Test-PythonImport "agent_core")) {
+  & $PythonExe -m pip install --disable-pip-version-check --no-warn-script-location --no-build-isolation -q -e . *> $null
+  if ($LASTEXITCODE -ne 0) { throw "Falha ao instalar dependencias base." }
+}
 
-& $pythonExe -m uvicorn web.server:app --host 127.0.0.1 --port $Port
+if ((-not (Test-PythonImport "anthropic")) -or (-not (Test-PythonImport "google.generativeai"))) {
+  & $PythonExe -m pip install --disable-pip-version-check --no-warn-script-location --no-build-isolation -q -e .[llms] *> $null
+  if ($LASTEXITCODE -ne 0) { throw "Falha ao instalar dependencias opcionais de LLM." }
+}
+
+if ((-not (Test-PythonImport "fastapi")) -or (-not (Test-PythonImport "uvicorn"))) {
+  & $PythonExe -m pip install --disable-pip-version-check --no-warn-script-location -q fastapi uvicorn *> $null
+  if ($LASTEXITCODE -ne 0) { throw "Falha ao instalar dependencias do servidor web." }
+}
+
+if (-not (Test-PythonImport "playwright")) {
+  & $PythonExe -m pip install --disable-pip-version-check --no-warn-script-location -q playwright *> $null
+  if ($LASTEXITCODE -ne 0) { throw "Falha ao instalar Playwright." }
+}
+
+$playwrightRoot = Join-Path $env:LOCALAPPDATA "ms-playwright"
+if (-not (Test-Path $playwrightRoot)) {
+  & $PythonExe -m playwright install chromium *> $null
+  if ($LASTEXITCODE -ne 0) { throw "Falha ao instalar o Chromium do Playwright." }
+}
+
+& $PythonExe -m uvicorn web.server:app --host $ListenHost --port $Port

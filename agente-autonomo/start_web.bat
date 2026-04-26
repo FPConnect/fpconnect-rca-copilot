@@ -3,8 +3,7 @@ setlocal EnableDelayedExpansion
 
 set PORT=8012
 if not "%1"=="" set PORT=%1
-
-echo [agente-autonomo] Iniciando servidor web na porta %PORT%...
+set LISTEN_HOST=127.0.0.1
 
 set SCRIPT_DIR=%~dp0
 cd /d "%SCRIPT_DIR%"
@@ -24,15 +23,31 @@ if exist ".env" (
 	if "%1"=="" if not "%PORT%"=="" set PORT=%PORT%
 )
 
+if not "%AGENTE_AUTONOMO_HOST%"=="" set "LISTEN_HOST=%AGENTE_AUTONOMO_HOST%"
+
+echo [agente-autonomo] Iniciando servidor web em %LISTEN_HOST%:%PORT%...
+
 REM Dependencias minimas (silencioso)
-c:\python314\python.exe -m pip install -e . >NUL 2>NUL
-c:\python314\python.exe -m pip install -e .[llms] >NUL 2>NUL
-c:\python314\python.exe -m pip install fastapi uvicorn >NUL 2>NUL
-c:\python314\python.exe -m pip install playwright >NUL 2>NUL
-c:\python314\python.exe -m playwright install chromium >NUL 2>NUL
+set "PYTHON_EXE=%AGENTE_AUTONOMO_PYTHON%"
+if "%PYTHON_EXE%"=="" set "PYTHON_EXE=python"
+if "%AGENTE_AUTONOMO_DISABLE_EMBEDDED_BROWSER%"=="" set "AGENTE_AUTONOMO_DISABLE_EMBEDDED_BROWSER=0"
+
+"%PYTHON_EXE%" -c "import agent_core" >NUL 2>NUL
+if errorlevel 1 "%PYTHON_EXE%" -m pip install --no-build-isolation -e . >NUL 2>NUL
+
+"%PYTHON_EXE%" -c "import anthropic, google.generativeai" >NUL 2>NUL
+if errorlevel 1 "%PYTHON_EXE%" -m pip install --no-build-isolation -e .[llms] >NUL 2>NUL
+
+"%PYTHON_EXE%" -c "import fastapi, uvicorn" >NUL 2>NUL
+if errorlevel 1 "%PYTHON_EXE%" -m pip install fastapi uvicorn >NUL 2>NUL
+
+"%PYTHON_EXE%" -c "import playwright" >NUL 2>NUL
+if errorlevel 1 "%PYTHON_EXE%" -m pip install playwright >NUL 2>NUL
+
+if not exist "%LOCALAPPDATA%\ms-playwright" "%PYTHON_EXE%" -m playwright install chromium >NUL 2>NUL
 
 start "" "http://localhost:%PORT%/"
 
-c:\python314\python.exe -m uvicorn web.server:app --host 127.0.0.1 --port %PORT%
+"%PYTHON_EXE%" -m uvicorn web.server:app --host %LISTEN_HOST% --port %PORT%
 
 endlocal

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import agent_core.agent as agent_module
 from agent_core.agent import AutonomousAgent
 from agent_core.config import settings
 from agent_core.knowledge import KnowledgeBase
 from agent_core.memory import MemoryStore
+from agent_core import tools as tools_module
 from agent_core.tools import _result_candidate_score
 
 
@@ -74,7 +76,6 @@ def test_resources_intent_returns_human_style_answer(tmp_path: Path) -> None:
         lowered = answer.lower()
         assert "posso te ajudar" in lowered
         assert "6 frentes" in lowered
-        assert "paper trading" in lowered
         assert OLD_ERROR not in lowered
     finally:
         restore_settings(original_memory_path)
@@ -177,198 +178,6 @@ def test_stars_question_has_direct_estimate_answer(tmp_path: Path) -> None:
         restore_settings(original_memory_path)
 
 
-def test_beginner_stock_market_question_has_direct_answer(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("Como faço para investir na bolsa?", state)
-        lowered = answer.lower()
-        assert "corretora" in lowered
-        assert "divers" in lowered
-        assert "estilo copiloto" not in lowered
-        assert "faltou contexto" not in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_learning_to_invest_question_has_direct_answer(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("como faço pra aprender a investir?", state)
-        lowered = answer.lower()
-        assert "renda fixa" in lowered
-        assert "trilha iniciante" in lowered
-        assert "estilo copiloto" not in lowered
-        assert "faltou contexto" not in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_small_amount_investment_question_has_actionable_answer(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("quero investir 30 reais agora, como faco?", state)
-        lowered = answer.lower()
-        assert "tesouro selic" in lowered or "cdb" in lowered
-        assert "corretora" in lowered
-        assert "consigo responder perguntas amplas" not in lowered
-        assert "faltou contexto" not in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_quero_aprender_phrase_does_not_use_generic_fallback(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("ok, vamos la, quero aprender", state)
-        lowered = answer.lower()
-        assert "estilo copiloto" not in lowered
-        assert "faltou contexto" not in lowered
-        assert "vamos aprender" in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_learning_menu_numeric_choice_routes_to_investments(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        menu_answer = agent.handle_command("ok, vamos la, quero aprender", state)
-        assert "escolha um caminho" in menu_answer.lower()
-
-        answer = agent.handle_command("2", state)
-        lowered = answer.lower()
-        assert "renda fixa" in lowered
-        assert "tesouro selic" in lowered
-        assert "pesquisei na web e encontrei" not in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_bare_numeric_input_without_menu_does_not_use_web_lookup(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("2", state)
-        lowered = answer.lower()
-        assert "pesquisei na web e encontrei" not in lowered
-        assert "recebi apenas um numero" in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_ok_vamos_para_trilha_returns_study_track(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("ok, vamos para a trilha", state)
-        lowered = answer.lower()
-        assert "trilha iniciante" in lowered or "trilha de mercado" in lowered
-        assert "faltou contexto" not in lowered
-        assert "estilo copiloto" not in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_renda_fixa_question_has_direct_answer(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("O que e renda fixa?", state)
-        lowered = answer.lower()
-        assert "tesouro selic" in lowered
-        assert "cdb" in lowered
-        assert "faltou contexto" not in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_selic_and_cdi_question_has_direct_answer(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("Qual a diferenca entre Selic e CDI?", state)
-        lowered = answer.lower()
-        assert "selic" in lowered
-        assert "cdi" in lowered
-        assert "ipca" in lowered
-        assert "faltou contexto" not in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_valuation_question_has_direct_answer(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("O que e valuation?", state)
-        lowered = answer.lower()
-        assert "pl" in lowered or "p/l" in lowered
-        assert "ev/ebitda" in lowered
-        assert "faltou contexto" not in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_trading_style_question_has_direct_answer(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("Qual a diferenca entre day trade, swing trade e buy and hold?", state)
-        lowered = answer.lower()
-        assert "day trade" in lowered
-        assert "swing trade" in lowered
-        assert "buy and hold" in lowered
-        assert "faltou contexto" not in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_debentures_question_is_answered_from_finance_knowledge(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("O que sao debentures?", state)
-        lowered = answer.lower()
-        assert "titulos de divida" in lowered or "títulos de dívida" in lowered
-        assert "fgc" in lowered
-        assert "faltou contexto" not in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_natural_language_finance_study_request_returns_beginner_track(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        answer = agent.handle_command("Quero estudar mercado financeiro", state)
-        lowered = answer.lower()
-        assert "trilha iniciante" in lowered
-        assert "reserva de emergencia" in lowered
-        assert "faltou contexto" not in lowered
-    finally:
-        restore_settings(original_memory_path)
-
-
-def test_curated_finance_knowledge_is_seeded_into_local_db(tmp_path: Path) -> None:
-    agent, original_memory_path = build_agent(tmp_path)
-    try:
-        state = agent.load_state()
-        _ = agent.handle_command("O que sao debentures?", state)
-
-        kb = KnowledgeBase(tmp_path / "knowledge.db")
-        try:
-            hits = kb.search("o que sao debentures", limit=5, min_score=0.05)
-            assert any("debentures" in item.question.lower() for item in hits)
-        finally:
-            kb.close()
-    finally:
-        restore_settings(original_memory_path)
-
-
 def test_browser_enable_command_is_handled(tmp_path: Path) -> None:
     agent, original_memory_path = build_agent(tmp_path)
     try:
@@ -445,6 +254,76 @@ def test_direct_fpconnect_access_phrase_suggests_opening_local_app(tmp_path: Pat
         restore_settings(original_memory_path)
 
 
+def test_cloud_status_command_is_handled(tmp_path: Path, monkeypatch) -> None:
+    agent, original_memory_path = build_agent(tmp_path)
+    monkeypatch.setattr(agent_module, "cloud_drive_status_summary", lambda: "Estado cloud ok")
+    try:
+        state = agent.load_state()
+        answer = agent.handle_command("drive status", state)
+        assert answer == "Estado cloud ok"
+    finally:
+        restore_settings(original_memory_path)
+
+
+def test_cloud_connect_natural_language_is_handled(tmp_path: Path, monkeypatch) -> None:
+    agent, original_memory_path = build_agent(tmp_path)
+    monkeypatch.setattr(agent_module, "connect_cloud_provider", lambda provider: f"oauth {provider}")
+    try:
+        state = agent.load_state()
+        answer = agent.handle_command("conecte o google drive", state)
+        assert answer == "oauth google"
+    finally:
+        restore_settings(original_memory_path)
+
+
+def test_cloud_write_command_is_handled(tmp_path: Path, monkeypatch) -> None:
+    agent, original_memory_path = build_agent(tmp_path)
+    monkeypatch.setattr(
+        agent_module,
+        "cloud_drive_write_text",
+        lambda provider, path, content: f"write {provider} {path} {content}",
+    )
+    try:
+        state = agent.load_state()
+        answer = agent.handle_command("drive write google /docs/teste.txt => ola mundo", state)
+        assert answer == "write google /docs/teste.txt ola mundo"
+    finally:
+        restore_settings(original_memory_path)
+
+
 def test_result_score_matches_synonyms_for_download_and_browser() -> None:
     score = _result_candidate_score("Download Browser Free", "https://example.com/download", "baixar navegador gratis")
     assert score > 0
+
+
+def test_browser_open_url_returns_search_results_when_embedded_browser_is_blocked(monkeypatch) -> None:
+    monkeypatch.setattr(
+        tools_module,
+        "_call_browser_worker",
+        lambda fn, *args: {"ok": False, "error": "A janela interna do agente nao esta disponivel neste ambiente por restricao local de execucao."},
+    )
+    monkeypatch.setattr(
+        tools_module,
+        "_web_search_results",
+        lambda query, limit=5: [{"title": "Resultado", "url": "https://example.com"}],
+    )
+
+    answer = tools_module.browser_open_url("https://www.google.com/search?q=flavio+pimenta+da+cruz")
+
+    assert "janela interna navegou para" in answer.lower()
+    assert "https://example.com" in answer
+
+
+def test_browser_open_url_reports_embedded_and_backend_limits_for_search_when_no_results_are_available(monkeypatch) -> None:
+    monkeypatch.setattr(
+        tools_module,
+        "_call_browser_worker",
+        lambda fn, *args: {"ok": False, "error": "A janela interna do agente nao esta disponivel neste ambiente por restricao local de execucao."},
+    )
+    monkeypatch.setattr(tools_module, "_web_search_results", lambda query, limit=5: [])
+
+    answer = tools_module.browser_open_url("https://www.google.com/search?q=flavio+pimenta+da+cruz")
+
+    lowered = answer.lower()
+    assert "janela interna navegou para" in lowered
+    assert "nao foi possivel obter resultados reais da web neste ambiente" in lowered

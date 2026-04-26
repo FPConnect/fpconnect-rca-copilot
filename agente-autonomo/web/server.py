@@ -1,16 +1,24 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import os
+from urllib.parse import urlencode
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from pydantic import BaseModel, Field
 from pathlib import Path
 
-from agent_core.background import ensure_hidden_learning_loop, ensure_hidden_qa_loop
-from agent_core.agent import _is_profile_intent_without_criteria, classify_agent_mode_intent, create_agent, is_profile_based_intent, plan_agent_mode_browser_command, plan_agent_mode_contextual_workflow, plan_agent_mode_llm_browser_command, plan_agent_mode_login_workflow, plan_agent_mode_web_command, plan_agent_mode_workflow
-from agent_core.finance_knowledge import finance_knowledge_entries, finance_study_track_entries
+from agent_core.background import ensure_hidden_qa_loop
+from agent_core.agent import create_agent, plan_agent_mode_browser_command, plan_agent_mode_web_command, plan_agent_mode_workflow
+from agent_core.cloud_drives import (
+    CloudDriveError,
+    complete_cloud_oauth,
+    disconnect_cloud_provider,
+    list_cloud_provider_statuses,
+    start_cloud_oauth,
+)
 from agent_core.memory import ConversationState
 from agent_core.tools import (
     browser_bootstrap,
@@ -24,12 +32,13 @@ from agent_core.tools import (
     browser_set_zoom,
     browser_snapshot,
     browser_type_text,
+    extract_search_query_from_url,
+    web_search_results,
 )
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     ensure_hidden_qa_loop()
-    ensure_hidden_learning_loop()
     yield
 
 
@@ -41,15 +50,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.middleware("http")
-async def no_cache_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "0"
-    return response
-
 static_dir = Path(__file__).parent / "static"
 static_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
@@ -59,13 +59,16 @@ class CommandRequest(BaseModel):
     input: str
     auto_accept: bool = False
     agent_mode: bool | None = None
-    login_context: dict | None = None
 
 
 class CommandResponse(BaseModel):
     reply: str
     auto_accept: bool
     agent_mode: bool
+    sources: list[dict[str, str]] = Field(default_factory=list)
+    workspace_visible: bool = False
+    workspace_title: str | None = None
+    activity: list[str] = Field(default_factory=list)
 
 
 class BrowserClickRequest(BaseModel):
@@ -92,6 +95,36 @@ class BrowserPasteRequest(BaseModel):
 
 class BrowserZoomRequest(BaseModel):
     zoom: float
+
+
+class CloudProvidersResponse(BaseModel):
+    providers: list[dict[str, object]]
+
+
+class CloudOauthStartResponse(BaseModel):
+    provider: str
+    auth_url: str
+
+
+class CloudDisconnectResponse(BaseModel):
+    ok: bool
+    message: str
+
+
+def _configured_public_base_url() -> str | None:
+    value = os.getenv("AGENTE_AUTONOMO_PUBLIC_BASE_URL", "").strip()
+    return value.rstrip("/") if value else None
+
+
+def _public_base_url_from_request(request: Request) -> str:
+    return _configured_public_base_url() or str(request.base_url).rstrip("/")
+
+
+def _cloud_callback_redirect(provider: str, status: str, message: str | None = None) -> RedirectResponse:
+    params = {"cloud_provider": provider, "cloud_status": status}
+    if message:
+        params["cloud_message"] = message
+    return RedirectResponse(url=f"/?{urlencode(params)}", status_code=303)
 
 
 def _find_last_suggested(state: ConversationState) -> str | None:
@@ -203,6 +236,75 @@ def _browser_snapshot_response(message: str, **extra: str) -> dict:
     return snap
 
 
+def _looks_like_workspace_task(text: str) -> bool:
+    lowered = text.lower()
+    return any(
+        token in lowered
+        for token in [
+            "pesquis",
+            "procure",
+            "busque",
+            "web",
+            "internet",
+            "site",
+            "pagina",
+            "página",
+            "linkedin",
+            "github",
+            "janela interna",
+            "browser:",
+            "abrir url:",
+            "resultado",
+        ]
+    )
+
+
+def _sources_from_snapshot(snapshot: dict | None) -> list[dict[str, str]]:
+    if not snapshot:
+        return []
+    raw = snapshot.get("results")
+    if not isinstance(raw, list):
+        return []
+    sources: list[dict[str, str]] = []
+    for item in raw[:5]:
+        if not isinstance(item, dict):
+            continue
+        title = str(item.get("title") or "").strip()
+        url = str(item.get("url") or "").strip()
+        if not title or not url:
+            continue
+        source = {"title": title, "url": url}
+        snippet = str(item.get("snippet") or "").strip()
+        if snippet:
+            source["snippet"] = snippet
+        sources.append(source)
+    return sources
+
+
+def _compose_search_reply(query: str, sources: list[dict[str, str]], executed: str) -> tuple[str, list[str]]:
+    activity = [f"Buscando na web por: {query}"]
+    if not sources:
+        return (
+            f"Fiz a busca por '{query}', mas nao consegui reunir resultados estruturados confiaveis neste ambiente agora.",
+            activity,
+        )
+
+    lines = [f"Pesquisei na web sobre '{query}' e organizei os principais resultados aqui."]
+    for index, item in enumerate(sources, start=1):
+        title = item.get("title", "Resultado")
+        url = item.get("url", "")
+        snippet = item.get("snippet", "")
+        line = f"{index}. {title}"
+        if snippet:
+            line += f" - {snippet}"
+        if url:
+            line += f" ({url})"
+        lines.append(line)
+    if executed:
+        activity.append(executed)
+    return ("\n".join(lines), activity)
+
+
 @app.post("/api/command", response_model=CommandResponse)
 def run_command(payload: CommandRequest) -> CommandResponse:
     """Endpoint mínimo para conversar com o agente-autonomo.
@@ -260,106 +362,69 @@ def run_command(payload: CommandRequest) -> CommandResponse:
         return CommandResponse(reply=reply, auto_accept=auto_accept, agent_mode=False)
 
     if agent_mode:
-        login_ctx = payload.login_context or {}
-        login_service = str(login_ctx.get("service") or "").strip()
-        login_user = str(login_ctx.get("username") or "").strip()
-        login_password = str(login_ctx.get("password") or "").strip()
-
-        # Hard guard: block vague profile-fit prompts before any planner/fallback can execute.
-        if _is_profile_intent_without_criteria(user_text):
-            reply = (
-                "Nao vou executar uma busca generica so com 'vagas'. Para buscar de acordo com seu perfil, preciso de contexto real, "
-                "como cargo, stack, senioridade ou um perfil salvo/aberto para eu analisar."
-            )
+        workflow_steps, workflow_note = plan_agent_mode_workflow(user_text)
+        if workflow_steps:
+            reply = _execute_agent_mode_steps(agent, state, workflow_steps, workflow_note)
             state.add("agent", reply)
             agent.save_state(state)
-            return CommandResponse(reply=reply, auto_accept=True, agent_mode=True)
-
-        intent = classify_agent_mode_intent(user_text, state)
-
-        if intent == "meta":
-            reply = (
-                "Entendi como uma instrucao sobre o comportamento do agente, nao como uma tarefa de navegador. "
-                "Nenhuma acao na workspace foi executada para evitar copiar o texto do chat literalmente."
+            snapshot = browser_snapshot()
+            return CommandResponse(
+                reply=reply,
+                auto_accept=True,
+                agent_mode=True,
+                sources=_sources_from_snapshot(snapshot),
+                workspace_visible=_looks_like_workspace_task(user_text) or bool(snapshot.get("url")),
+                workspace_title=str(snapshot.get("title") or "") or None,
+                activity=[workflow_note] if workflow_note else [],
             )
-            state.add("agent", reply)
-            agent.save_state(state)
-            return CommandResponse(reply=reply, auto_accept=True, agent_mode=True)
 
-        if intent == "login":
-            if not login_user or not login_password:
-                reply = "Nao encontrei credenciais salvas na workspace. Preencha servico, usuario e senha no cofre lateral e tente de novo."
-                state.add("agent", reply)
-                agent.save_state(state)
-                return CommandResponse(reply=reply, auto_accept=True, agent_mode=True)
-
-            login_steps, login_note = plan_agent_mode_login_workflow(user_text, login_service, login_user, login_password)
-            if login_steps:
-                reply = _execute_agent_mode_steps(agent, state, login_steps, login_note)
-                state.add("agent", reply)
-                agent.save_state(state)
-                return CommandResponse(reply=reply, auto_accept=True, agent_mode=True)
-
-        # For profile-based prompts, prefer contextual reasoning (LLM + current page)
-        # before deterministic keyword rules, to avoid generic searches like "vagas".
-        if intent == "workspace_task" and is_profile_based_intent(user_text):
-            llm_command, llm_note = plan_agent_mode_llm_browser_command(user_text, state)
-            if llm_command:
-                executed = agent.handle_command(llm_command, state)
-                reply = f"{llm_note}\n\n{executed}" if llm_note else executed
-                state.add("agent", reply)
-                agent.save_state(state)
-                return CommandResponse(reply=reply, auto_accept=True, agent_mode=True)
-
-        if intent == "workspace_task":
-            contextual_steps, contextual_note = plan_agent_mode_contextual_workflow(user_text, state)
-            if contextual_steps:
-                reply = _execute_agent_mode_steps(agent, state, contextual_steps, contextual_note)
-                state.add("agent", reply)
-                agent.save_state(state)
-                return CommandResponse(reply=reply, auto_accept=True, agent_mode=True)
-
-            workflow_steps, workflow_note = plan_agent_mode_workflow(user_text)
-            if workflow_steps:
-                reply = _execute_agent_mode_steps(agent, state, workflow_steps, workflow_note)
-                state.add("agent", reply)
-                agent.save_state(state)
-                return CommandResponse(reply=reply, auto_accept=True, agent_mode=True)
-
-            planned_command, planned_note = plan_agent_mode_web_command(user_text)
-            if planned_command:
-                executed = agent.handle_command(planned_command, state)
+        planned_command, planned_note = plan_agent_mode_web_command(user_text)
+        if planned_command:
+            executed = agent.handle_command(planned_command, state)
+            snapshot = browser_snapshot()
+            query = extract_search_query_from_url(planned_command.removeprefix("abrir url: ").strip())
+            sources = _sources_from_snapshot(snapshot)
+            activity = [planned_note] if planned_note else []
+            if query:
+                if not sources:
+                    sources = web_search_results(query, limit=5)
+                reply, search_activity = _compose_search_reply(query, sources, executed)
+                activity.extend(search_activity)
+            else:
                 reply = f"{planned_note}\n\n{executed}" if planned_note else executed
-                state.add("agent", reply)
-                agent.save_state(state)
-                return CommandResponse(reply=reply, auto_accept=True, agent_mode=True)
+                if executed:
+                    activity.append(executed)
+            state.add("agent", reply)
+            agent.save_state(state)
+            return CommandResponse(
+                reply=reply,
+                auto_accept=True,
+                agent_mode=True,
+                sources=sources,
+                workspace_visible=_looks_like_workspace_task(user_text) or bool(snapshot.get("url")),
+                workspace_title=str(snapshot.get("title") or "") or None,
+                activity=activity,
+            )
 
-            browser_command, browser_note = plan_agent_mode_browser_command(user_text)
-            if browser_command:
-                executed = agent.handle_command(browser_command, state)
-                reply = f"{browser_note}\n\n{executed}" if browser_note else executed
-                state.add("agent", reply)
-                agent.save_state(state)
-                return CommandResponse(reply=reply, auto_accept=True, agent_mode=True)
-
-            # LLM-based contextual planner: reads current page context and decides
-            # which browser: command to execute, handling anything the regex planners missed.
-            llm_command, llm_note = plan_agent_mode_llm_browser_command(user_text, state)
-            if llm_command:
-                executed = agent.handle_command(llm_command, state)
-                reply = f"{llm_note}\n\n{executed}" if llm_note else executed
-                state.add("agent", reply)
-                agent.save_state(state)
-                return CommandResponse(reply=reply, auto_accept=True, agent_mode=True)
-
-            if is_profile_based_intent(user_text):
-                reply = (
-                    "Nao vou executar uma busca generica so com 'vagas'. Para buscar de acordo com seu perfil, preciso de contexto real, "
-                    "como cargo, stack, senioridade ou um perfil salvo/aberto para eu analisar."
-                )
-                state.add("agent", reply)
-                agent.save_state(state)
-                return CommandResponse(reply=reply, auto_accept=True, agent_mode=True)
+        browser_command, browser_note = plan_agent_mode_browser_command(user_text)
+        if browser_command:
+            executed = agent.handle_command(browser_command, state)
+            reply = f"{browser_note}\n\n{executed}" if browser_note else executed
+            state.add("agent", reply)
+            agent.save_state(state)
+            snapshot = browser_snapshot()
+            activity = [browser_note] if browser_note else []
+            if executed:
+                activity.append(executed)
+            return CommandResponse(
+                reply=reply,
+                auto_accept=True,
+                agent_mode=True,
+                sources=_sources_from_snapshot(snapshot),
+                workspace_visible=_looks_like_workspace_task(user_text) or bool(snapshot.get("url")),
+                workspace_title=str(snapshot.get("title") or "") or None,
+                activity=activity,
+            )
 
     reply = agent.handle_command(user_text, state)
     state.add("agent", reply)
@@ -373,7 +438,16 @@ def run_command(payload: CommandRequest) -> CommandResponse:
             reply = f"{reply}\n\n[auto] Executado: {executed}"
 
     agent.save_state(state)
-    return CommandResponse(reply=reply, auto_accept=auto_accept, agent_mode=agent_mode)
+    snapshot = browser_snapshot()
+    return CommandResponse(
+        reply=reply,
+        auto_accept=auto_accept,
+        agent_mode=agent_mode,
+        sources=_sources_from_snapshot(snapshot),
+        workspace_visible=_looks_like_workspace_task(user_text) or bool(snapshot.get("url")),
+        workspace_title=str(snapshot.get("title") or "") or None,
+        activity=[],
+    )
 
 
 @app.get("/")
@@ -381,14 +455,9 @@ def index() -> FileResponse:
     return FileResponse(static_dir / "index.html")
 
 
-@app.get("/api/finance/tracks")
-def get_finance_tracks() -> dict:
-    return {"ok": True, "tracks": finance_study_track_entries()}
-
-
-@app.get("/api/finance/knowledge")
-def get_finance_knowledge() -> dict:
-    return {"ok": True, "entries": finance_knowledge_entries()}
+@app.get("/healthz")
+def healthz() -> dict[str, str]:
+    return {"status": "ok"}
 
 
 @app.get("/api/browser/snapshot")
@@ -460,3 +529,56 @@ def post_browser_disable() -> dict:
         "message": msg,
         "snapshot": snap,
     }
+
+
+@app.get("/api/cloud/providers", response_model=CloudProvidersResponse)
+def get_cloud_providers() -> CloudProvidersResponse:
+    return CloudProvidersResponse(providers=list_cloud_provider_statuses())
+
+
+@app.post("/api/cloud/oauth/{provider}/start", response_model=CloudOauthStartResponse)
+def post_cloud_oauth_start(provider: str, request: Request) -> CloudOauthStartResponse:
+    base_url = _public_base_url_from_request(request)
+    auth_url = start_cloud_oauth(provider, base_url=base_url)
+    return CloudOauthStartResponse(provider=provider, auth_url=auth_url)
+
+
+@app.get("/api/cloud/oauth/{provider}/callback")
+def get_cloud_oauth_callback(
+    provider: str,
+    request: Request,
+    code: str | None = None,
+    state: str | None = None,
+    error: str | None = None,
+    error_description: str | None = None,
+):
+    if error:
+        description = (error_description or error).strip()
+        return _cloud_callback_redirect(provider, "error", f"Falha na conexao cloud: {description}")
+
+    if not code or not state:
+        return HTMLResponse(
+            "<html><body style='font-family:Segoe UI,Arial,sans-serif;padding:24px;background:#0f1117;color:#eef3fb'>"
+            "<h1>Callback invalido</h1><p>Codigo ou estado ausente.</p></body></html>",
+            status_code=400,
+        )
+
+    try:
+        complete_cloud_oauth(provider, code, state)
+    except CloudDriveError as exc:
+        return _cloud_callback_redirect(provider, "error", str(exc))
+
+    base_url = _public_base_url_from_request(request)
+    return RedirectResponse(
+        url=f"{base_url}/?{urlencode({'cloud_provider': provider, 'cloud_status': 'connected'})}",
+        status_code=303,
+    )
+
+
+@app.post("/api/cloud/{provider}/disconnect", response_model=CloudDisconnectResponse)
+def post_cloud_disconnect(provider: str) -> CloudDisconnectResponse:
+    try:
+        message = disconnect_cloud_provider(provider)
+    except CloudDriveError as exc:
+        return CloudDisconnectResponse(ok=False, message=str(exc))
+    return CloudDisconnectResponse(ok=True, message=message)

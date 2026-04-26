@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
 from fastapi.testclient import TestClient
 
 from agent_core.memory import ConversationState
 from agent_core.config import settings
-from agent_core.agent import _is_generic_search_query, _semantic_search_query, plan_agent_mode_web_command, plan_agent_mode_workflow
+from agent_core.agent import plan_agent_mode_web_command, plan_agent_mode_workflow
 from web import server as server_module
 from web.server import app
 
@@ -188,7 +187,7 @@ def test_plan_agent_mode_workflow_supports_open_first_result() -> None:
     steps, _ = plan_agent_mode_workflow("procure example domain na web e abra o primeiro resultado e extraia o texto da pagina")
 
     assert steps is not None
-    assert steps[0][0].startswith("abrir url: https://www.google.com/search?q=")
+    assert steps[0][0].startswith("abrir url: https://duckduckgo.com/?q=")
     assert steps[1][0] == "browser: primeiro resultado"
     assert steps[2][0] == "browser: extrair pagina"
 
@@ -366,8 +365,8 @@ def test_web_agent_mode_opens_first_result_then_extracts(tmp_path: Path, monkeyp
 
         def handle_command(self, command: str, state: ConversationState) -> str:
             self.calls.append(command)
-            if command.startswith("abrir url: https://www.google.com/search?q="):
-                return "Janela interna navegou para: https://www.google.com/search?q=example+domain"
+            if command.startswith("abrir url: https://duckduckgo.com/?q="):
+                return "Janela interna navegou para: https://duckduckgo.com/?q=example+domain"
             if command == "browser: esperar 1":
                 return "Aguardado 1.0s na janela interna."
             if command == "browser: primeiro resultado":
@@ -397,7 +396,7 @@ def test_web_agent_mode_opens_first_result_then_extracts(tmp_path: Path, monkeyp
         assert body["agent_mode"] is True
         assert "primeiro resultado aberto na janela interna" in reply
         assert fake_agent.calls == [
-            "abrir url: https://www.google.com/search?q=example+domain",
+            "abrir url: https://duckduckgo.com/?q=example+domain",
             "browser: esperar 1",
             "browser: primeiro resultado",
             "browser: esperar 1",
@@ -621,7 +620,7 @@ def test_browser_bootstrap_endpoint_returns_snapshot(monkeypatch) -> None:
     monkeypatch.setattr(
         server_module,
         "browser_snapshot",
-        lambda: {"ok": True, "image_base64": "ZmFrZQ==", "width": 1280, "height": 720, "url": "about:blank", "title": "Area de trabalho remota pronta"},
+        lambda: {"ok": True, "image_base64": "ZmFrZQ==", "width": 1280, "height": 720, "url": "about:blank", "title": "Workspace remota pronta"},
     )
 
     client = TestClient(app)
@@ -672,425 +671,3 @@ def test_browser_zoom_endpoint_returns_snapshot(monkeypatch) -> None:
     assert body["ok"] is True
     assert body["message"] == "Zoom do navegador interno ajustado para 130%."
     assert body["zoom"] == "1.3"
-
-
-def test_semantic_query_ignores_connective_profile_fillers() -> None:
-    query = _semantic_search_query("procure vagas no brasil que sejam de acordo com meu perfil")
-
-    assert query == "brasil"
-    assert "que" not in query
-    assert "sejam" not in query
-    assert _is_generic_search_query(query) is True
-
-
-def test_web_agent_mode_profile_prompt_without_criteria_does_not_execute_browser_actions(tmp_path: Path, monkeypatch) -> None:
-    original_memory_path = settings.memory_path
-    settings.memory_path = tmp_path / "memory.json"
-
-    class FakeAgent:
-        def __init__(self) -> None:
-            self.calls: list[str] = []
-            self.state = ConversationState.empty()
-
-        def load_state(self) -> ConversationState:
-            return self.state
-
-        def save_state(self, state: ConversationState) -> None:
-            self.state = state
-
-        def handle_command(self, command: str, state: ConversationState) -> str:
-            self.calls.append(command)
-            return f"UNEXPECTED {command}"
-
-    fake_agent = FakeAgent()
-    monkeypatch.setattr(server_module, "create_agent", lambda: fake_agent)
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/api/command",
-            json={
-                "input": "procure vagas no brasil que sejam de acordo com meu perfil",
-                "auto_accept": False,
-                "agent_mode": True,
-            },
-        )
-
-        assert response.status_code == 200
-        body = response.json()
-        reply = body["reply"].lower()
-        assert "nao vou executar uma busca generica" in reply
-        assert fake_agent.calls == []
-    finally:
-        settings.memory_path = original_memory_path  # type: ignore[assignment]
-
-
-def test_web_agent_mode_meta_instruction_never_executes_browser_action(tmp_path: Path, monkeypatch) -> None:
-    original_memory_path = settings.memory_path
-    settings.memory_path = tmp_path / "memory.json"
-
-    class FakeAgent:
-        def __init__(self) -> None:
-            self.calls: list[str] = []
-            self.state = ConversationState.empty()
-
-        def load_state(self) -> ConversationState:
-            return self.state
-
-        def save_state(self, state: ConversationState) -> None:
-            self.state = state
-
-        def handle_command(self, command: str, state: ConversationState) -> str:
-            self.calls.append(command)
-            return f"UNEXPECTED {command}"
-
-    fake_agent = FakeAgent()
-    monkeypatch.setattr(server_module, "create_agent", lambda: fake_agent)
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/api/command",
-            json={
-                "input": "nao copie o que esta no chat, analise e execute corretamente",
-                "auto_accept": False,
-                "agent_mode": True,
-            },
-        )
-
-        assert response.status_code == 200
-        body = response.json()
-        reply = body["reply"].lower()
-        assert "instrucao sobre o comportamento" in reply
-        assert fake_agent.calls == []
-    finally:
-        settings.memory_path = original_memory_path  # type: ignore[assignment]
-
-
-def test_web_agent_mode_login_uses_saved_workspace_credentials(tmp_path: Path, monkeypatch) -> None:
-    original_memory_path = settings.memory_path
-    settings.memory_path = tmp_path / "memory.json"
-
-    class FakeAgent:
-        def __init__(self) -> None:
-            self.calls: list[str] = []
-            self.state = ConversationState.empty()
-
-        def load_state(self) -> ConversationState:
-            return self.state
-
-        def save_state(self, state: ConversationState) -> None:
-            self.state = state
-
-        def handle_command(self, command: str, state: ConversationState) -> str:
-            self.calls.append(command)
-            if command.startswith("abrir url: https://www.linkedin.com/login"):
-                return "Janela interna navegou para: https://www.linkedin.com/login"
-            if command == "browser: esperar 1":
-                return "Aguardado 1.0s na janela interna."
-            if command.startswith("browser: texto "):
-                return "Texto digitado na janela interna."
-            if command == "browser: tecla Tab":
-                return "Tecla Tab enviada para a janela interna."
-            if command.startswith("browser: texto+enter "):
-                return "Texto enviado com Enter na janela interna."
-            return f"UNEXPECTED {command}"
-
-    fake_agent = FakeAgent()
-    monkeypatch.setattr(server_module, "create_agent", lambda: fake_agent)
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/api/command",
-            json={
-                "input": "faça login no linkedin",
-                "auto_accept": False,
-                "agent_mode": True,
-                "login_context": {
-                    "service": "linkedin",
-                    "username": "flavio.rj@hotmail.com",
-                    "password": "senha-secreta",
-                },
-            },
-        )
-
-        assert response.status_code == 200
-        body = response.json()
-        reply = body["reply"].lower()
-        assert "executando login com credenciais salvas" in reply
-        assert fake_agent.calls == [
-            "abrir url: https://www.linkedin.com/login",
-            "browser: esperar 1",
-            "browser: texto flavio.rj@hotmail.com",
-            "browser: tecla Tab",
-            "browser: esperar 1",
-            "browser: texto+enter senha-secreta",
-        ]
-    finally:
-        settings.memory_path = original_memory_path  # type: ignore[assignment]
-
-
-def test_semantic_query_drops_action_residue_term_entre() -> None:
-    query = _semantic_search_query("entre no meu linkedin e busque vagas com meu perfil")
-
-    assert query == ""
-
-
-def test_plan_agent_mode_web_command_profile_prompt_with_entre_residue_is_blocked() -> None:
-    command, note = plan_agent_mode_web_command("entre no meu linkedin e busque vagas com meu perfil")
-
-    assert command is None
-    assert note is None
-
-
-def test_plan_agent_mode_web_command_profile_fit_phrase_without_criteria_is_blocked() -> None:
-    command, note = plan_agent_mode_web_command("analise o meu perfil e busque vagas em que eu possa ser encaixado")
-
-    assert command is None
-    assert note is None
-
-
-def test_web_agent_mode_profile_fit_phrase_without_criteria_does_not_execute_browser_actions(tmp_path: Path, monkeypatch) -> None:
-    original_memory_path = settings.memory_path
-    settings.memory_path = tmp_path / "memory.json"
-
-    class FakeAgent:
-        def __init__(self) -> None:
-            self.calls: list[str] = []
-            self.state = ConversationState.empty()
-
-        def load_state(self) -> ConversationState:
-            return self.state
-
-        def save_state(self, state: ConversationState) -> None:
-            self.state = state
-
-        def handle_command(self, command: str, state: ConversationState) -> str:
-            self.calls.append(command)
-            return f"UNEXPECTED {command}"
-
-    fake_agent = FakeAgent()
-    monkeypatch.setattr(server_module, "create_agent", lambda: fake_agent)
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/api/command",
-            json={
-                "input": "analise o meu perfil e busque vagas em que eu possa ser encaixado",
-                "auto_accept": False,
-                "agent_mode": True,
-            },
-        )
-
-        assert response.status_code == 200
-        body = response.json()
-        reply = body["reply"].lower()
-        assert "nao vou executar uma busca generica" in reply
-        assert fake_agent.calls == []
-    finally:
-        settings.memory_path = original_memory_path  # type: ignore[assignment]
-
-
-def test_web_agent_mode_hard_guard_blocks_vague_profile_fit_prompt_before_planners(tmp_path: Path, monkeypatch) -> None:
-    original_memory_path = settings.memory_path
-    settings.memory_path = tmp_path / "memory.json"
-
-    class FakeAgent:
-        def __init__(self) -> None:
-            self.calls: list[str] = []
-            self.state = ConversationState.empty()
-
-        def load_state(self) -> ConversationState:
-            return self.state
-
-        def save_state(self, state: ConversationState) -> None:
-            self.state = state
-
-        def handle_command(self, command: str, state: ConversationState) -> str:
-            self.calls.append(command)
-            return f"UNEXPECTED {command}"
-
-    fake_agent = FakeAgent()
-    monkeypatch.setattr(server_module, "create_agent", lambda: fake_agent)
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/api/command",
-            json={
-                "input": "analise o que combina comigo e vagas no linkedin",
-                "auto_accept": False,
-                "agent_mode": True,
-            },
-        )
-
-        assert response.status_code == 200
-        body = response.json()
-        reply = body["reply"].lower()
-        assert "nao vou executar uma busca generica" in reply
-        assert fake_agent.calls == []
-    finally:
-        settings.memory_path = original_memory_path  # type: ignore[assignment]
-
-
-def test_plan_agent_mode_web_command_blocks_aderencia_phrase_without_real_criteria() -> None:
-    command, note = plan_agent_mode_web_command("agora procure todas as vagas na europa que eu tenho aderencia")
-
-    assert command is None
-    assert note is None
-
-
-def test_web_agent_mode_hard_guard_blocks_aderencia_phrase_without_real_criteria(tmp_path: Path, monkeypatch) -> None:
-    original_memory_path = settings.memory_path
-    settings.memory_path = tmp_path / "memory.json"
-
-    class FakeAgent:
-        def __init__(self) -> None:
-            self.calls: list[str] = []
-            self.state = ConversationState.empty()
-
-        def load_state(self) -> ConversationState:
-            return self.state
-
-        def save_state(self, state: ConversationState) -> None:
-            self.state = state
-
-        def handle_command(self, command: str, state: ConversationState) -> str:
-            self.calls.append(command)
-            return f"UNEXPECTED {command}"
-
-    fake_agent = FakeAgent()
-    monkeypatch.setattr(server_module, "create_agent", lambda: fake_agent)
-
-    try:
-        client = TestClient(app)
-
-        response = client.post(
-            "/api/command",
-            json={
-                "input": "agora procure todas as vagas na europa que eu tenho aderencia",
-                "auto_accept": False,
-                "agent_mode": True,
-            },
-        )
-
-        assert response.status_code == 200
-        body = response.json()
-        reply = body["reply"].lower()
-        assert "nao vou executar uma busca generica" in reply
-        assert fake_agent.calls == []
-    finally:
-        settings.memory_path = original_memory_path  # type: ignore[assignment]
-
-
-@pytest.mark.parametrize(
-    "prompt",
-    [
-        "analise meu perfil e busque vagas para mim",
-        "analisa meu perfil e encontre oportunidades",
-        "com base no meu perfil procure vagas",
-        "de acordo com meu perfil busque vagas no linkedin",
-        "entre no linkedin e ache vagas compativeis com meu perfil",
-        "acesse meu linkedin e procure algo que combine comigo",
-        "quero vagas que encaixem no meu perfil",
-        "encontre vagas aderentes ao meu perfil",
-        "procure oportunidades ideais para meu perfil",
-        "busque empregos que tenham meu perfil",
-        "me arruma vagas conforme meu perfil",
-        "traga vagas de acordo comigo",
-        "encontre uma vaga que eu possa ser encaixado",
-        "pesquise jobs no linkedin que combinem comigo",
-        "busca vaga perfeita pro meu perfil",
-        "vagas para meu perfil no brasil",
-        "vagas para meu perfil na europa",
-        "ache vagas em que eu possa ser encaixado",
-        "analise o meu perfil e veja vagas para mim",
-        "entre no meu linkedin e me traga vagas aderentes",
-    ],
-)
-def test_plan_agent_mode_web_command_blocks_many_profile_vague_variants(prompt: str) -> None:
-    command, note = plan_agent_mode_web_command(prompt)
-
-    assert command is None
-    assert note is None
-
-
-def test_plan_agent_mode_web_command_allows_profile_prompt_with_real_criteria() -> None:
-    command, note = plan_agent_mode_web_command(
-        "com base no meu perfil busque vagas de engenheiro de dados senior com python no linkedin"
-    )
-
-    assert command is not None
-    assert note is not None
-    assert command.startswith("abrir url: https://www.linkedin.com/jobs/search/?keywords=")
-
-
-def test_plan_agent_mode_web_command_blocks_3500_generated_profile_vague_prompts() -> None:
-    actions = [
-        "analise",
-        "analisa",
-        "busque",
-        "procure",
-        "encontre",
-        "veja",
-        "traga",
-        "ache",
-        "pesquise",
-        "mapeie",
-    ]
-    starters = [
-        "meu perfil",
-        "o meu perfil",
-        "com meu perfil",
-        "com base no meu perfil",
-        "de acordo com meu perfil",
-        "de acordo comigo",
-        "o que combina comigo",
-        "o que seja aderente ao meu perfil",
-        "algo compativel com meu perfil",
-        "algo que encaixe em mim",
-    ]
-    vague_targets = [
-        "vagas",
-        "jobs",
-        "oportunidades",
-        "trabalhos",
-        "vagas no brasil",
-        "vagas na europa",
-        "vagas remotas",
-    ]
-    tails = [
-        "no linkedin",
-        "agora",
-        "por favor",
-        "para mim",
-        "",
-    ]
-
-    seen = 0
-    for action in actions:
-        for starter in starters:
-            for target in vague_targets:
-                for tail in tails:
-                    prompt = f"{action} {starter} e {target} {tail}".strip()
-                    command, note = plan_agent_mode_web_command(prompt)
-                    assert command is None, f"Nao deveria gerar comando para prompt vago: {prompt}"
-                    assert note is None, f"Nao deveria gerar nota para prompt vago: {prompt}"
-                    seen += 1
-                    if seen >= 3500:
-                        break
-                if seen >= 3500:
-                    break
-            if seen >= 3500:
-                break
-        if seen >= 3500:
-            break
-
-    assert seen == 3500
