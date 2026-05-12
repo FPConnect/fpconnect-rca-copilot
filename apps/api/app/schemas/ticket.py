@@ -42,6 +42,20 @@ class TicketResponse(BaseModel):
         from_attributes = True
 
 
+class TicketAttachmentResponse(BaseModel):
+    """Schema for an uploaded ticket attachment."""
+
+    id: int
+    ticket_id: int
+    filename: str
+    content_type: str
+    size_bytes: int
+    download_url: str
+
+    class Config:
+        from_attributes = True
+
+
 class AnalyzeTicketRequest(BaseModel):
     """Schema for RCA analysis request."""
 
