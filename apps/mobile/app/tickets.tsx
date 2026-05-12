@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -11,21 +11,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
-
-interface Ticket {
-  id: string;
-  title: string;
-  status: "open" | "in_progress" | "resolved";
-  priority: "critical" | "high" | "medium" | "low";
-}
-
-const INITIAL_TICKETS: Ticket[] = [
-  { id: "1", title: "MRI Scanner offline - Ward A", status: "open", priority: "critical" },
-  { id: "2", title: "ECG Monitor slow response", status: "in_progress", priority: "high" },
-  { id: "3", title: "Patient monitor alarm", status: "open", priority: "medium" },
-];
+import {
+  createOfflineTicket,
+  getPendingTicketCount,
+  loadOfflineTickets,
+  OfflineTicket,
+  syncPendingTickets,
+  TicketPriority,
+} from "../src/services/offlineTickets";
 
 const PRIORITY_COLORS: Record<string, { bg: string; text: string }> = {
   critical: { bg: "#fee2e2", text: "#991b1b" },
@@ -38,32 +34,81 @@ const STATUS_LABELS: Record<string, string> = {
   open: "Open",
   in_progress: "In Progress",
   resolved: "Resolved",
+  closed: "Closed",
+};
+
+const SYNC_LABELS: Record<string, { label: string; color: string; bg: string }> = {
+  synced: { label: "Synced", color: "#166534", bg: "#dcfce7" },
+  pending: { label: "Pending sync", color: "#854d0e", bg: "#fef9c3" },
+  syncing: { label: "Syncing", color: "#1d4ed8", bg: "#dbeafe" },
+  failed: { label: "Offline", color: "#991b1b", bg: "#fee2e2" },
 };
 
 export default function TicketsScreen() {
-  const [tickets, setTickets] = useState<Ticket[]>(INITIAL_TICKETS);
+  const [tickets, setTickets] = useState<OfflineTicket[]>([]);
   const [title, setTitle] = useState("");
-  const [priority, setPriority] = useState<Ticket["priority"]>("medium");
+  const [priority, setPriority] = useState<TicketPriority>("medium");
   const [search, setSearch] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const PRIORITIES: Ticket["priority"][] = ["low", "medium", "high", "critical"];
+  const PRIORITIES: TicketPriority[] = ["low", "medium", "high", "critical"];
 
-  const handleCreate = () => {
+  const refreshPendingCount = async () => {
+    setPendingCount(await getPendingTicketCount());
+  };
+
+  const runSync = async (showResult = false) => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    const result = await syncPendingTickets();
+    setTickets(result.tickets);
+    await refreshPendingCount();
+    setIsSyncing(false);
+
+    if (showResult) {
+      if (result.failed > 0) {
+        Alert.alert(
+          "Offline sync",
+          `${result.failed} ticket(s) remain queued and will sync when the API is reachable.`,
+        );
+      } else {
+        Alert.alert("Offline sync", `${result.synced} ticket(s) synced successfully.`);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const bootstrap = async () => {
+      const storedTickets = await loadOfflineTickets();
+      setTickets(storedTickets);
+      await refreshPendingCount();
+      setIsLoading(false);
+      await runSync();
+    };
+
+    void bootstrap();
+  }, []);
+
+  const handleCreate = async () => {
     if (!title.trim()) {
       Alert.alert("Error", "Please enter a ticket title.");
       return;
     }
-    const newTicket: Ticket = {
-      id: String(Date.now()),
+
+    const newTicket = await createOfflineTicket({
       title: title.trim(),
-      status: "open",
       priority,
-    };
-    setTickets([newTicket, ...tickets]);
+    });
+
+    setTickets((current) => [newTicket, ...current]);
+    await refreshPendingCount();
     setTitle("");
     setPriority("medium");
     setModalVisible(false);
+    void runSync();
   };
 
   const filtered = useMemo(() => {
@@ -74,7 +119,30 @@ export default function TicketsScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Search */}
+      <View style={styles.syncBanner}>
+        <View style={styles.syncTextWrap}>
+          <Ionicons name="cloud-upload-outline" size={18} color="#2563eb" />
+          <Text style={styles.syncText}>
+            {pendingCount > 0
+              ? `${pendingCount} ticket(s) waiting for sync`
+              : "Offline queue is clear"}
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={[styles.syncButton, isSyncing && styles.syncButtonDisabled]}
+          onPress={() => runSync(true)}
+          disabled={isSyncing}
+          accessibilityLabel="Sync queued tickets"
+          accessibilityRole="button"
+        >
+          {isSyncing ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Text style={styles.syncButtonText}>Sync</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.searchWrap}>
         <Ionicons name="search-outline" size={16} color="#9ca3af" style={styles.searchIcon} />
         <TextInput
@@ -86,9 +154,13 @@ export default function TicketsScreen() {
         />
       </View>
 
-      {/* Ticket list */}
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <View style={styles.empty}>
+            <ActivityIndicator color="#2563eb" />
+            <Text style={styles.emptyText}>Loading local tickets...</Text>
+          </View>
+        ) : filtered.length === 0 ? (
           <View style={styles.empty}>
             <Ionicons name="ticket-outline" size={40} color="#d1d5db" />
             <Text style={styles.emptyText}>No tickets found.</Text>
@@ -96,22 +168,22 @@ export default function TicketsScreen() {
         ) : (
           filtered.map((t) => {
             const pc = PRIORITY_COLORS[t.priority] ?? { bg: "#f3f4f6", text: "#374151" };
+            const sync = SYNC_LABELS[t.syncStatus];
             return (
               <View key={t.id} style={styles.card}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.cardTitle} numberOfLines={2}>{t.title}</Text>
-                  <Text style={styles.cardId}>#{t.id.slice(0, 4)}</Text>
+                  <Text style={styles.cardId}>#{t.serverId ?? t.id.slice(-4)}</Text>
                 </View>
                 <View style={styles.badges}>
                   <View style={[styles.badge, { backgroundColor: pc.bg }]}>
-                    <Text style={[styles.badgeText, { color: pc.text }]}>
-                      {t.priority}
-                    </Text>
+                    <Text style={[styles.badgeText, { color: pc.text }]}>{t.priority}</Text>
                   </View>
                   <View style={styles.statusBadge}>
-                    <Text style={styles.statusBadgeText}>
-                      {STATUS_LABELS[t.status]}
-                    </Text>
+                    <Text style={styles.statusBadgeText}>{STATUS_LABELS[t.status]}</Text>
+                  </View>
+                  <View style={[styles.statusBadge, { backgroundColor: sync.bg }]}>
+                    <Text style={[styles.statusBadgeText, { color: sync.color }]}>{sync.label}</Text>
                   </View>
                 </View>
               </View>
@@ -120,7 +192,6 @@ export default function TicketsScreen() {
         )}
       </ScrollView>
 
-      {/* Floating Action Button */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => setModalVisible(true)}
@@ -130,7 +201,6 @@ export default function TicketsScreen() {
         <Ionicons name="add" size={28} color="#ffffff" />
       </TouchableOpacity>
 
-      {/* New Ticket Modal */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -206,6 +276,31 @@ export default function TicketsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#f8fafc" },
+  syncBanner: {
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    borderColor: "#dbeafe",
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  syncTextWrap: { alignItems: "center", flex: 1, flexDirection: "row", gap: 8 },
+  syncText: { color: "#334155", fontSize: 13, fontWeight: "600" },
+  syncButton: {
+    alignItems: "center",
+    backgroundColor: "#2563eb",
+    borderRadius: 8,
+    minWidth: 64,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  syncButtonDisabled: { opacity: 0.7 },
+  syncButtonText: { color: "#ffffff", fontSize: 12, fontWeight: "700" },
   searchWrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -253,7 +348,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: { flex: 1, fontSize: 14, fontWeight: "600", color: "#111827", marginRight: 8 },
   cardId: { fontSize: 12, color: "#9ca3af" },
-  badges: { flexDirection: "row", gap: 6 },
+  badges: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 99 },
   badgeText: { fontSize: 11, fontWeight: "700", textTransform: "capitalize" },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 99, backgroundColor: "#f3f4f6" },

@@ -19,6 +19,14 @@ class Settings(BaseSettings):
 
     openai_api_key: str = "sk-placeholder"
 
+    s3_endpoint_url: str = "http://localhost:9000"
+    s3_access_key_id: str = "minioadmin"
+    s3_secret_access_key: str = "minioadmin"
+    s3_bucket_name: str = "fpconnect-ticket-attachments"
+    s3_region: str = "us-east-1"
+    s3_presigned_url_expire_seconds: int = 3600
+    max_upload_size_bytes: int = 5 * 1024 * 1024
+
     @model_validator(mode="after")
     def validate_security(self):
         """Prevent insecure key defaults outside development and enforce minimum key size."""
