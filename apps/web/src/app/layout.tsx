@@ -9,8 +9,8 @@ import AuthGuard from "@/components/AuthGuard";
 import LanguageRuntime from "@/components/LanguageRuntime";
 
 export const metadata: Metadata = {
-  title: "FPConnect RCA Copilot",
-  description: "RCA Copilot & Availability Engine for Healthcare/MedTech",
+  title: "FPConnect Engenharia Clínica",
+  description: "Plataforma de incidentes, diagnóstico de falha e gestão de equipamentos clínicos.",
 };
 
 export default function RootLayout({
