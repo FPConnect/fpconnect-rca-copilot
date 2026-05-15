@@ -15,6 +15,10 @@ class Machine(Base):
     name = Column(String, nullable=False)
     location = Column(String, nullable=False)
     type = Column(String, nullable=False)
+    model = Column(String, nullable=True)
+    criticality = Column(String, default="Média", nullable=False)
+    last_failure = Column(String, nullable=True)
+    recurrent_failures = Column(Integer, default=0, nullable=False)
     status = Column(
         Enum("online", "warning", "offline", name="machine_status"),
         default="online",

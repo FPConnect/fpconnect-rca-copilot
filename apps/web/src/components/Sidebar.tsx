@@ -10,6 +10,7 @@ import {
   BarChart2,
   Wrench,
   ShieldCheck,
+  FileText,
   History,
   Settings,
   Ticket,
@@ -19,15 +20,16 @@ import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 const navItems = [
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/machines", label: "Máquinas", icon: Monitor },
-  { href: "/health-checks", label: "Health Checks", icon: HeartPulse },
+  { href: "/dashboard", label: "Painel", icon: LayoutDashboard },
+  { href: "/machines", label: "Equipamentos", icon: Monitor },
+  { href: "/tickets", label: "Incidentes", icon: Ticket },
+  { href: "/analyze", label: "Diagnóstico de Falha", icon: HeartPulse },
+  { href: "/playbooks", label: "Playbooks", icon: Wrench },
+  { href: "/contracts", label: "Contratos/SLA", icon: FileText },
   { href: "/alerts", label: "Alertas", icon: Bell },
-  { href: "/tickets", label: "Tickets", icon: Ticket },
   { href: "/metrics", label: "Métricas", icon: BarChart2 },
-  { href: "/maintenance", label: "Manutenção", icon: Wrench },
+  { href: "/history", label: "Eventos", icon: History },
   { href: "/access-control", label: "Controle de Acesso", icon: ShieldCheck },
-  { href: "/history", label: "Histórico", icon: History },
 ];
 
 export default function Sidebar() {
@@ -42,7 +44,7 @@ export default function Sidebar() {
           <span className="text-xl font-bold tracking-tight text-blue-400">
             FPConnect
           </span>
-          <span className="block text-xs text-gray-400 mt-0.5">Technologies</span>
+          <span className="block text-xs text-gray-400 mt-0.5">Engenharia Clínica</span>
         </div>
         <button
           onClick={close}

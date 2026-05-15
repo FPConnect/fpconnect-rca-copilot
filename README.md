@@ -66,6 +66,7 @@ Copy `apps/web/.env.example` to `apps/web/.env.local`:
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_APP_NAME=FPConnect
 NEXT_PUBLIC_APP_VERSION=1.0.0
+NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
 ```
 
 | Variable | Default | Description |
@@ -73,6 +74,7 @@ NEXT_PUBLIC_APP_VERSION=1.0.0
 | `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | FastAPI backend URL |
 | `NEXT_PUBLIC_APP_NAME` | `FPConnect` | Application name |
 | `NEXT_PUBLIC_APP_VERSION` | `1.0.0` | Application version |
+| `NEXT_PUBLIC_SITE_URL` | `https://fpconnect.tec.br` | Canonical production URL used by metadata and domain redirects |
 
 ## Deploy to Production (Cloud)
 
@@ -136,9 +138,11 @@ NEXT_PUBLIC_APP_VERSION=1.0.0
    NEXT_PUBLIC_API_URL=<your Railway API URL from Step 3>
    NEXT_PUBLIC_APP_NAME=FPConnect
    NEXT_PUBLIC_APP_VERSION=1.0.0
+   NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
    ```
 
-5. Click **Deploy** — your app will be live at `https://<your-project>.vercel.app`
+5. Add `fpconnect.tec.br` in **Vercel → Project → Settings → Domains** and point DNS according to Vercel. See `docs/DOMAIN_MIGRATION.md` for the full domain migration checklist.
+6. Click **Deploy** — your app will be live at `https://<your-project>.vercel.app`
 
 ### Step 5 — Automated CI/CD (GitHub Actions)
 
