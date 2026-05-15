@@ -87,3 +87,21 @@ def create_ticket_attachment(
 def get_ticket_attachments(db: Session, ticket_id: int) -> List[TicketAttachment]:
     """Retrieve all attachments for a ticket."""
     return db.query(TicketAttachment).filter(TicketAttachment.ticket_id == ticket_id).all()
+
+
+def complete_ticket_analysis(
+    db: Session,
+    ticket: Ticket,
+    *,
+    root_cause: str,
+    recommendation: str,
+) -> Ticket:
+    """Persist root-cause analysis results for an incident."""
+    from datetime import datetime, timezone
+
+    ticket.root_cause = root_cause
+    ticket.recommendation = recommendation
+    ticket.analysis_completed = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(ticket)
+    return ticket
