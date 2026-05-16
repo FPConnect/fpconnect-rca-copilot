@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user_id
+from app.api.routes.tickets import get_current_user_id
 from app.core.database import get_db
 from app.crud.ticket import complete_ticket_analysis, get_ticket_by_id
 from app.schemas.ticket import AnalyzeIncidentRequest, AnalyzeIncidentResponse, AnalyzeTicketRequest
