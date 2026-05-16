@@ -1,7 +1,7 @@
 # fpconnect-rca-copilot
 RCA Copilot & Availability Engine for Healthcare/MedTech Operations
 
-> **No authentication required** — the app is fully open access. Just clone, install, and run.
+> **Web preview:** the frontend can run with local preview data for quick evaluation. API-backed workflows require authentication tokens from `/auth/login`.
 
 ## Quick Start
 
@@ -114,6 +114,9 @@ NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
    DATABASE_URL=<your Neon connection string>
    REDIS_URL=<your Upstash Redis URL>
    SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
+   REFRESH_SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
+   ACCESS_TOKEN_EXPIRE_MINUTES=15
+   REFRESH_TOKEN_EXPIRE_DAYS=7
    OPENAI_API_KEY=<your OpenAI key>
    MINIO_ENDPOINT=<your S3/R2 endpoint>
    MINIO_ACCESS_KEY=<your access key>
