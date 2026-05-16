@@ -1,14 +1,17 @@
 """Ticket CRUD routes and RCA analysis endpoint."""
 
-from typing import List, Optional
+from typing import List
 
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from sqlalchemy.orm import Session
+
+from app.api.deps import get_current_user_id
 import magic
 from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
-from app.core.security import decode_access_token
 from app.crud.ticket import (
     create_ticket,
     create_ticket_attachment,
@@ -34,23 +37,6 @@ from app.services.object_storage import (
 )
 
 router = APIRouter()
-
-
-def get_current_user_id(authorization: Optional[str] = Header(None)) -> int:
-    """Extract and validate the current user ID from the Authorization header."""
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
-    token = authorization.split(" ", 1)[1]
-    payload = decode_access_token(token)
-    if not payload or "sub" not in payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-        )
-    return int(payload["sub"])
 
 
 @router.get("/", response_model=List[TicketResponse])
@@ -129,6 +115,26 @@ def analyze_existing_ticket(
 
 ALLOWED_IMAGE_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
+
+def _detect_image_mime_from_signature(body: bytes) -> str:
+    """Detect supported image MIME types without external shared libraries."""
+    if body.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if body.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if len(body) >= 12 and body[:4] == b"RIFF" and body[8:12] == b"WEBP":
+        return "image/webp"
+    return "application/octet-stream"
+
+
+async def validate_image_real_type(body: bytes) -> str:
+    """Validate the actual MIME type detected from the uploaded bytes."""
+    try:
+        import magic
+
+        mime = magic.from_buffer(body, mime=True)
+    except ImportError:
+        mime = _detect_image_mime_from_signature(body)
 
 async def validate_image_real_type(body: bytes) -> str:
     """Validate the actual MIME type detected from the uploaded bytes."""
