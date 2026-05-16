@@ -33,8 +33,15 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
+class RefreshTokenRequest(BaseModel):
+    """Schema for refreshing an access token."""
+
+    refresh_token: str
+
+
 class TokenResponse(BaseModel):
     """Schema for JWT token response."""
 
     access_token: str
+    refresh_token: Optional[str] = None
     token_type: str = "bearer"

@@ -41,7 +41,7 @@ def test_register_success():
         "/auth/register",
         json={
             "email": "tech@example.com",
-            "password": "SecurePass123",
+            "password": "SecurePass123!",
             "full_name": "Tech User",
             "role": "technician",
         },
@@ -55,7 +55,7 @@ def test_register_success():
 def test_register_duplicate_email():
     payload = {
         "email": "dup@example.com",
-        "password": "SecurePass123",
+        "password": "SecurePass123!",
     }
     client.post("/auth/register", json=payload)
     response = client.post("/auth/register", json=payload)
@@ -65,11 +65,11 @@ def test_register_duplicate_email():
 def test_login_success():
     client.post(
         "/auth/register",
-        json={"email": "login@example.com", "password": "SecurePass123"},
+        json={"email": "login@example.com", "password": "SecurePass123!"},
     )
     response = client.post(
         "/auth/login",
-        json={"email": "login@example.com", "password": "SecurePass123"},
+        json={"email": "login@example.com", "password": "SecurePass123!"},
     )
     assert response.status_code == 200
     assert "access_token" in response.json()
@@ -87,3 +87,21 @@ def test_health():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_refresh_token_success():
+    client.post(
+        "/auth/register",
+        json={"email": "refresh@example.com", "password": "SecurePass123!"},
+    )
+    login_response = client.post(
+        "/auth/login",
+        json={"email": "refresh@example.com", "password": "SecurePass123!"},
+    )
+    refresh = login_response.json()["refresh_token"]
+
+    response = client.post("/auth/refresh", json={"refresh_token": refresh})
+
+    assert response.status_code == 200
+    assert response.json()["access_token"]
+    assert response.json()["refresh_token"] == refresh
