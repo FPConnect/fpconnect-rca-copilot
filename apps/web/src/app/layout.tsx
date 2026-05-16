@@ -23,6 +23,8 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     type: "website",
   },
+  title: "FPConnect Engenharia Clínica",
+  description: "Plataforma de incidentes, diagnóstico de falha e gestão de equipamentos clínicos.",
 };
 
 export default function RootLayout({

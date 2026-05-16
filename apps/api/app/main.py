@@ -49,6 +49,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         )
         return response
 
+from app.api.routes import analyze, auth, contracts, machines, playbooks, tickets
+from app.core.config import settings
+from app.core.database import Base, engine
+from app.models import machine, playbook, ticket, user  # noqa: F401
 
 # Create database tables on startup
 Base.metadata.create_all(bind=engine)
