@@ -55,6 +55,7 @@ def setup_db(monkeypatch):
 
 
 def auth_headers() -> dict[str, str]:
+    credentials = {"email": "clinical@example.com", "password": "SecurePass123!"}
     credentials = {"email": "clinical@example.com", "password": "SecurePass123"}
     client.post("/auth/register", json=credentials)
     response = client.post("/auth/login", json=credentials)

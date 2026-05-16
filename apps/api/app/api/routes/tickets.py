@@ -129,6 +129,8 @@ def _detect_image_mime_from_signature(body: bytes) -> str:
 
 async def validate_image_real_type(body: bytes) -> str:
     """Validate the actual MIME type detected from the uploaded bytes."""
+    mime = _detect_image_mime_from_signature(body)
+
     try:
         import magic
 
