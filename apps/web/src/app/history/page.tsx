@@ -6,12 +6,12 @@ import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
 
 const EVENTS = [
-  { id: 1, action: "Ticket criado", user: "João Silva", resource: "MRI Scanner offline", time: "2026-02-26 14:32", type: "ticket" },
-  { id: 2, action: "Alerta reconhecido", user: "Maria Santos", resource: "ECG Monitor high latency", time: "2026-02-26 13:10", type: "alert" },
-  { id: 3, action: "Manutenção agendada", user: "Carlos Rocha", resource: "Defibrillator", time: "2026-02-26 11:45", type: "maintenance" },
+  { id: 1, action: "Chamado criado", user: "João Silva", resource: "Ressonância Magnética offline", time: "2026-02-26 14:32", type: "ticket" },
+  { id: 2, action: "Alerta reconhecido", user: "Maria Santos", resource: "Monitor ECG com alta latência", time: "2026-02-26 13:10", type: "alert" },
+  { id: 3, action: "Manutenção agendada", user: "Carlos Rocha", resource: "Desfibrilador", time: "2026-02-26 11:45", type: "maintenance" },
   { id: 4, action: "Usuário criado", user: "Admin", resource: "Ana Lima", time: "2026-02-26 10:00", type: "user" },
-  { id: 5, action: "Health check falhou", user: "Sistema", resource: "Defibrillator self-test", time: "2026-02-26 09:15", type: "health" },
-  { id: 6, action: "Ticket resolvido", user: "Maria Santos", resource: "Ventilator alarm", time: "2026-02-25 17:22", type: "ticket" },
+  { id: 5, action: "Health check falhou", user: "Sistema", resource: "Autoteste do desfibrilador", time: "2026-02-26 09:15", type: "health" },
+  { id: 6, action: "Chamado resolvido", user: "Maria Santos", resource: "Alarme do ventilador", time: "2026-02-25 17:22", type: "ticket" },
 ];
 
 const FILTERS = [
@@ -19,11 +19,11 @@ const FILTERS = [
     key: "type",
     label: "Tipo",
     options: [
-      { label: "Ticket", value: "ticket" },
+      { label: "Chamado", value: "ticket" },
       { label: "Alerta", value: "alert" },
       { label: "Manutenção", value: "maintenance" },
       { label: "Usuário", value: "user" },
-      { label: "Health Check", value: "health" },
+      { label: "Verificação técnica", value: "health" },
     ],
   },
 ];
@@ -59,10 +59,10 @@ export default function HistoryPage() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Histórico de Auditoria</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">Eventos de Auditoria</h1>
       <div className="flex flex-wrap gap-3 mb-4">
         <SearchBar
-          placeholder="Pesquisar histórico..."
+          placeholder="Pesquisar eventos..."
           value={search}
           onChange={handleSearch}
           className="w-64"

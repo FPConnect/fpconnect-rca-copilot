@@ -1,7 +1,7 @@
 # fpconnect-rca-copilot
 RCA Copilot & Availability Engine for Healthcare/MedTech Operations
 
-> **No authentication required** — the app is fully open access. Just clone, install, and run.
+> **Web preview:** the frontend can run with local preview data for quick evaluation. API-backed workflows require authentication tokens from `/auth/login`.
 
 ## Quick Start
 
@@ -66,6 +66,7 @@ Copy `apps/web/.env.example` to `apps/web/.env.local`:
 NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_APP_NAME=FPConnect
 NEXT_PUBLIC_APP_VERSION=1.0.0
+NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
 ```
 
 | Variable | Default | Description |
@@ -73,6 +74,7 @@ NEXT_PUBLIC_APP_VERSION=1.0.0
 | `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | FastAPI backend URL |
 | `NEXT_PUBLIC_APP_NAME` | `FPConnect` | Application name |
 | `NEXT_PUBLIC_APP_VERSION` | `1.0.0` | Application version |
+| `NEXT_PUBLIC_SITE_URL` | `https://fpconnect.tec.br` | Canonical production URL used by metadata and domain redirects |
 
 ## Deploy to Production (Cloud)
 
@@ -112,6 +114,9 @@ NEXT_PUBLIC_APP_VERSION=1.0.0
    DATABASE_URL=<your Neon connection string>
    REDIS_URL=<your Upstash Redis URL>
    SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
+   REFRESH_SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
+   ACCESS_TOKEN_EXPIRE_MINUTES=15
+   REFRESH_TOKEN_EXPIRE_DAYS=7
    OPENAI_API_KEY=<your OpenAI key>
    MINIO_ENDPOINT=<your S3/R2 endpoint>
    MINIO_ACCESS_KEY=<your access key>
@@ -136,9 +141,11 @@ NEXT_PUBLIC_APP_VERSION=1.0.0
    NEXT_PUBLIC_API_URL=<your Railway API URL from Step 3>
    NEXT_PUBLIC_APP_NAME=FPConnect
    NEXT_PUBLIC_APP_VERSION=1.0.0
+   NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
    ```
 
-5. Click **Deploy** — your app will be live at `https://<your-project>.vercel.app`
+5. Add `fpconnect.tec.br` in **Vercel → Project → Settings → Domains** and point DNS according to Vercel. See `docs/DOMAIN_MIGRATION.md` for the full domain migration checklist.
+6. Click **Deploy** — your app will be live at `https://<your-project>.vercel.app`
 
 ### Step 5 — Automated CI/CD (GitHub Actions)
 

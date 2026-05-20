@@ -5,7 +5,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.api.routes.tickets import get_current_user_id
+from app.api.deps import get_current_user_id
 from app.core.database import get_db
 from app.crud.machine import get_machines
 from app.schemas.machine import MachineResponse

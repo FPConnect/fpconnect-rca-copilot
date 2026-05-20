@@ -11,6 +11,10 @@ class MachineResponse(BaseModel):
     name: str
     location: str
     type: str
+    model: str | None = None
+    criticality: str = "Média"
+    last_failure: str | None = None
+    recurrent_failures: int = 0
     status: str
     last_check: datetime
 
