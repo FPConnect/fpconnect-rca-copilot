@@ -6,10 +6,25 @@ import ToastManager from "@/components/ToastManager";
 import AppShell from "@/components/AppShell";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthGuard from "@/components/AuthGuard";
+import LanguageRuntime from "@/components/LanguageRuntime";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fpconnect.tec.br";
 
 export const metadata: Metadata = {
-  title: "FPConnect RCA Copilot",
-  description: "RCA Copilot & Availability Engine for Healthcare/MedTech",
+  metadataBase: new URL(siteUrl),
+  title: "FPConnect Engenharia Clínica",
+  description: "Plataforma de incidentes, diagnóstico de falha e gestão de equipamentos clínicos.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "FPConnect Engenharia Clínica",
+    description: "Plataforma de incidentes, diagnóstico de falha e gestão de equipamentos clínicos.",
+    url: siteUrl,
+    siteName: "FPConnect",
+    locale: "pt_BR",
+    type: "website",
+  },
+  title: "FPConnect Engenharia Clínica",
+  description: "Plataforma de incidentes, diagnóstico de falha e gestão de equipamentos clínicos.",
 };
 
 export default function RootLayout({
@@ -18,7 +33,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var raw = localStorage.getItem('fpconnect_system_preferences');
+                var theme = raw ? JSON.parse(raw).theme : 'light';
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var useDark = theme === 'dark' || (theme === 'system' && prefersDark);
+                document.documentElement.classList.toggle('dark', useDark);
+                document.documentElement.dataset.theme = theme;
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
       <body>
         <AuthProvider>
           <AuthGuard>
@@ -26,6 +57,7 @@ export default function RootLayout({
               <SidebarProvider>
                 <AppShell>{children}</AppShell>
                 <ToastManager />
+                <LanguageRuntime />
               </SidebarProvider>
             </NotificationProvider>
           </AuthGuard>

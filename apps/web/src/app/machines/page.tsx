@@ -7,36 +7,41 @@ import FilterBar from "@/components/FilterBar";
 import { api, Machine } from "@/services/api";
 
 const STATUS_COLORS: Record<string, string> = {
-  online: "bg-green-100 text-green-700",
-  warning: "bg-yellow-100 text-yellow-700",
+  online: "bg-emerald-100 text-emerald-700",
+  warning: "bg-amber-100 text-amber-700",
   offline: "bg-red-100 text-red-700",
+};
+
+const CRITICALITY_COLORS: Record<string, string> = {
+  Alta: "border-red-200 bg-red-50 text-red-800",
+  Média: "border-amber-200 bg-amber-50 text-amber-800",
+  Baixa: "border-emerald-200 bg-emerald-50 text-emerald-800",
 };
 
 const FILTERS = [
   {
     key: "status",
-    label: "Status",
+    label: "Status operacional",
     options: [
       { label: "Online", value: "online" },
       { label: "Offline", value: "offline" },
-      { label: "Warning", value: "warning" },
+      { label: "Atenção", value: "warning" },
     ],
   },
   {
-    key: "type",
-    label: "Tipo",
+    key: "criticality",
+    label: "Criticidade",
     options: [
-      { label: "Imaging", value: "imaging" },
-      { label: "Monitoramento", value: "monitoring" },
-      { label: "Suporte de Vida", value: "life-support" },
-      { label: "Infusão", value: "infusion" },
+      { label: "Alta", value: "Alta" },
+      { label: "Média", value: "Média" },
+      { label: "Baixa", value: "Baixa" },
     ],
   },
 ];
 
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 6;
 
-export default function MachinesPage() {
+export default function EquipmentPage() {
   const [machines, setMachines] = useState<Machine[]>([]);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -48,11 +53,16 @@ export default function MachinesPage() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return machines.filter((m) => {
-      const matchSearch = !q || m.name.toLowerCase().includes(q) || m.code.toLowerCase().includes(q) || m.location.toLowerCase().includes(q);
-      const matchStatus = !filters.status || m.status === filters.status;
-      const matchType = !filters.type || m.type === filters.type;
-      return matchSearch && matchStatus && matchType;
+    return machines.filter((equipment) => {
+      const matchSearch =
+        !q ||
+        equipment.name.toLowerCase().includes(q) ||
+        equipment.code.toLowerCase().includes(q) ||
+        equipment.location.toLowerCase().includes(q) ||
+        (equipment.model ?? "").toLowerCase().includes(q);
+      const matchStatus = !filters.status || equipment.status === filters.status;
+      const matchCriticality = !filters.criticality || equipment.criticality === filters.criticality;
+      return matchSearch && matchStatus && matchCriticality;
     });
   }, [machines, search, filters]);
 
@@ -61,27 +71,45 @@ export default function MachinesPage() {
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Máquinas</h1>
-      <div className="flex flex-wrap gap-3 mb-4">
-        <SearchBar placeholder="Pesquisar máquinas..." value={search} onChange={(v) => { setSearch(v); setPage(1); }} className="w-64" />
+    <div className="mx-auto max-w-7xl space-y-6">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <p className="text-sm font-semibold uppercase tracking-wide text-blue-700">Parque instalado</p>
+        <h1 className="mt-1 text-3xl font-bold text-slate-950">Equipamentos</h1>
+        <p className="mt-2 max-w-3xl text-sm text-slate-600">
+          Visão clínica do parque instalado com modelo, unidade, criticidade, status e falhas recorrentes para priorização de atendimento.
+        </p>
+      </section>
+
+      <div className="flex flex-wrap gap-3">
+        <SearchBar placeholder="Pesquisar equipamentos, modelos ou unidades..." value={search} onChange={(v) => { setSearch(v); setPage(1); }} className="w-80" />
         <FilterBar filters={FILTERS} values={filters} onChange={(key, value) => { setFilters((prev) => ({ ...prev, [key]: value })); setPage(1); }} onClear={() => { setFilters({}); setPage(1); }} />
       </div>
-      <div className="bg-white rounded-xl shadow overflow-x-auto">
-        <table className="w-full text-sm min-w-[600px]"><thead className="bg-gray-50 border-b border-gray-200"><tr>{["ID", "Nome", "Localização", "Status", "Último Check"].map((h) => <th key={h} className="px-4 py-3 text-left font-semibold text-gray-600">{h}</th>)}</tr></thead>
-          <tbody className="divide-y divide-gray-100">
-            {paginated.length === 0 ? <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Nenhuma máquina encontrada.</td></tr> : paginated.map((m) => (
-              <tr key={m.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-mono text-gray-500">{m.code}</td>
-                <td className="px-4 py-3 font-medium text-gray-900">{m.name}</td>
-                <td className="px-4 py-3 text-gray-600">{m.location}</td>
-                <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[m.status]}`}>{m.status}</span></td>
-                <td className="px-4 py-3 text-gray-500">{new Date(m.last_check).toLocaleString("pt-BR")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {paginated.map((equipment) => (
+          <article key={equipment.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="font-mono text-xs text-slate-500">{equipment.code}</p>
+                <h2 className="mt-1 text-lg font-bold text-slate-950">{equipment.name}</h2>
+                <p className="text-sm text-slate-500">{equipment.model ?? "Modelo não informado"}</p>
+              </div>
+              <span className={`rounded-full px-2 py-1 text-xs font-semibold ${STATUS_COLORS[equipment.status]}`}>{equipment.status}</span>
+            </div>
+            <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
+              <div><dt className="text-slate-500">Unidade</dt><dd className="font-semibold text-slate-900">{equipment.location}</dd></div>
+              <div><dt className="text-slate-500">Criticidade</dt><dd><span className={`rounded-full border px-2 py-1 text-xs font-semibold ${CRITICALITY_COLORS[equipment.criticality] ?? CRITICALITY_COLORS.Média}`}>{equipment.criticality}</span></dd></div>
+              <div className="col-span-2"><dt className="text-slate-500">Última falha</dt><dd className="font-medium text-slate-800">{equipment.last_failure ?? "Sem falha registrada"}</dd></div>
+            </dl>
+            {equipment.recurrent_failures > 1 && (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+                Indicador de falhas recorrentes: {equipment.recurrent_failures} ocorrências recentes
+              </div>
+            )}
+          </article>
+        ))}
       </div>
+      {paginated.length === 0 && <div className="rounded-xl bg-white p-8 text-center text-slate-400 shadow">Nenhum equipamento encontrado.</div>}
       <Pagination page={safePage} totalPages={totalPages} onPrev={() => setPage((p) => Math.max(1, p - 1))} onNext={() => setPage((p) => Math.min(totalPages, p + 1))} />
     </div>
   );

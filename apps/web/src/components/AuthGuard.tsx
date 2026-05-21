@@ -12,7 +12,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoading) return;
 
-    if (!isAuthenticated && pathname !== "/login") {
+    if (!isAuthenticated && pathname !== "/login" && pathname !== "/") {
       router.replace("/login");
     }
 
@@ -25,7 +25,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     return <div className="p-6 text-sm text-gray-500">Carregando sessão...</div>;
   }
 
-  if (!isAuthenticated && pathname !== "/login") {
+  if (!isAuthenticated && pathname !== "/login" && pathname !== "/") {
     return <div className="p-6 text-sm text-gray-500">Redirecionando para login...</div>;
   }
 

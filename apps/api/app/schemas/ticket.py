@@ -1,5 +1,6 @@
 """Pydantic schemas for ticket-related endpoints."""
 
+from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
@@ -23,6 +24,9 @@ class TicketUpdate(BaseModel):
     status: Optional[str] = None
     priority: Optional[str] = None
     assignee_id: Optional[int] = None
+    root_cause: Optional[str] = None
+    recommendation: Optional[str] = None
+    analysis_completed: Optional[datetime] = None
 
 
 class TicketResponse(BaseModel):
@@ -37,9 +41,42 @@ class TicketResponse(BaseModel):
     location: Optional[str] = None
     creator_id: int
     assignee_id: Optional[int] = None
+    root_cause: Optional[str] = None
+    recommendation: Optional[str] = None
+    analysis_completed: Optional[datetime] = None
 
     class Config:
         from_attributes = True
+
+
+class TicketAttachmentResponse(BaseModel):
+    """Schema for an uploaded ticket attachment."""
+
+    id: int
+    ticket_id: int
+    filename: str
+    content_type: str
+    size_bytes: int
+    download_url: str
+
+    class Config:
+        from_attributes = True
+
+
+class AnalyzeIncidentRequest(BaseModel):
+    """Request body for the clinical diagnosis endpoint."""
+
+    ticket_id: int
+    context: Optional[str] = None
+
+
+class AnalyzeIncidentResponse(BaseModel):
+    """Clinical diagnosis response focused on root cause and next action."""
+
+    ticket_id: int
+    root_cause: str
+    recommendation: str
+    explanation: str
 
 
 class AnalyzeTicketRequest(BaseModel):
