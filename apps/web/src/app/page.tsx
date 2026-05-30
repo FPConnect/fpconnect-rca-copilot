@@ -1,16 +1,5 @@
 import Link from "next/link";
-import {
-  ShieldCheck,
-  Activity,
-  Siren,
-  ArrowRight,
-  Server,
-  Clock3,
-  Stethoscope,
-  Sparkles,
-  ChevronRight,
-  Quote,
-} from "lucide-react";
+import { ShieldCheck, Activity, Siren, ArrowRight, Server, Clock3, Stethoscope } from "lucide-react";
 
 const HIGHLIGHTS = [
   {
@@ -34,42 +23,6 @@ const KPI = [
   { label: "Equipamentos monitoráveis", value: "1.200+", icon: Server },
   { label: "Redução média de MTTR", value: "-32%", icon: Clock3 },
   { label: "SLA de disponibilidade", value: "99,9%", icon: Stethoscope },
-];
-
-const PAID_PLANS = [
-  {
-    name: "Premium",
-    price: "R$ 1.500/mês",
-    summary: "Operação clínica completa com diagnóstico inteligente e colaboração de equipe.",
-    features: ["RCA avançado", "Playbooks operacionais", "Relatórios executivos", "Suporte prioritário"],
-  },
-  {
-    name: "VIP",
-    price: "R$ 4.900/mês",
-    summary: "Para operações críticas com alta disponibilidade e governança multiunidade.",
-    features: ["Tudo do Premium", "Contratos/SLA avançados", "Prioridade máxima de processamento", "Acompanhamento estratégico"],
-  },
-  {
-    name: "Consultoria",
-    price: "R$ 15.000/mês",
-    summary: "Plano consultivo para transformação operacional com apoio especialista dedicado.",
-    features: ["Tudo do VIP", "Squad consultivo", "Roadmap de eficiência", "Implantação assistida"],
-  },
-];
-
-const TESTIMONIALS = [
-  {
-    quote:
-      "Com o FPConnect, reduzimos o tempo entre o alerta e a tomada de decisão. O time de engenharia clínica ganhou previsibilidade.",
-    author: "Mariana F.",
-    role: "Coordenadora de Engenharia Clínica",
-  },
-  {
-    quote:
-      "A visão de incidentes e causa raiz trouxe clareza para priorização. Hoje atuamos de forma muito mais proativa.",
-    author: "Rafael S.",
-    role: "Gestor de Operações Hospitalares",
-  },
 ];
 
 export default function LandingPage() {
@@ -136,82 +89,6 @@ export default function LandingPage() {
               </div>
               <h2 className="text-lg font-bold text-white">{title}</h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-300">{description}</p>
-            </article>
-          ))}
-        </section>
-
-        <section className="mt-14 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-6 shadow-lg shadow-emerald-950/30">
-          <div className="flex flex-wrap items-start justify-between gap-5">
-            <div className="max-w-2xl">
-              <p className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-400/15 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-200">
-                <Sparkles size={14} /> Degustação gratuita
-              </p>
-              <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">Plano Basic para experimentar sem custo</h2>
-              <p className="mt-2 text-sm leading-relaxed text-emerald-100/90 sm:text-base">
-                Acesse o modo gratuito com limite máximo para conhecer a experiência do FPConnect sem compromisso.
-                Ideal para validação inicial com sua equipe.
-              </p>
-            </div>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-400 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-emerald-300"
-            >
-              Testar plano Basic <ChevronRight size={16} />
-            </Link>
-          </div>
-        </section>
-
-        <section className="mt-12">
-          <details className="group rounded-2xl border border-slate-700 bg-slate-900/70 p-6 shadow-xl shadow-slate-900/40">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-200">Menu</p>
-                <h2 className="mt-1 text-2xl font-black text-white">Planos</h2>
-                <p className="mt-1 text-sm text-slate-300">Abra para visualizar os planos pagos em formato de carrossel.</p>
-              </div>
-              <span className="rounded-full border border-slate-600 px-3 py-1 text-xs font-semibold text-slate-200 group-open:bg-cyan-500/20 group-open:text-cyan-100">
-                Abrir / Fechar
-              </span>
-            </summary>
-
-            <div className="mt-6 overflow-x-auto pb-2">
-              <div className="flex snap-x snap-mandatory gap-4">
-                {PAID_PLANS.map((plan) => (
-                  <article
-                    key={plan.name}
-                    className="min-w-[260px] max-w-[320px] shrink-0 snap-start rounded-2xl border border-slate-700 bg-slate-950/70 p-5"
-                  >
-                    <h3 className="text-xl font-black text-white">{plan.name}</h3>
-                    <p className="mt-2 text-2xl font-black text-cyan-200">{plan.price}</p>
-                    <p className="mt-2 text-sm text-slate-300">{plan.summary}</p>
-                    <ul className="mt-4 space-y-2 text-sm text-slate-200">
-                      {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-2">
-                          <span className="mt-1 h-1.5 w-1.5 rounded-full bg-cyan-300" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link
-                      href="/login"
-                      className="mt-5 inline-flex items-center gap-2 rounded-lg border border-cyan-400/50 px-4 py-2 text-sm font-bold text-cyan-200 hover:bg-cyan-500/10"
-                    >
-                      Quero este plano <ArrowRight size={14} />
-                    </Link>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </details>
-        </section>
-
-        <section className="mt-12 grid gap-4 md:grid-cols-2">
-          {TESTIMONIALS.map((item) => (
-            <article key={item.author} className="rounded-2xl border border-slate-700 bg-slate-900/70 p-5">
-              <Quote size={18} className="text-cyan-300" />
-              <p className="mt-3 text-sm leading-relaxed text-slate-200">“{item.quote}”</p>
-              <p className="mt-4 text-sm font-bold text-white">{item.author}</p>
-              <p className="text-xs text-slate-400">{item.role}</p>
             </article>
           ))}
         </section>

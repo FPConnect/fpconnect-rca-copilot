@@ -39,59 +39,19 @@ export interface Machine {
   location: string;
   status: "online" | "offline" | "warning";
   type: string;
-  model?: string | null;
-  criticality: "Baixa" | "Média" | "Alta" | string;
-  last_failure?: string | null;
-  recurrent_failures: number;
   last_check: string;
 }
 
 export interface Ticket {
   id: number;
   title: string;
-  description?: string | null;
   status: string;
   priority: string;
-  device_id?: string | null;
-  location?: string | null;
-  root_cause?: string | null;
-  recommendation?: string | null;
-  analysis_completed?: string | null;
 }
 
 export interface CreateTicketPayload {
   title: string;
   priority: string;
-  description?: string;
-  device_id?: string;
-  location?: string;
-}
-
-export interface AnalyzeResponse {
-  ticket_id: number;
-  root_cause: string;
-  recommendation: string;
-  explanation: string;
-}
-
-export interface Playbook {
-  id: number;
-  title: string;
-  equipment: string;
-  steps: string;
-  files?: string | null;
-}
-
-export interface SLAContract {
-  id: number;
-  equipment: string;
-  vendor: string;
-  response_time_hours: number;
-  penalty?: string | null;
-  sla_compliance: number;
-  expires_at?: string | null;
-  days_to_expire?: number | null;
-  alert?: string | null;
 }
 
 export interface HealthStatus {
@@ -109,107 +69,111 @@ export interface LoginResponse {
   token_type: string;
 }
 
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  full_name?: string;
+  phone_number?: string;
+}
+
+export interface UserProfile {
+  id: number;
+  email: string;
+  full_name?: string | null;
+  phone_number?: string | null;
+  role: string;
+}
+
+export interface UpdateProfilePayload {
+  email?: string;
+  full_name?: string;
+  phone_number?: string;
+}
+
+export interface SmsResponse {
+  status: string;
+  to: string;
+  provider: string;
+  delivered: boolean;
+}
+
 const TICKETS_STORAGE_KEY = "fpconnect_preview_tickets";
-const PLAYBOOKS_STORAGE_KEY = "fpconnect_preview_playbooks";
+const PREVIEW_USERS_KEY = "fpconnect_preview_users";
+const PREVIEW_PROFILE_KEY = "fpconnect_profile";
 
 const FALLBACK_MACHINES: Machine[] = [
   {
     id: 1,
     code: "MRI-01",
-    name: "Ressonância Magnética 1.5T",
-    model: "Magnetom Aera",
+    name: "MRI Scanner",
     location: "Radiologia",
     status: "online",
     type: "imaging",
-    criticality: "Alta",
-    last_failure: "Quench falso positivo no sistema de refrigeração",
-    recurrent_failures: 2,
-    last_check: "2026-05-15T08:30:00-03:00",
+    last_check: "2026-04-15T08:30:00-03:00",
   },
   {
     id: 2,
     code: "ECG-02",
-    name: "Monitor Multiparamétrico",
-    model: "IntelliVue MX450",
-    location: "UTI Adulto",
+    name: "ECG Monitor",
+    location: "UTI",
     status: "warning",
     type: "monitoring",
-    criticality: "Alta",
-    last_failure: "Perda intermitente de SpO2",
-    recurrent_failures: 4,
-    last_check: "2026-05-15T08:26:00-03:00",
+    last_check: "2026-04-15T08:26:00-03:00",
   },
   {
     id: 3,
     code: "VENT-03",
-    name: "Ventilador Pulmonar",
-    model: "Servo-u",
+    name: "Ventilator",
     location: "UTI 2",
     status: "online",
     type: "life-support",
-    criticality: "Alta",
-    last_failure: "Alarme de pressão alta",
-    recurrent_failures: 1,
-    last_check: "2026-05-15T08:31:00-03:00",
+    last_check: "2026-04-15T08:31:00-03:00",
   },
   {
     id: 4,
     code: "DEF-04",
-    name: "Desfibrilador",
-    model: "HeartStart XL+",
-    location: "Pronto Atendimento",
+    name: "Defibrillator",
+    location: "Emergência",
     status: "offline",
     type: "life-support",
-    criticality: "Alta",
-    last_failure: "Falha no autoteste de bateria",
-    recurrent_failures: 3,
-    last_check: "2026-05-15T07:45:00-03:00",
-  },
-  {
-    id: 5,
-    code: "INF-05",
-    name: "Bomba de Infusão",
-    model: "Volumat Agilia",
-    location: "Centro Cirúrgico",
-    status: "online",
-    type: "infusion",
-    criticality: "Média",
-    last_failure: "Oclusão recorrente em equipo",
-    recurrent_failures: 1,
-    last_check: "2026-05-15T08:40:00-03:00",
+    last_check: "2026-04-15T07:45:00-03:00",
   },
 ];
 
 const FALLBACK_TICKETS: Ticket[] = [
-  { id: 101, title: "Perda intermitente de SpO2", description: "Monitor multiparamétrico com alarmes falsos na UTI Adulto.", device_id: "ECG-02", location: "UTI Adulto", status: "open", priority: "critical", root_cause: "Sensor com mau contato ou cabo danificado" },
-  { id: 102, title: "Ventilador com alarme de pressão alta", description: "Alarme durante ventilação assistida.", device_id: "VENT-03", location: "UTI 2", status: "in_progress", priority: "critical", root_cause: "Circuito obstruído ou filtro saturado" },
-  { id: 103, title: "Falha no autoteste de bateria", description: "Desfibrilador indisponível para uso.", device_id: "DEF-04", location: "Pronto Atendimento", status: "open", priority: "high", root_cause: "Bateria abaixo da capacidade mínima" },
+  { id: 101, title: "Ventilador UTI com alarmes intermitentes", status: "open", priority: "critical" },
+  { id: 102, title: "Monitor ECG com latência alta", status: "in_progress", priority: "high" },
+  { id: 103, title: "Calibração preventiva do MRI Scanner", status: "resolved", priority: "medium" },
 ];
 
-const FALLBACK_PLAYBOOKS: Playbook[] = [
-  { id: 1, title: "Troca e validação de sensor SpO2", equipment: "Monitor Multiparamétrico", steps: "1. Isolar leito\n2. Trocar cabo/sensor\n3. Validar curva e alarmes", files: "checklist-spo2.pdf" },
-  { id: 2, title: "Diagnóstico de circuito ventilatório", equipment: "Ventilador Pulmonar", steps: "1. Verificar circuito\n2. Inspecionar filtro\n3. Rodar autoteste", files: null },
-  { id: 3, title: "Substituição de bateria", equipment: "Desfibrilador", steps: "1. Remover do uso\n2. Trocar bateria\n3. Executar autoteste", files: "manual-desfibrilador.pdf" },
-];
-
-const FALLBACK_CONTRACTS: SLAContract[] = [
-  { id: 1, equipment: "Ventilador Pulmonar", vendor: "MedTech Care", response_time_hours: 4, penalty: "Crédito de 5% por violação", sla_compliance: 97.5, expires_at: "2026-06-05T00:00:00Z", days_to_expire: 21, alert: "Contrato vence em até 30 dias" },
-  { id: 2, equipment: "Ressonância Magnética 1.5T", vendor: "Imagem Prime", response_time_hours: 8, penalty: "Plantão técnico sem custo", sla_compliance: 94, expires_at: "2026-08-01T00:00:00Z", days_to_expire: 78, alert: "SLA abaixo da meta" },
-];
-
-function readStorage<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
+function readPreviewTickets(): Ticket[] {
+  if (typeof window === "undefined") return FALLBACK_TICKETS;
   try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
+    const raw = localStorage.getItem(TICKETS_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Ticket[]) : FALLBACK_TICKETS;
   } catch {
-    return fallback;
+    return FALLBACK_TICKETS;
   }
 }
 
-function writeStorage<T>(key: string, value: T) {
+function writePreviewTickets(tickets: Ticket[]) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(key, JSON.stringify(value));
+  localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(tickets));
+}
+
+function readPreviewUsers(): RegisterPayload[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(PREVIEW_USERS_KEY);
+    return raw ? (JSON.parse(raw) as RegisterPayload[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writePreviewUsers(users: RegisterPayload[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(PREVIEW_USERS_KEY, JSON.stringify(users));
 }
 
 async function login(data: LoginPayload): Promise<LoginResponse> {
@@ -222,9 +186,82 @@ async function login(data: LoginPayload): Promise<LoginResponse> {
     const isPreviewAccess =
       data.email.trim().toLowerCase() === "admin@fpconnect.com" &&
       data.password === "admin123";
-    if (!isPreviewAccess) throw error;
-    return { access_token: "fpconnect-official-preview-token", token_type: "bearer" };
+    const previewUser = readPreviewUsers().find(
+      (user) =>
+        user.email.trim().toLowerCase() === data.email.trim().toLowerCase() &&
+        user.password === data.password,
+    );
+
+    if (!isPreviewAccess && !previewUser) {
+      throw error;
+    }
+
+    if (previewUser) {
+      localStorage.setItem(
+        PREVIEW_PROFILE_KEY,
+        JSON.stringify({
+          name: previewUser.full_name || previewUser.email.split("@")[0],
+          email: previewUser.email,
+          phone: previewUser.phone_number || "",
+        }),
+      );
+    }
+
+    return {
+      access_token: "fpconnect-official-preview-token",
+      token_type: "bearer",
+    };
   }
+}
+
+async function register(data: RegisterPayload): Promise<UserProfile> {
+  try {
+    return await request<UserProfile>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  } catch {
+    const users = readPreviewUsers();
+    const email = data.email.trim().toLowerCase();
+    if (users.some((user) => user.email.trim().toLowerCase() === email)) {
+      throw new ApiError(400, "Email already registered");
+    }
+    const nextUser = { ...data, email };
+    writePreviewUsers([nextUser, ...users]);
+    localStorage.setItem(
+      PREVIEW_PROFILE_KEY,
+      JSON.stringify({
+        name: data.full_name || email.split("@")[0],
+        email,
+        phone: data.phone_number || "",
+      }),
+    );
+    return {
+      id: Date.now(),
+      email,
+      full_name: data.full_name,
+      phone_number: data.phone_number,
+      role: "technician",
+    };
+  }
+}
+
+async function getMe(): Promise<UserProfile> {
+  return request<UserProfile>("/auth/me");
+}
+
+async function updateMe(data: UpdateProfilePayload): Promise<UserProfile> {
+  return request<UserProfile>("/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+async function sendSmsNotification(message: string): Promise<SmsResponse> {
+  return request<SmsResponse>("/notifications/sms", {
+    method: "POST",
+    body: JSON.stringify({ message }),
+  });
 }
 
 async function withFallback<T>(requestFn: () => Promise<T>, fallbackFn: () => T): Promise<T> {
@@ -239,34 +276,15 @@ async function createTicket(data: CreateTicketPayload): Promise<Ticket> {
   return withFallback(
     () => request<Ticket>("/tickets", { method: "POST", body: JSON.stringify(data) }),
     () => {
-      const tickets = readStorage<Ticket[]>(TICKETS_STORAGE_KEY, FALLBACK_TICKETS);
-      const ticket: Ticket = { id: Date.now(), title: data.title, priority: data.priority, status: "open", description: data.description, device_id: data.device_id, location: data.location };
-      writeStorage(TICKETS_STORAGE_KEY, [ticket, ...tickets]);
+      const tickets = readPreviewTickets();
+      const ticket: Ticket = {
+        id: Date.now(),
+        title: data.title,
+        priority: data.priority,
+        status: "open",
+      };
+      writePreviewTickets([ticket, ...tickets]);
       return ticket;
-    },
-  );
-}
-
-async function analyzeIncident(ticketId: number): Promise<AnalyzeResponse> {
-  return withFallback(
-    () => request<AnalyzeResponse>("/analyze", { method: "POST", body: JSON.stringify({ ticket_id: ticketId }) }),
-    () => ({
-      ticket_id: ticketId,
-      root_cause: "Falha recorrente em sensor/cabo do equipamento",
-      recommendation: "Aplicar playbook de diagnóstico, substituir componente suspeito e validar com teste funcional.",
-      explanation: "Resultado de demonstração baseado no histórico local de incidentes e severidade clínica.",
-    }),
-  );
-}
-
-async function createPlaybook(data: Omit<Playbook, "id">): Promise<Playbook> {
-  return withFallback(
-    () => request<Playbook>("/playbooks/", { method: "POST", body: JSON.stringify(data) }),
-    () => {
-      const playbooks = readStorage<Playbook[]>(PLAYBOOKS_STORAGE_KEY, FALLBACK_PLAYBOOKS);
-      const playbook = { ...data, id: Date.now() };
-      writeStorage(PLAYBOOKS_STORAGE_KEY, [playbook, ...playbooks]);
-      return playbook;
     },
   );
 }
@@ -274,11 +292,11 @@ async function createPlaybook(data: Omit<Playbook, "id">): Promise<Playbook> {
 export const api = {
   health: () => withFallback(() => request<HealthStatus>("/health"), () => ({ status: "ok", version: "preview" })),
   login,
+  register,
+  getMe,
+  updateMe,
+  sendSmsNotification,
   getMachines: () => withFallback(() => request<Machine[]>("/machines"), () => FALLBACK_MACHINES),
-  getTickets: () => withFallback(() => request<Ticket[]>("/tickets"), () => readStorage<Ticket[]>(TICKETS_STORAGE_KEY, FALLBACK_TICKETS)),
+  getTickets: () => withFallback(() => request<Ticket[]>("/tickets"), readPreviewTickets),
   createTicket,
-  analyzeIncident,
-  getPlaybooks: () => withFallback(() => request<Playbook[]>("/playbooks/"), () => readStorage<Playbook[]>(PLAYBOOKS_STORAGE_KEY, FALLBACK_PLAYBOOKS)),
-  createPlaybook,
-  getContracts: () => withFallback(() => request<SLAContract[]>("/contracts/"), () => FALLBACK_CONTRACTS),
 };

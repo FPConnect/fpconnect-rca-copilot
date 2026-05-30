@@ -8,23 +8,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import AuthGuard from "@/components/AuthGuard";
 import LanguageRuntime from "@/components/LanguageRuntime";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fpconnect.tec.br";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: "FPConnect Engenharia Clínica",
-  description: "Plataforma de incidentes, diagnóstico de falha e gestão de equipamentos clínicos.",
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: "FPConnect Engenharia Clínica",
-    description: "Plataforma de incidentes, diagnóstico de falha e gestão de equipamentos clínicos.",
-    url: siteUrl,
-    siteName: "FPConnect",
-    locale: "pt_BR",
-    type: "website",
-  },
-  title: "FPConnect Engenharia Clínica",
-  description: "Plataforma de incidentes, diagnóstico de falha e gestão de equipamentos clínicos.",
+  title: "FPConnect RCA Copilot",
+  description: "RCA Copilot & Availability Engine for Healthcare/MedTech",
 };
 
 export default function RootLayout({

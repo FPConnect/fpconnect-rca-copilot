@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { api } from "@/services/api";
 
 type AuthContextValue = {
@@ -8,6 +8,12 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (data: {
+    email: string;
+    password: string;
+    full_name?: string;
+    phone_number?: string;
+  }) => Promise<void>;
   logout: () => void;
 };
 
@@ -23,20 +29,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     const result = await api.login({ email, password });
     localStorage.setItem("auth_token", result.access_token);
     setToken(result.access_token);
-  };
+  }, []);
 
-  const logout = () => {
+  const register = useCallback(async (data: {
+    email: string;
+    password: string;
+    full_name?: string;
+    phone_number?: string;
+  }) => {
+    await api.register(data);
+    await login(data.email, data.password);
+  }, [login]);
+
+  const logout = useCallback(() => {
     localStorage.removeItem("auth_token");
     setToken(null);
-  };
+  }, []);
 
   const value = useMemo(
-    () => ({ token, isAuthenticated: Boolean(token), isLoading, login, logout }),
-    [token, isLoading],
+    () => ({ token, isAuthenticated: Boolean(token), isLoading, login, register, logout }),
+    [token, isLoading, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

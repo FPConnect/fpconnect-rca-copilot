@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, User, ChevronDown, LogOut, Settings, Menu, Search, HelpCircle } from "lucide-react";
+import { Bell, User, ChevronDown, LogOut, Settings, Menu } from "lucide-react";
 import Link from "next/link";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
@@ -9,25 +9,9 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
   const [userOpen, setUserOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const { unreadCount, markAllRead } = useNotifications();
   const { toggle } = useSidebar();
   const { logout } = useAuth();
-
-  const faqQuestions = [
-    { q: "Como cadastrar um novo equipamento?", a: "Acesse o menu Máquinas e clique em 'Novo Equipamento'." },
-    { q: "Como visualizar alertas?", a: "Clique no ícone de sino no cabeçalho para ver todos os alertas." },
-    { q: "Como gerar relatórios?", a: "Acesse o menu Métricas e selecione o período desejado." },
-    { q: "Como abrir um chamado?", a: "Vá em Tickets e clique em 'Novo Ticket'." },
-    { q: "Como configurar notificações?", a: "Acesse Configurações > Notificações para personalizar." },
-  ];
-
-  const filteredFAQs = faqQuestions.filter(
-    (item) =>
-      item.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.a.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
@@ -45,50 +29,6 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-4 ml-auto">
-        {/* Search Bar */}
-        <div className="relative">
-          <button
-            onClick={() => setSearchOpen(!searchOpen)}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
-            aria-label="Buscar"
-          >
-            <Search size={20} />
-          </button>
-          {searchOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 py-3 px-4 z-20">
-              <input
-                type="text"
-                placeholder="Buscar nas FAQs..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                autoFocus
-              />
-              <div className="mt-3 max-h-64 overflow-y-auto">
-                {filteredFAQs.length > 0 ? (
-                  filteredFAQs.map((item, idx) => (
-                    <div key={idx} className="mb-3 pb-3 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
-                      <p className="text-sm font-medium text-gray-800">{item.q}</p>
-                      <p className="text-xs text-gray-500 mt-1">{item.a}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-2">Nenhuma pergunta encontrada.</p>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* FAQ Link */}
-        <Link
-          href="#faq"
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
-        >
-          <HelpCircle size={20} />
-          <span className="text-sm font-medium hidden sm:block">Ajuda / FAQs</span>
-        </Link>
-
         {/* Notifications */}
         <Link
           href="/notifications"
@@ -141,3 +81,4 @@ export default function Header() {
     </header>
   );
 }
+
