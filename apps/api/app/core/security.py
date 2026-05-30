@@ -4,14 +4,13 @@ from datetime import datetime, timedelta, timezone
 import re
 from typing import Optional
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt", "pbkdf2_sha256"], deprecated="auto")
 limiter = Limiter(key_func=get_remote_address)
 
 ALGORITHM = settings.algorithm
@@ -21,12 +20,14 @@ REFRESH_TTL_DAYS = settings.refresh_token_expire_days
 
 def hash_password(password: str) -> str:
     """Hash a plain-text password using bcrypt."""
-    return pwd_context.hash(password)
+    salt = bcrypt.gensalt(rounds=12)
+    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return hashed.decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
     """Verify a plain-text password against its hash."""
-    return pwd_context.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
 def validate_password(password: str) -> tuple[bool, list[str]]:
