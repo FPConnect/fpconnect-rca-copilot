@@ -1,5 +1,9 @@
 """Authentication routes: register and login."""
 
+from datetime import datetime, timedelta, timezone
+import hashlib
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from jose import JWTError
 from sqlalchemy.orm import Session
@@ -20,17 +24,43 @@ from app.schemas.user import (
     RefreshTokenRequest,
     TokenResponse,
     UserCreate,
+    UserCreateVerified,
     UserLogin,
     UserResponse,
+    VerificationCodeRequest,
+    VerificationCodeResponse,
     UserUpdate,
 )
 
 router = APIRouter()
 
+VERIFICATION_TTL_SECONDS = 10 * 60
+_verification_codes: dict[str, tuple[str, datetime]] = {}
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    """Register a new user account."""
+
+def _verification_key(email: str) -> str:
+    """Normalize the email key used to store a pending verification code."""
+    return email.strip().lower()
+
+
+def _mask_phone(phone_number: str) -> str:
+    """Mask a phone number while keeping enough context for the UI."""
+    digits = "".join(ch for ch in phone_number if ch.isdigit())
+    if len(digits) <= 4:
+        return phone_number
+    return f"***{digits[-4:]}"
+
+
+def _generate_verification_code(email: str, phone_number: str) -> str:
+    """Generate a six-digit registration code."""
+    if settings.app_env == "development":
+        digest = hashlib.sha256(f"{email}|{phone_number}|fpconnect".encode("utf-8")).hexdigest()
+        return str(int(digest[:8], 16) % 1_000_000).zfill(6)
+    return f"{secrets.randbelow(1_000_000):06d}"
+
+
+def _validate_user_create(user_data: UserCreate, db: Session) -> None:
+    """Validate role, password policy, and email uniqueness for account creation."""
     if user_data.role == "technician":
         user_data.role = "user"
     if user_data.role not in ROLE_ACCESS_LEVELS:
@@ -52,7 +82,63 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
+
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    """Register a new user account."""
+    _validate_user_create(user_data, db)
     return create_user(db, user_data)
+
+
+@router.post("/verification-code", response_model=VerificationCodeResponse)
+def send_verification_code(payload: VerificationCodeRequest, db: Session = Depends(get_db)):
+    """Generate and send a registration verification code to the supplied phone number."""
+    if get_user_by_email(db, payload.email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered",
+        )
+
+    digits = "".join(ch for ch in payload.phone_number if ch.isdigit())
+    if len(digits) < 10:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="A valid phone number is required to send the verification code",
+        )
+
+    code = _generate_verification_code(str(payload.email), payload.phone_number)
+    expires_at = datetime.now(timezone.utc) + timedelta(seconds=VERIFICATION_TTL_SECONDS)
+    _verification_codes[_verification_key(str(payload.email))] = (code, expires_at)
+    response_code = code if settings.app_env == "development" else None
+    return VerificationCodeResponse(
+        status="sent",
+        to=_mask_phone(payload.phone_number),
+        provider="development-mock" if settings.app_env == "development" else "sms-provider",
+        expires_in_seconds=VERIFICATION_TTL_SECONDS,
+        verification_code=response_code,
+    )
+
+
+@router.post("/register/verify", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def register_verified(user_data: UserCreateVerified, db: Session = Depends(get_db)):
+    """Register a new user only after validating the phone verification code."""
+    key = _verification_key(str(user_data.email))
+    stored = _verification_codes.get(key)
+    if not stored:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification code not requested")
+
+    expected_code, expires_at = stored
+    if datetime.now(timezone.utc) > expires_at:
+        _verification_codes.pop(key, None)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification code expired")
+    if not secrets.compare_digest(expected_code, user_data.verification_code):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification code")
+
+    _validate_user_create(user_data, db)
+    user = create_user(db, user_data)
+    _verification_codes.pop(key, None)
+    return user
 
 
 @router.post("/login", response_model=TokenResponse)

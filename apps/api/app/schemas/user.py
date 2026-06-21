@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 ROLE_ACCESS_LEVELS = {"visitor": 1, "user": 2, "manager": 3, "admin": 4, "master": 5}
 
@@ -15,6 +15,29 @@ class UserCreate(BaseModel):
     full_name: Optional[str] = None
     phone_number: Optional[str] = None
     role: str = "user"
+
+
+class VerificationCodeRequest(BaseModel):
+    """Schema for requesting a registration verification code."""
+
+    email: EmailStr
+    phone_number: str
+
+
+class VerificationCodeResponse(BaseModel):
+    """Schema returned after a verification code is generated/sent."""
+
+    status: str
+    to: str
+    provider: str
+    expires_in_seconds: int
+    verification_code: Optional[str] = None
+
+
+class UserCreateVerified(UserCreate):
+    """Schema for creating a user after phone verification."""
+
+    verification_code: str = Field(..., min_length=4, max_length=8)
 
 
 class UserLogin(BaseModel):

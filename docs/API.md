@@ -29,6 +29,46 @@ Response 201:
 }
 ```
 
+
+### Send registration verification code
+```
+POST /auth/verification-code
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "phone_number": "+55 47 99678-9861"
+}
+
+Response 200:
+{
+  "status": "sent",
+  "to": "***9861",
+  "provider": "development-mock",
+  "expires_in_seconds": 600,
+  "verification_code": "123456"
+}
+```
+
+`verification_code` is returned only in development/preview mode. In production the code is sent by the configured SMS provider.
+
+### Register with verification code
+```
+POST /auth/register/verify
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "StrongPass123!",
+  "full_name": "John Doe",
+  "phone_number": "+55 47 99678-9861",
+  "role": "user",
+  "verification_code": "123456"
+}
+
+Response 201: UserObject
+```
+
 ### Login
 ```
 POST /auth/login

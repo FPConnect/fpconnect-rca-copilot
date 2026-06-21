@@ -75,6 +75,20 @@ export interface RegisterPayload {
   password: string;
   full_name?: string;
   phone_number?: string;
+  verification_code?: string;
+}
+
+export interface VerificationCodePayload {
+  email: string;
+  phone_number: string;
+}
+
+export interface VerificationCodeResponse {
+  status: string;
+  to: string;
+  provider: string;
+  expires_in_seconds: number;
+  verification_code?: string | null;
 }
 
 export interface UserProfile {
@@ -267,9 +281,26 @@ async function login(data: LoginPayload): Promise<LoginResponse> {
   }
 }
 
+async function sendVerificationCode(data: VerificationCodePayload): Promise<VerificationCodeResponse> {
+  return withFallback(
+    () => request<VerificationCodeResponse>("/auth/verification-code", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+    () => ({
+      status: "sent",
+      to: data.phone_number,
+      provider: "preview-local",
+      expires_in_seconds: 10 * 60,
+      verification_code: "123456",
+    }),
+  );
+}
+
 async function register(data: RegisterPayload): Promise<UserProfile> {
   try {
-    return await request<UserProfile>("/auth/register", {
+    const path = data.verification_code ? "/auth/register/verify" : "/auth/register";
+    return await request<UserProfile>(path, {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -357,6 +388,7 @@ export const api = {
   health: () => withFallback(() => request<HealthStatus>("/health"), () => ({ status: "ok", version: "preview" })),
   login,
   register,
+  sendVerificationCode,
   getMe,
   updateMe,
   testAccounts: TEST_ACCOUNTS.map((account) => ({
