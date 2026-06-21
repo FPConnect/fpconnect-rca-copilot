@@ -9,7 +9,7 @@ from slowapi.errors import RateLimitExceeded
 import structlog
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.api.routes import analyze, auth, contracts, enterprise, machines, playbooks, tickets
+from app.api.routes import analyze, auth, contracts, enterprise, machines, notifications, playbooks, tickets
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.core.security import limiter
@@ -72,6 +72,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
 app.include_router(machines.router, prefix="/machines", tags=["machines"])
+app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
 app.include_router(analyze.router, prefix="/analyze", tags=["clinical-diagnosis"])
 app.include_router(playbooks.router, prefix="/playbooks", tags=["playbooks"])
 app.include_router(contracts.router, prefix="/contracts", tags=["contracts"])

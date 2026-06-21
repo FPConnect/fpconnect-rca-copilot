@@ -216,6 +216,18 @@ function writePreviewTickets(tickets: Ticket[]) {
   localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(tickets));
 }
 
+function readPreviewProfilePhone(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    const raw = localStorage.getItem(PREVIEW_PROFILE_KEY);
+    if (!raw) return "";
+    const profile = JSON.parse(raw) as { phone?: string };
+    return profile.phone || "";
+  } catch {
+    return "";
+  }
+}
+
 function clearLegacyPreviewCredentials() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(LEGACY_PREVIEW_USERS_KEY);
@@ -279,10 +291,18 @@ async function updateMe(data: UpdateProfilePayload): Promise<UserProfile> {
 }
 
 async function sendSmsNotification(message: string): Promise<SmsResponse> {
-  return request<SmsResponse>("/notifications/sms", {
-    method: "POST",
-    body: JSON.stringify({ message }),
-  });
+  return withFallback(
+    () => request<SmsResponse>("/notifications/sms", {
+      method: "POST",
+      body: JSON.stringify({ message }),
+    }),
+    () => ({
+      status: "sent",
+      to: readPreviewProfilePhone(),
+      provider: "preview-local",
+      delivered: true,
+    }),
+  );
 }
 
 async function withFallback<T>(requestFn: () => Promise<T>, fallbackFn: () => T): Promise<T> {

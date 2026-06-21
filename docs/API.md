@@ -13,7 +13,9 @@ Content-Type: application/json
   "email": "user@example.com",
   "password": "StrongPass123!",
   "full_name": "John Doe",
-  "role": "user"
+  "phone_number": "+55 47 99678-9861",
+  "role": "user",
+  "access_level": 2
 }
 
 Response 201:
@@ -21,7 +23,9 @@ Response 201:
   "id": 1,
   "email": "user@example.com",
   "full_name": "John Doe",
-  "role": "user"
+  "phone_number": "+55 47 99678-9861",
+  "role": "user",
+  "access_level": 2
 }
 ```
 
@@ -38,6 +42,7 @@ Content-Type: application/json
 Response 200:
 {
   "access_token": "eyJ...",
+  "refresh_token": "eyJ...",
   "token_type": "bearer"
 }
 ```
@@ -126,3 +131,28 @@ GET /health
 
 Response 200: { "status": "ok" }
 ```
+
+
+## Notifications
+
+Notification endpoints require `Authorization: Bearer <token>` header.
+
+### Send SMS test notification
+```
+POST /notifications/sms
+Content-Type: application/json
+
+{
+  "message": "FPConnect: SMS ativado para alertas operacionais."
+}
+
+Response 200:
+{
+  "status": "sent",
+  "to": "+55 47 99678-9861",
+  "provider": "development-mock",
+  "delivered": true
+}
+```
+
+The current provider is a development mock. It validates the authenticated user's `phone_number` and returns the same response contract expected by the web settings page.
