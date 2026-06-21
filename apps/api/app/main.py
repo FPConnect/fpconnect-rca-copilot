@@ -9,18 +9,11 @@ from slowapi.errors import RateLimitExceeded
 import structlog
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.api.routes import (
-    analyze,
-    auth,
-    contracts,
-    enterprise,
-    machines,
-    playbooks,
-    tickets,
-)
+from app.api.routes import analyze, auth, contracts, enterprise, machines, playbooks, tickets
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import Base, SessionLocal, engine
 from app.core.security import limiter
+from app.core.test_accounts import reset_test_accounts
 from app.models import machine, playbook, ticket, user  # noqa: F401
 
 structlog.configure(
@@ -49,95 +42,13 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         )
         return response
 
-
-from app.api.routes import (
-    analyze,
-    auth,
-    contracts,
-    enterprise,
-    machines,
-    playbooks,
-    tickets,
-)
-from app.core.config import settings
-from app.core.database import Base, engine
-from app.core.security import limiter
-from app.models import machine, playbook, ticket, user  # noqa: F401
-
-structlog.configure(
-    processors=[
-        structlog.processors.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.JSONRenderer(),
-    ]
-)
-log = structlog.get_logger()
-
-
-class LoggingMiddleware(BaseHTTPMiddleware):
-    """Emit structured JSON logs for HTTP requests."""
-
-    async def dispatch(self, request: Request, call_next):
-        start = datetime.now(timezone.utc)
-        response = await call_next(request)
-        duration = (datetime.now(timezone.utc) - start).total_seconds()
-        log.info(
-            "http_request",
-            method=request.method,
-            path=request.url.path,
-            status=response.status_code,
-            duration=duration,
-        )
-        return response
-
-
-from app.api.routes import (
-    analyze,
-    auth,
-    contracts,
-    enterprise,
-    machines,
-    playbooks,
-    tickets,
-)
-from app.core.config import settings
-from app.core.database import Base, engine
-from app.core.security import limiter
-from app.models import machine, playbook, ticket, user  # noqa: F401
-
-structlog.configure(
-    processors=[
-        structlog.processors.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.JSONRenderer(),
-    ]
-)
-log = structlog.get_logger()
-
-
-class LoggingMiddleware(BaseHTTPMiddleware):
-    """Emit structured JSON logs for HTTP requests."""
-
-    async def dispatch(self, request: Request, call_next):
-        start = datetime.now(timezone.utc)
-        response = await call_next(request)
-        duration = (datetime.now(timezone.utc) - start).total_seconds()
-        log.info(
-            "http_request",
-            method=request.method,
-            path=request.url.path,
-            status=response.status_code,
-            duration=duration,
-        )
-        return response
-
-from app.api.routes import analyze, auth, contracts, machines, playbooks, tickets
-from app.core.config import settings
-from app.core.database import Base, engine
-from app.models import machine, playbook, ticket, user  # noqa: F401
 
 # Create database tables on startup
 Base.metadata.create_all(bind=engine)
+
+if settings.app_env == "development":
+    with SessionLocal() as seed_db:
+        reset_test_accounts(seed_db)
 
 app = FastAPI(
     title="FPConnect RCA Copilot API",

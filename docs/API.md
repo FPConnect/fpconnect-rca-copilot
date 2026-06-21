@@ -13,7 +13,7 @@ Content-Type: application/json
   "email": "user@example.com",
   "password": "StrongPass123!",
   "full_name": "John Doe",
-  "role": "technician"
+  "role": "user"
 }
 
 Response 201:
@@ -21,7 +21,7 @@ Response 201:
   "id": 1,
   "email": "user@example.com",
   "full_name": "John Doe",
-  "role": "technician"
+  "role": "user"
 }
 ```
 

@@ -6,10 +6,6 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user_id
-import magic
-from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile, status
-from sqlalchemy.orm import Session
-
 from app.core.config import settings
 from app.core.database import get_db
 from app.crud.ticket import (
@@ -130,24 +126,12 @@ def _detect_image_mime_from_signature(body: bytes) -> str:
 async def validate_image_real_type(body: bytes) -> str:
     """Validate the actual MIME type detected from the uploaded bytes."""
     mime = _detect_image_mime_from_signature(body)
-
-    try:
-        import magic
-
-        mime = magic.from_buffer(body, mime=True)
-    except ImportError:
-        mime = _detect_image_mime_from_signature(body)
-
-async def validate_image_real_type(body: bytes) -> str:
-    """Validate the actual MIME type detected from the uploaded bytes."""
-    mime = magic.from_buffer(body, mime=True)
     if mime not in ALLOWED_IMAGE_CONTENT_TYPES:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail=f"Real file type {mime} is not supported",
         )
     return mime
-
 
 def _attachment_response(attachment) -> TicketAttachmentResponse:
     """Build an API response with a short-lived attachment URL."""

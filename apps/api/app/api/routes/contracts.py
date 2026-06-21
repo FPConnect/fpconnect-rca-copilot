@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user_id
-from app.api.routes.tickets import get_current_user_id
 from app.core.database import get_db
 from app.crud.playbook import (
     contract_alert,

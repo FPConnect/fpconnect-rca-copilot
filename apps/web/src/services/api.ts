@@ -67,6 +67,7 @@ export interface LoginPayload {
 export interface LoginResponse {
   access_token: string;
   token_type: string;
+  refresh_token?: string;
 }
 
 export interface RegisterPayload {
@@ -82,12 +83,45 @@ export interface UserProfile {
   full_name?: string | null;
   phone_number?: string | null;
   role: string;
+  access_level?: number;
 }
 
 export interface UpdateProfilePayload {
   email?: string;
   full_name?: string;
   phone_number?: string;
+}
+
+export interface Playbook {
+  id: number;
+  title: string;
+  equipment: string;
+  steps: string;
+  files?: string | null;
+}
+
+export interface CreatePlaybookPayload {
+  title: string;
+  equipment: string;
+  steps: string;
+  files?: string | null;
+}
+
+export interface SLAContract {
+  id: number;
+  equipment: string;
+  vendor: string;
+  response_time_hours: number;
+  sla_compliance: number;
+  days_to_expire?: number | null;
+  alert?: string | null;
+}
+
+export interface AnalyzeResponse {
+  ticket_id: number;
+  root_cause: string;
+  explanation: string;
+  recommendation: string;
 }
 
 export interface SmsResponse {
@@ -98,8 +132,18 @@ export interface SmsResponse {
 }
 
 const TICKETS_STORAGE_KEY = "fpconnect_preview_tickets";
-const PREVIEW_USERS_KEY = "fpconnect_preview_users";
+const LEGACY_PREVIEW_USERS_KEY = "fpconnect_preview_users";
 const PREVIEW_PROFILE_KEY = "fpconnect_profile";
+
+type TestAccount = UserProfile & { password: string };
+
+const TEST_ACCOUNTS: TestAccount[] = [
+  { id: 1, email: "master@fpconnect.com", password: "Master@2024Secure!", full_name: "Master", role: "master", access_level: 5 },
+  { id: 2, email: "admin_teste@fpconnect.com", password: "Admin@123", full_name: "Administrador", role: "admin", access_level: 4 },
+  { id: 3, email: "gerente_teste@fpconnect.com", password: "Gerente@123", full_name: "Gerente", role: "manager", access_level: 3 },
+  { id: 4, email: "usuario_teste@fpconnect.com", password: "Usuario@123", full_name: "Usuário", role: "user", access_level: 2 },
+  { id: 5, email: "visitante_teste@fpconnect.com", password: "Visitante@123", full_name: "Visitante", role: "visitor", access_level: 1 },
+];
 
 const FALLBACK_MACHINES: Machine[] = [
   {
@@ -140,6 +184,17 @@ const FALLBACK_MACHINES: Machine[] = [
   },
 ];
 
+
+const FALLBACK_PLAYBOOKS: Playbook[] = [
+  { id: 1, title: "Troca e validação de sensor SpO2", equipment: "Monitor Multiparamétrico", steps: "1. Isolar leito.\n2. Trocar cabo/sensor.\n3. Validar curva e alarmes.\n4. Registrar evento.", files: null },
+  { id: 2, title: "Diagnóstico de circuito ventilatório obstruído", equipment: "Ventilador Pulmonar", steps: "1. Verificar circuito.\n2. Inspecionar filtro HME.\n3. Rodar autoteste.\n4. Liberar com checklist.", files: null },
+];
+
+const FALLBACK_CONTRACTS: SLAContract[] = [
+  { id: 1, equipment: "Ventilador Pulmonar", vendor: "MedTech Care", response_time_hours: 4, sla_compliance: 97.5, days_to_expire: 20, alert: "Vencimento próximo" },
+  { id: 2, equipment: "Ressonância Magnética 1.5T", vendor: "Imagem Prime", response_time_hours: 8, sla_compliance: 94, days_to_expire: 75, alert: null },
+];
+
 const FALLBACK_TICKETS: Ticket[] = [
   { id: 101, title: "Ventilador UTI com alarmes intermitentes", status: "open", priority: "critical" },
   { id: 102, title: "Monitor ECG com latência alta", status: "in_progress", priority: "high" },
@@ -161,19 +216,9 @@ function writePreviewTickets(tickets: Ticket[]) {
   localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(tickets));
 }
 
-function readPreviewUsers(): RegisterPayload[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(PREVIEW_USERS_KEY);
-    return raw ? (JSON.parse(raw) as RegisterPayload[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writePreviewUsers(users: RegisterPayload[]) {
+function clearLegacyPreviewCredentials() {
   if (typeof window === "undefined") return;
-  localStorage.setItem(PREVIEW_USERS_KEY, JSON.stringify(users));
+  localStorage.removeItem(LEGACY_PREVIEW_USERS_KEY);
 }
 
 async function login(data: LoginPayload): Promise<LoginResponse> {
@@ -183,32 +228,28 @@ async function login(data: LoginPayload): Promise<LoginResponse> {
       body: JSON.stringify(data),
     });
   } catch (error) {
-    const isPreviewAccess =
-      data.email.trim().toLowerCase() === "admin@fpconnect.com" &&
-      data.password === "admin123";
-    const previewUser = readPreviewUsers().find(
-      (user) =>
-        user.email.trim().toLowerCase() === data.email.trim().toLowerCase() &&
-        user.password === data.password,
+    clearLegacyPreviewCredentials();
+    const previewAccount = TEST_ACCOUNTS.find(
+      (account) =>
+        account.email === data.email.trim().toLowerCase() &&
+        account.password === data.password,
     );
 
-    if (!isPreviewAccess && !previewUser) {
+    if (!previewAccount) {
       throw error;
     }
 
-    if (previewUser) {
-      localStorage.setItem(
-        PREVIEW_PROFILE_KEY,
-        JSON.stringify({
-          name: previewUser.full_name || previewUser.email.split("@")[0],
-          email: previewUser.email,
-          phone: previewUser.phone_number || "",
-        }),
-      );
-    }
+    localStorage.setItem(
+      PREVIEW_PROFILE_KEY,
+      JSON.stringify({
+        name: previewAccount.full_name,
+        email: previewAccount.email,
+        phone: "",
+      }),
+    );
 
     return {
-      access_token: "fpconnect-official-preview-token",
+      access_token: `fpconnect-preview-token-${previewAccount.role}`,
       token_type: "bearer",
     };
   }
@@ -220,29 +261,9 @@ async function register(data: RegisterPayload): Promise<UserProfile> {
       method: "POST",
       body: JSON.stringify(data),
     });
-  } catch {
-    const users = readPreviewUsers();
-    const email = data.email.trim().toLowerCase();
-    if (users.some((user) => user.email.trim().toLowerCase() === email)) {
-      throw new ApiError(400, "Email already registered");
-    }
-    const nextUser = { ...data, email };
-    writePreviewUsers([nextUser, ...users]);
-    localStorage.setItem(
-      PREVIEW_PROFILE_KEY,
-      JSON.stringify({
-        name: data.full_name || email.split("@")[0],
-        email,
-        phone: data.phone_number || "",
-      }),
-    );
-    return {
-      id: Date.now(),
-      email,
-      full_name: data.full_name,
-      phone_number: data.phone_number,
-      role: "technician",
-    };
+  } catch (error) {
+    clearLegacyPreviewCredentials();
+    throw error;
   }
 }
 
@@ -272,6 +293,29 @@ async function withFallback<T>(requestFn: () => Promise<T>, fallbackFn: () => T)
   }
 }
 
+async function createPlaybook(data: CreatePlaybookPayload): Promise<Playbook> {
+  return withFallback(
+    () => request<Playbook>("/playbooks/", { method: "POST", body: JSON.stringify(data) }),
+    () => ({ id: Date.now(), ...data }),
+  );
+}
+
+async function analyzeIncident(ticketId: number): Promise<AnalyzeResponse> {
+  return withFallback(
+    () =>
+      request<AnalyzeResponse>("/analyze", {
+        method: "POST",
+        body: JSON.stringify({ ticket_id: ticketId }),
+      }),
+    () => ({
+      ticket_id: ticketId,
+      root_cause: "Falha intermitente em sensor ou conexão do equipamento",
+      explanation: "Diagnóstico em modo preview baseado nos chamados clínicos locais. Valide cabos, sensores, histórico de alarmes e condições de uso antes de liberar o equipamento.",
+      recommendation: "Isolar o equipamento, executar checklist funcional, substituir acessórios suspeitos e registrar evidências no chamado.",
+    }),
+  );
+}
+
 async function createTicket(data: CreateTicketPayload): Promise<Ticket> {
   return withFallback(
     () => request<Ticket>("/tickets", { method: "POST", body: JSON.stringify(data) }),
@@ -295,7 +339,20 @@ export const api = {
   register,
   getMe,
   updateMe,
+  testAccounts: TEST_ACCOUNTS.map((account) => ({
+    id: account.id,
+    email: account.email,
+    full_name: account.full_name,
+    phone_number: account.phone_number,
+    role: account.role,
+    access_level: account.access_level,
+  })),
+  clearLegacyPreviewCredentials,
   sendSmsNotification,
+  analyzeIncident,
+  getPlaybooks: () => withFallback(() => request<Playbook[]>("/playbooks/"), () => FALLBACK_PLAYBOOKS),
+  createPlaybook,
+  getContracts: () => withFallback(() => request<SLAContract[]>("/contracts/"), () => FALLBACK_CONTRACTS),
   getMachines: () => withFallback(() => request<Machine[]>("/machines"), () => FALLBACK_MACHINES),
   getTickets: () => withFallback(() => request<Ticket[]>("/tickets"), readPreviewTickets),
   createTicket,

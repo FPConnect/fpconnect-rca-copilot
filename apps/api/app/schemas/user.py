@@ -4,6 +4,8 @@ from typing import Optional
 
 from pydantic import BaseModel, EmailStr
 
+ROLE_ACCESS_LEVELS = {"visitor": 1, "user": 2, "manager": 3, "admin": 4, "master": 5}
+
 
 class UserCreate(BaseModel):
     """Schema for creating a new user."""
@@ -11,7 +13,8 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: Optional[str] = None
-    role: str = "technician"
+    phone_number: Optional[str] = None
+    role: str = "user"
 
 
 class UserLogin(BaseModel):
@@ -27,10 +30,20 @@ class UserResponse(BaseModel):
     id: int
     email: str
     full_name: Optional[str] = None
+    phone_number: Optional[str] = None
     role: str
+    access_level: int
 
     class Config:
         from_attributes = True
+
+
+class UserUpdate(BaseModel):
+    """Schema for updating the current user profile."""
+
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
+    phone_number: Optional[str] = None
 
 
 class RefreshTokenRequest(BaseModel):

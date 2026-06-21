@@ -21,11 +21,13 @@ def upgrade() -> None:
         sa.Column("email", sa.String(), nullable=False),
         sa.Column("hashed_password", sa.String(), nullable=False),
         sa.Column("full_name", sa.String(), nullable=True),
+        sa.Column("phone_number", sa.String(), nullable=True),
         sa.Column(
             "role",
-            sa.Enum("admin", "manager", "technician", name="user_role"),
+            sa.Enum("master", "admin", "manager", "user", "visitor", name="user_role"),
             nullable=False,
         ),
+        sa.Column("access_level", sa.Integer(), nullable=False, server_default="2"),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),

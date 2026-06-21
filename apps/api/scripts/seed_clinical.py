@@ -7,7 +7,7 @@ Run from apps/api:
 from datetime import datetime, timedelta, timezone
 
 from app.core.database import Base, SessionLocal, engine
-from app.core.security import hash_password
+from app.core.test_accounts import reset_test_accounts
 from app.models.machine import Machine
 from app.models.playbook import Playbook, SLAContract
 from app.models.ticket import Ticket, TicketLog
@@ -43,27 +43,16 @@ PLAYBOOKS = [
 ]
 
 
-def get_or_create_admin(db):
-    user = db.query(User).filter(User.email == "admin@fpconnect.com").first()
-    if user:
-        return user
-    user = User(
-        email="admin@fpconnect.com",
-        hashed_password=hash_password("admin123"),
-        full_name="Engenharia Clínica",
-        role="admin",
-    )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
+def get_or_create_master(db):
+    reset_test_accounts(db)
+    return db.query(User).filter(User.email == "master@fpconnect.com").one()
 
 
 def seed():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
-        user = get_or_create_admin(db)
+        user = get_or_create_master(db)
         if db.query(Machine).count() == 0:
             for code, name, model, location, type_, criticality, status, recurrent in MACHINES:
                 db.add(

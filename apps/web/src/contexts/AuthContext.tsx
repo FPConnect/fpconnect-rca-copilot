@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    api.clearLegacyPreviewCredentials();
     const stored = localStorage.getItem("auth_token");
     if (stored) setToken(stored);
     setIsLoading(false);
