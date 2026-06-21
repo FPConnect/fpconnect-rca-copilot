@@ -1,35 +1,55 @@
 ```
-# Database files
-*.db
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.ENV
+.ENV.*
+.venv.bak/
+env.bak/
 
-# Environment
+# Alembic
+alembic/versions/*.py
+
+# Logs
+*.log
+
+# Environment variables
 .env
 .env.local
 .env.*
+!.env.example
 
-# Dependencies
-node_modules/
-.venv/
-venv/
-__pycache__/
-.mypy_cache/
-.pytest_cache/
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
 
 # Build artifacts
 dist/
 build/
-target/
+*.egg-info/
 
-# Editors
-.vscode/
-.idea/
+# Testing
+.pytest_cache/
+.mypy_cache/
 
-# Logs and temp files
-*.log
+# Temporary files
 *.tmp
-*.swp
-
-# System files
-.DS_Store
-Thumbs.db
+*.temp
 ```
