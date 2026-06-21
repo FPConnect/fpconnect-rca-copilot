@@ -13,6 +13,7 @@ type AuthContextValue = {
     password: string;
     full_name?: string;
     phone_number?: string;
+    verification_code?: string;
   }) => Promise<void>;
   logout: () => void;
 };
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    api.clearLegacyPreviewCredentials();
     const stored = localStorage.getItem("auth_token");
     if (stored) setToken(stored);
     setIsLoading(false);
@@ -40,6 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string;
     full_name?: string;
     phone_number?: string;
+    verification_code?: string;
   }) => {
     await api.register(data);
     await login(data.email, data.password);

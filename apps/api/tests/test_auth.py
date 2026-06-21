@@ -105,3 +105,58 @@ def test_refresh_token_success():
     assert response.status_code == 200
     assert response.json()["access_token"]
     assert response.json()["refresh_token"] == refresh
+
+
+def test_send_verification_code_success():
+    response = client.post(
+        "/auth/verification-code",
+        json={"email": "verify@example.com", "phone_number": "+55 51 98510-2172"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "sent"
+    assert data["to"] == "***2172"
+    assert data["verification_code"]
+
+
+def test_register_with_verification_code_success():
+    code_response = client.post(
+        "/auth/verification-code",
+        json={"email": "verified@example.com", "phone_number": "+55 51 98510-2172"},
+    )
+    code = code_response.json()["verification_code"]
+
+    response = client.post(
+        "/auth/register/verify",
+        json={
+            "email": "verified@example.com",
+            "password": "SecurePass123",
+            "full_name": "Verified User",
+            "phone_number": "+55 51 98510-2172",
+            "verification_code": code,
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["email"] == "verified@example.com"
+    assert response.json()["phone_number"] == "+55 51 98510-2172"
+
+
+def test_register_with_invalid_verification_code_fails():
+    client.post(
+        "/auth/verification-code",
+        json={"email": "invalid-code@example.com", "phone_number": "+55 51 98510-2172"},
+    )
+
+    response = client.post(
+        "/auth/register/verify",
+        json={
+            "email": "invalid-code@example.com",
+            "password": "SecurePass123",
+            "full_name": "Invalid Code",
+            "phone_number": "+55 51 98510-2172",
+            "verification_code": "000000",
+        },
+    )
+
+    assert response.status_code == 400

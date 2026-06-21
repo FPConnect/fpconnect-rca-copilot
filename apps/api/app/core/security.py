@@ -33,16 +33,14 @@ def verify_password(plain: str, hashed: str) -> bool:
 def validate_password(password: str) -> tuple[bool, list[str]]:
     """Validate enterprise password complexity requirements."""
     errors: list[str] = []
-    if len(password) < 12:
-        errors.append("min 12 chars")
+    if len(password) < 8:
+        errors.append("min 8 chars")
     if not re.search(r"[A-Z]", password):
         errors.append("1 uppercase")
     if not re.search(r"[a-z]", password):
         errors.append("1 lowercase")
     if not re.search(r"\d", password):
         errors.append("1 digit")
-    if not re.search(r"[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>/?]", password):
-        errors.append("1 special")
     return len(errors) == 0, errors
 
 

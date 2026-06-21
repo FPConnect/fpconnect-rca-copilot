@@ -42,8 +42,8 @@ const TIMEZONES = [
 ];
 
 const INITIAL_PROFILE: ProfileForm = {
-  name: "Admin",
-  email: "admin@hospital.com",
+  name: "Master",
+  email: "master@fpconnect.com",
   phone: "+55 47 99678-9861",
 };
 const INITIAL_SYSTEM: SystemPrefs = {
