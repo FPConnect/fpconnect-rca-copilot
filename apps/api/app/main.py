@@ -131,9 +131,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         )
         return response
 
-from app.api.routes import analyze, auth, contracts, machines, playbooks, tickets
+from app.api.routes import (\n    analyze,\n    auth,\n    contracts,\n    enterprise,\n    machines,\n    playbooks,\n    tickets,\n    rbac,\n)
 from app.core.config import settings
 from app.core.database import Base, engine
+from app.core.security import limiter
 from app.models import machine, playbook, ticket, user  # noqa: F401
 
 # Create database tables on startup
@@ -165,6 +166,7 @@ app.include_router(analyze.router, prefix="/analyze", tags=["clinical-diagnosis"
 app.include_router(playbooks.router, prefix="/playbooks", tags=["playbooks"])
 app.include_router(contracts.router, prefix="/contracts", tags=["contracts"])
 app.include_router(enterprise.router, prefix="/enterprise", tags=["enterprise"])
+app.include_router(rbac.router, prefix="/rbac", tags=["rbac"])
 
 
 @app.get("/health")
