@@ -22,14 +22,14 @@ import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 
 const navItems = [
-  { href: "/dashboard", label: "Início", icon: LayoutDashboard },
-  { href: "/risk-radar", label: "Radar de Risco", icon: ShieldAlert },
-  { href: "/evidence-copilot", label: "RCA com Evidências", icon: BookOpenCheck },
-  { href: "/value-engine", label: "Motor de Valor", icon: CircleDollarSign },
+  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+  { href: "/risk-radar", label: "Risk Radar", icon: ShieldAlert },
+  { href: "/evidence-copilot", label: "RCA Evidence", icon: BookOpenCheck },
+  { href: "/value-engine", label: "Value Engine", icon: CircleDollarSign },
   { href: "/machines", label: "Máquinas", icon: Monitor },
-  { href: "/health-checks", label: "Verificações", icon: HeartPulse },
+  { href: "/health-checks", label: "Health Checks", icon: HeartPulse },
   { href: "/alerts", label: "Alertas", icon: Bell },
-  { href: "/tickets", label: "Chamados", icon: Ticket },
+  { href: "/tickets", label: "Tickets", icon: Ticket },
   { href: "/metrics", label: "Métricas", icon: BarChart2 },
   { href: "/maintenance", label: "Manutenção", icon: Wrench },
   { href: "/access-control", label: "Controle de Acesso", icon: ShieldCheck },
@@ -48,7 +48,7 @@ export default function Sidebar() {
           <span className="text-xl font-bold tracking-tight text-blue-400">
             FPConnect
           </span>
-          <span className="block text-xs text-gray-400 mt-0.5">Tecnologias</span>
+          <span className="block text-xs text-gray-400 mt-0.5">Technologies</span>
         </div>
         <button
           onClick={close}

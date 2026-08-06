@@ -32,9 +32,9 @@ const TICKET_CARDS = [
 ];
 
 const ONBOARDING_STEPS = [
-  { href: "/risk-radar", icon: ShieldAlert, title: "Ative o Radar de Risco Clínico", description: "Cruze UDI, firmware, recall, cibersegurança e risco regulatório por equipamento." },
-  { href: "/evidence-copilot", icon: BookOpenCheck, title: "Use RCA com evidência", description: "Gere causa provável com manuais, histórico, contenção e pacote para fornecedor." },
-  { href: "/value-engine", icon: CircleDollarSign, title: "Mostre ROI e renovação", description: "Converta indisponibilidade evitada em valor financeiro e expansão contratual." },
+  { href: "/risk-radar", icon: ShieldAlert, title: "Ative o Clinical Risk Radar", description: "Cruze UDI, firmware, recall, cyber e risco regulatorio por equipamento." },
+  { href: "/evidence-copilot", icon: BookOpenCheck, title: "Use RCA com evidencia", description: "Gere causa provavel com manuais, historico, contencao e pacote para fornecedor." },
+  { href: "/value-engine", icon: CircleDollarSign, title: "Mostre ROI e renovacao", description: "Converta downtime evitado em valor financeiro e expansao contratual." },
   { href: "/machines", icon: Monitor, title: "Cadastre suas máquinas", description: "Adicione os equipamentos hospitalares que deseja monitorar." },
   { href: "/health-checks", icon: HeartPulse, title: "Configure verificações de saúde", description: "Defina verificações periódicas de disponibilidade para cada equipamento." },
   { href: "/alerts", icon: Bell, title: "Ative alertas", description: "Receba notificações em tempo real quando um equipamento apresentar falha." },

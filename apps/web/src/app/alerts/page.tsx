@@ -6,10 +6,10 @@ import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
 
 const ALERTS = [
-  { id: 1, severity: "critical", message: "Autoteste do desfibrilador falhou", machine: "M004", time: "há 1 hora", acknowledged: false },
-  { id: 2, severity: "high", message: "Monitor de ECG com alta latência (250 ms)", machine: "M002", time: "há 5 min", acknowledged: false },
-  { id: 3, severity: "medium", message: "Manutenção programada da ressonância magnética pendente", machine: "M001", time: "há 2 horas", acknowledged: true },
-  { id: 4, severity: "low", message: "Rotação de logs do monitor multiparamétrico", machine: "M005", time: "há 4 horas", acknowledged: true },
+  { id: 1, severity: "critical", message: "Defibrillator self-test failed", machine: "M004", time: "1 hour ago", acknowledged: false },
+  { id: 2, severity: "high", message: "ECG Monitor high latency (250ms)", machine: "M002", time: "5 min ago", acknowledged: false },
+  { id: 3, severity: "medium", message: "MRI Scanner scheduled maintenance due", machine: "M001", time: "2 hours ago", acknowledged: true },
+  { id: 4, severity: "low", message: "Patient Monitor log rotation", machine: "M005", time: "4 hours ago", acknowledged: true },
 ];
 
 const SEVERITY_CONFIG: Record<string, { icon: typeof AlertOctagon; bg: string; text: string }> = {

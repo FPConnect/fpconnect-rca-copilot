@@ -24,11 +24,12 @@ export default function Header() {
           <Menu size={20} />
         </button>
         <h1 className="text-base font-semibold text-gray-700 hidden sm:block">
-          Monitor de Equipamentos Clínicos
+          Healthcare Equipment Monitor
         </h1>
       </div>
 
       <div className="flex items-center gap-4 ml-auto">
+        {/* Notifications */}
         <Link
           href="/notifications"
           onClick={markAllRead}
@@ -43,6 +44,7 @@ export default function Header() {
           )}
         </Link>
 
+        {/* User menu */}
         <div className="relative">
           <button
             onClick={() => setUserOpen(!userOpen)}

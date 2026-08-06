@@ -163,7 +163,7 @@ const FALLBACK_MACHINES: Machine[] = [
   {
     id: 1,
     code: "MRI-01",
-    name: "Ressonância magnética",
+    name: "MRI Scanner",
     location: "Radiologia",
     status: "online",
     type: "imaging",
@@ -172,7 +172,7 @@ const FALLBACK_MACHINES: Machine[] = [
   {
     id: 2,
     code: "ECG-02",
-    name: "Monitor de ECG",
+    name: "ECG Monitor",
     location: "UTI",
     status: "warning",
     type: "monitoring",
@@ -181,7 +181,7 @@ const FALLBACK_MACHINES: Machine[] = [
   {
     id: 3,
     code: "VENT-03",
-    name: "Ventilador",
+    name: "Ventilator",
     location: "UTI 2",
     status: "online",
     type: "life-support",
@@ -190,7 +190,7 @@ const FALLBACK_MACHINES: Machine[] = [
   {
     id: 4,
     code: "DEF-04",
-    name: "Desfibrilador",
+    name: "Defibrillator",
     location: "Emergência",
     status: "offline",
     type: "life-support",
@@ -212,7 +212,7 @@ const FALLBACK_CONTRACTS: SLAContract[] = [
 const FALLBACK_TICKETS: Ticket[] = [
   { id: 101, title: "Ventilador UTI com alarmes intermitentes", status: "open", priority: "critical" },
   { id: 102, title: "Monitor ECG com latência alta", status: "in_progress", priority: "high" },
-  { id: 103, title: "Calibração preventiva da ressonância magnética", status: "resolved", priority: "medium" },
+  { id: 103, title: "Calibração preventiva do MRI Scanner", status: "resolved", priority: "medium" },
 ];
 
 function readPreviewTickets(): Ticket[] {

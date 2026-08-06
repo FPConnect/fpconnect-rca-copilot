@@ -5,27 +5,15 @@ import Modal from "@/components/Modal";
 import Form from "@/components/Form";
 
 const SCHEDULED = [
-  { id: 1, machine: "Ressonância magnética", type: "Preventive", date: "2026-03-01", technician: "João Silva", status: "scheduled" },
-  { id: 2, machine: "Desfibrilador", type: "Corrective", date: "2026-02-27", technician: "Maria Santos", status: "in_progress" },
-  { id: 3, machine: "Monitor de ECG", type: "Calibration", date: "2026-03-10", technician: "Carlos Rocha", status: "scheduled" },
+  { id: 1, machine: "MRI Scanner", type: "Preventive", date: "2026-03-01", technician: "João Silva", status: "scheduled" },
+  { id: 2, machine: "Defibrillator", type: "Corrective", date: "2026-02-27", technician: "Maria Santos", status: "in_progress" },
+  { id: 3, machine: "ECG Monitor", type: "Calibration", date: "2026-03-10", technician: "Carlos Rocha", status: "scheduled" },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
   scheduled: "bg-blue-100 text-blue-700",
   in_progress: "bg-yellow-100 text-yellow-700",
   completed: "bg-green-100 text-green-700",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  scheduled: "Agendada",
-  in_progress: "Em andamento",
-  completed: "Concluída",
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  Preventive: "Preventiva",
-  Corrective: "Corretiva",
-  Calibration: "Calibração",
 };
 
 const MAINTENANCE_STORAGE_KEY = "fpconnect_maintenance_schedule";
@@ -99,12 +87,12 @@ export default function MaintenancePage() {
             {schedule.map((s) => (
               <tr key={s.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900">{s.machine}</td>
-                <td className="px-4 py-3 text-gray-600">{TYPE_LABELS[s.type] ?? s.type}</td>
+                <td className="px-4 py-3 text-gray-600">{s.type}</td>
                 <td className="px-4 py-3 text-gray-600">{s.date}</td>
                 <td className="px-4 py-3 text-gray-600">{s.technician}</td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[s.status]}`}>
-                    {STATUS_LABELS[s.status] ?? s.status}
+                    {s.status}
                   </span>
                 </td>
               </tr>
@@ -122,7 +110,7 @@ export default function MaintenancePage() {
                 type="text"
                 value={machine}
                 onChange={(e) => setMachine(e.target.value)}
-                placeholder="Ex.: Ressonância magnética"
+                placeholder="Ex: MRI Scanner"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
