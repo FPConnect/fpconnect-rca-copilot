@@ -18,6 +18,14 @@ const evidenceTone = {
   checklist: "bg-slate-100 text-slate-800 border-slate-200",
 };
 
+const evidenceLabel = {
+  manual: "manual",
+  history: "histórico",
+  telemetry: "telemetria",
+  external: "externa",
+  checklist: "checklist",
+};
+
 export default function EvidenceCopilotPage() {
   const averageConfidence = Math.round(
     EVIDENCE_COPILOT_CASES.reduce((sum, item) => sum + item.confidence, 0) /
@@ -31,13 +39,13 @@ export default function EvidenceCopilotPage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700">
               <Brain size={14} />
-              RCA Copilot com evidencia
+              RCA Copilot com evidência
             </div>
             <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 md:text-4xl">
-              O tecnico nao recebe uma resposta generica; recebe um pacote tecnico defensavel.
+              O técnico não recebe uma resposta genérica; recebe um pacote técnico defensável.
             </h1>
             <p className="mt-3 text-sm leading-6 text-slate-600 md:text-base">
-              Cada analise combina sintomas, manuais, historico, telemetria, sinais externos e perguntas guiadas. O resultado vira checklist de contencao, mensagem para fornecedor e rascunho CAPA/RCA.
+              Cada análise combina sintomas, manuais, histórico, telemetria, sinais externos e perguntas guiadas. O resultado vira checklist de contenção, mensagem para fornecedor e rascunho CAPA/RCA.
             </p>
           </div>
           <Link
@@ -56,15 +64,15 @@ export default function EvidenceCopilotPage() {
           <p className="mt-2 text-3xl font-bold text-slate-950">{EVIDENCE_COPILOT_CASES.length}</p>
         </div>
         <div className="border-l-4 border-emerald-500 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Confianca media</p>
+          <p className="text-sm font-medium text-slate-500">Confiança média</p>
           <p className="mt-2 text-3xl font-bold text-slate-950">{averageConfidence}%</p>
         </div>
         <div className="border-l-4 border-orange-500 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Pacotes OEM</p>
+          <p className="text-sm font-medium text-slate-500">Pacotes para fabricante</p>
           <p className="mt-2 text-3xl font-bold text-slate-950">2</p>
         </div>
         <div className="border-l-4 border-violet-500 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Evidencias anexadas</p>
+          <p className="text-sm font-medium text-slate-500">Evidências anexadas</p>
           <p className="mt-2 text-3xl font-bold text-slate-950">
             {EVIDENCE_COPILOT_CASES.reduce((sum, item) => sum + item.evidence.length, 0)}
           </p>
@@ -81,7 +89,7 @@ export default function EvidenceCopilotPage() {
                     {item.id}
                   </span>
                   <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
-                    {item.confidence}% confianca
+                    {item.confidence}% confiança
                   </span>
                 </div>
                 <h2 className="mt-3 text-2xl font-bold text-slate-950">{item.ticketTitle}</h2>
@@ -100,7 +108,7 @@ export default function EvidenceCopilotPage() {
                   <div>
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                       <ShieldCheck size={16} />
-                      Causa provavel
+                      Causa provável
                     </div>
                     <p className="mt-2 text-sm leading-6 text-slate-600">{item.probableCause}</p>
                   </div>
@@ -109,7 +117,7 @@ export default function EvidenceCopilotPage() {
                 <div className="mt-5 border border-blue-100 bg-blue-50 p-4">
                   <div className="flex items-center gap-2 text-sm font-semibold text-blue-950">
                     <ClipboardList size={16} />
-                    Contencao guiada
+                    Contenção guiada
                   </div>
                   <ol className="mt-3 space-y-2">
                     {item.containmentSteps.map((step, index) => (
@@ -127,13 +135,13 @@ export default function EvidenceCopilotPage() {
               <div className="p-5">
                 <div className="grid gap-4 xl:grid-cols-2">
                   <div>
-                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Evidencias usadas</h3>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Evidências usadas</h3>
                     <div className="mt-3 space-y-3">
                       {item.evidence.map((evidence) => (
                         <div key={`${item.id}-${evidence.label}`} className="border border-slate-100 bg-slate-50 p-3">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold ${evidenceTone[evidence.type]}`}>
-                              {evidence.type}
+                              {evidenceLabel[evidence.type]}
                             </span>
                             <span className="text-xs font-semibold text-slate-700">{evidence.label}</span>
                           </div>
@@ -160,7 +168,7 @@ export default function EvidenceCopilotPage() {
                   <div className="border border-orange-100 bg-orange-50 p-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-orange-950">
                       <MessageSquareText size={16} />
-                      Mensagem para OEM
+                      Mensagem para fabricante
                     </div>
                     <p className="mt-2 text-sm leading-6 text-orange-950">{item.oemMessage}</p>
                   </div>

@@ -4,17 +4,21 @@ import { useEffect } from "react";
 
 const SYSTEM_STORAGE_KEY = "fpconnect_system_preferences";
 const LANGUAGE_CHANGE_EVENT = "fpconnect:language-change";
+const LANGUAGE_BASELINE_KEY = "fpconnect_language_baseline_v2";
 
 type Language = "pt-BR" | "en-US";
 
 const PT_TO_EN: Record<string, string> = {
   "FPConnect": "FPConnect",
-  "Technologies": "Technologies",
-  "Home": "Home",
+  "Tecnologias": "Technologies",
+  "Início": "Home",
+  "Radar de Risco": "Risk Radar",
+  "RCA com Evidências": "RCA Evidence",
+  "Motor de Valor": "Value Engine",
   "Máquinas": "Machines",
-  "Health Checks": "Health Checks",
+  "Verificações": "Health Checks",
   "Alertas": "Alerts",
-  "Tickets": "Tickets",
+  "Chamados": "Tickets",
   "Métricas": "Metrics",
   "Manutenção": "Maintenance",
   "Controle de Acesso": "Access Control",
@@ -22,7 +26,7 @@ const PT_TO_EN: Record<string, string> = {
   "Notificações": "Notifications",
   "Configurações": "Settings",
   "Sair": "Sign out",
-  "Healthcare Equipment Monitor": "Healthcare Equipment Monitor",
+  "Monitor de Equipamentos Clínicos": "Healthcare Equipment Monitor",
   "Dashboard Operacional": "Operational Dashboard",
   "Acompanhe disponibilidade, risco e performance dos equipamentos em um painel unificado para resposta rápida.": "Track availability, risk, and equipment performance in one unified panel for faster response.",
   "Tickets Abertos": "Open Tickets",
@@ -36,6 +40,12 @@ const PT_TO_EN: Record<string, string> = {
   "dias": "days",
   "vs mês anterior": "vs previous month",
   "Primeiros Passos": "First Steps",
+  "Ative o Radar de Risco Clínico": "Enable Clinical Risk Radar",
+  "Cruze UDI, firmware, recall, cibersegurança e risco regulatório por equipamento.": "Cross-check UDI, firmware, recall, cybersecurity, and regulatory risk by equipment.",
+  "Use RCA com evidência": "Use evidence-backed RCA",
+  "Gere causa provável com manuais, histórico, contenção e pacote para fornecedor.": "Generate probable cause with manuals, history, containment, and supplier package.",
+  "Mostre ROI e renovação": "Show ROI and renewal",
+  "Converta indisponibilidade evitada em valor financeiro e expansão contratual.": "Convert avoided downtime into financial value and contract expansion.",
   "Configure o FPConnect em poucos minutos para começar a monitorar os equipamentos da sua operação.": "Configure FPConnect in a few minutes to start monitoring your operation's equipment.",
   "Cadastre suas máquinas": "Register your machines",
   "Adicione os equipamentos hospitalares que deseja monitorar.": "Add the hospital equipment you want to monitor.",
@@ -119,7 +129,7 @@ const PT_TO_EN: Record<string, string> = {
   "Preferências redefinidas": "Preferences reset",
   "Todas as configurações foram restauradas.": "All settings have been restored.",
   "Pesquisar máquinas...": "Search machines...",
-  "Pesquisar tickets...": "Search tickets...",
+  "Pesquisar chamados...": "Search tickets...",
   "Pesquisar alertas...": "Search alerts...",
   "Pesquisar histórico...": "Search history...",
   "Tipo": "Type",
@@ -146,7 +156,7 @@ const PT_TO_EN: Record<string, string> = {
   "Reconhecer": "Acknowledge",
   "Nenhum alerta encontrado.": "No alerts found.",
   "Nenhuma máquina encontrada.": "No machines found.",
-  "Nenhum ticket encontrado.": "No tickets found.",
+  "Nenhum chamado encontrado.": "No tickets found.",
   "Nenhum evento encontrado.": "No events found.",
   "Nenhum resultado encontrado.": "No results found.",
   "ID": "ID",
@@ -172,8 +182,8 @@ const PT_TO_EN: Record<string, string> = {
   "Alertas (7d)": "Alerts (7d)",
   "Uptime por Equipamento": "Uptime by Equipment",
   "incidente(s)": "incident(s)",
-  "Create Ticket": "Create Ticket",
-  "Ticket title": "Ticket title",
+  "Criar chamado": "Create Ticket",
+  "Título do chamado": "Ticket title",
   "Low": "Low",
   "Medium": "Medium",
   "High": "High",
@@ -192,8 +202,31 @@ const EN_TO_PT = Object.fromEntries(
 const originalText = new WeakMap<Text, string>();
 const originalAttributes = new WeakMap<Element, Map<string, string>>();
 
+function normalizeLegacyLanguagePreference() {
+  const baseline = localStorage.getItem(LANGUAGE_BASELINE_KEY);
+  if (baseline === "portuguese-copy-2026-08") return;
+
+  const raw = localStorage.getItem(SYSTEM_STORAGE_KEY);
+  if (raw) {
+    try {
+      const preferences = JSON.parse(raw) as { language?: Language };
+      if (preferences.language === "en-US") {
+        localStorage.setItem(
+          SYSTEM_STORAGE_KEY,
+          JSON.stringify({ ...preferences, language: "pt-BR" }),
+        );
+      }
+    } catch {
+      localStorage.removeItem(SYSTEM_STORAGE_KEY);
+    }
+  }
+
+  localStorage.setItem(LANGUAGE_BASELINE_KEY, "portuguese-copy-2026-08");
+}
+
 function readLanguage(): Language {
   try {
+    normalizeLegacyLanguagePreference();
     const raw = localStorage.getItem(SYSTEM_STORAGE_KEY);
     const language = raw ? JSON.parse(raw).language : "pt-BR";
     return language === "en-US" ? "en-US" : "pt-BR";

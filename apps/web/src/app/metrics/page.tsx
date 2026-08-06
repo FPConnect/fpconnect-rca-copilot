@@ -6,11 +6,11 @@ const METRICS = [
 ];
 
 const PERFORMANCE = [
-  { machine: "MRI Scanner", uptime: 99.8, incidents: 0 },
-  { machine: "ECG Monitor", uptime: 94.5, incidents: 3 },
-  { machine: "Ventilator", uptime: 99.9, incidents: 0 },
-  { machine: "Defibrillator", uptime: 78.2, incidents: 5 },
-  { machine: "Patient Monitor", uptime: 98.7, incidents: 1 },
+  { machine: "Ressonância magnética", uptime: 99.8, incidents: 0 },
+  { machine: "Monitor de ECG", uptime: 94.5, incidents: 3 },
+  { machine: "Ventilador", uptime: 99.9, incidents: 0 },
+  { machine: "Desfibrilador", uptime: 78.2, incidents: 5 },
+  { machine: "Monitor multiparamétrico", uptime: 98.7, incidents: 1 },
 ];
 
 export default function MetricsPage() {

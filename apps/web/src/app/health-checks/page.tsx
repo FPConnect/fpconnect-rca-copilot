@@ -4,17 +4,24 @@ import { useState } from "react";
 import { CheckCircle, AlertTriangle, XCircle } from "lucide-react";
 
 const CHECKS = [
-  { id: 1, machine: "MRI Scanner", check: "Temperature", result: "OK", value: "36°C", time: "2 min ago" },
-  { id: 2, machine: "ECG Monitor", check: "Connectivity", result: "WARNING", value: "Latency 250ms", time: "5 min ago" },
-  { id: 3, machine: "Ventilator", check: "Battery", result: "OK", value: "98%", time: "1 min ago" },
-  { id: 4, machine: "Defibrillator", check: "Self-test", result: "FAIL", value: "Error code 0x1A", time: "1 hour ago" },
-  { id: 5, machine: "Patient Monitor", check: "Signal", result: "OK", value: "Strong", time: "3 min ago" },
+  { id: 1, machine: "Ressonância magnética", check: "Temperatura", result: "OK", value: "36°C", time: "há 2 min" },
+  { id: 2, machine: "Monitor de ECG", check: "Conectividade", result: "WARNING", value: "Latência 250 ms", time: "há 5 min" },
+  { id: 3, machine: "Ventilador", check: "Bateria", result: "OK", value: "98%", time: "há 1 min" },
+  { id: 4, machine: "Desfibrilador", check: "Autoteste", result: "FAIL", value: "Código de erro 0x1A", time: "há 1 hora" },
+  { id: 5, machine: "Monitor multiparamétrico", check: "Sinal", result: "OK", value: "Forte", time: "há 3 min" },
 ];
 
 const RESULT_CONFIG: Record<string, { icon: typeof CheckCircle; color: string }> = {
   OK: { icon: CheckCircle, color: "text-green-500" },
   WARNING: { icon: AlertTriangle, color: "text-yellow-500" },
   FAIL: { icon: XCircle, color: "text-red-500" },
+};
+
+const FILTER_LABELS: Record<string, string> = {
+  ALL: "Todos",
+  OK: "OK",
+  WARNING: "Atenção",
+  FAIL: "Falha",
 };
 
 export default function HealthChecksPage() {
@@ -25,7 +32,7 @@ export default function HealthChecksPage() {
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Health Checks</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Verificações de Saúde</h1>
         <div className="flex gap-2">
           {["ALL", "OK", "WARNING", "FAIL"].map((f) => (
             <button
@@ -37,7 +44,7 @@ export default function HealthChecksPage() {
                   : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
               }`}
             >
-              {f}
+              {FILTER_LABELS[f]}
             </button>
           ))}
         </div>

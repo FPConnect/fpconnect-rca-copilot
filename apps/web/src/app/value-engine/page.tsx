@@ -25,6 +25,12 @@ const renewalTone = {
   high: "bg-red-50 text-red-800 border-red-200",
 };
 
+const renewalLabel = {
+  low: "baixo",
+  medium: "médio",
+  high: "alto",
+};
+
 export default function ValueEnginePage() {
   const totalAvoidedLoss = VALUE_ENGINE_SCENARIOS.reduce((sum, item) => sum + item.avoidedLossBRL, 0);
   const totalExpansion = VALUE_ENGINE_SCENARIOS.reduce((sum, item) => sum + item.renewalExpansionBRL, 0);
@@ -37,20 +43,20 @@ export default function ValueEnginePage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
               <CircleDollarSign size={14} />
-              FPConnect Value Engine
+              FPConnect Motor de Valor
             </div>
             <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 md:text-4xl">
-              Transforme engenharia clinica em dinheiro protegido, risco reduzido e renovacao.
+              Transforme engenharia clínica em dinheiro protegido, risco reduzido e renovação.
             </h1>
             <p className="mt-3 text-sm leading-6 text-slate-600 md:text-base">
-              O sistema deixa de entregar apenas relatorios operacionais. Ele gera uma narrativa executiva de ROI, expansao contratual e valor de pos-venda para diretoria, financeiro e patrocinador do contrato.
+              O sistema deixa de entregar apenas relatórios operacionais. Ele gera uma narrativa executiva de ROI, expansão contratual e valor de pós-venda para diretoria, financeiro e patrocinador do contrato.
             </p>
           </div>
           <Link
             href="/risk-radar"
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
           >
-            Voltar ao Risk Radar
+            Voltar ao Radar de Risco
             <ArrowRight size={16} />
           </Link>
         </div>
@@ -58,17 +64,17 @@ export default function ValueEnginePage() {
 
       <section className="grid gap-4 md:grid-cols-3">
         <div className="border-l-4 border-emerald-500 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Perda evitada demonstravel</p>
+          <p className="text-sm font-medium text-slate-500">Perda evitada demonstrável</p>
           <p className="mt-2 text-3xl font-bold text-slate-950">{formatCurrency(totalAvoidedLoss)}</p>
           <p className="mt-1 text-xs text-slate-500">Base para conversa com diretoria e financeiro.</p>
         </div>
         <div className="border-l-4 border-blue-500 bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-slate-500">Upsell recomendado</p>
           <p className="mt-2 text-3xl font-bold text-slate-950">{formatCurrency(totalExpansion)}</p>
-          <p className="mt-1 text-xs text-slate-500">Pacotes de expansao defendidos por evidencias.</p>
+          <p className="mt-1 text-xs text-slate-500">Pacotes de expansão defendidos por evidências.</p>
         </div>
         <div className="border-l-4 border-violet-500 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">Ativos criticos protegidos</p>
+          <p className="text-sm font-medium text-slate-500">Ativos críticos protegidos</p>
           <p className="mt-2 text-3xl font-bold text-slate-950">{totalProtectedAssets}</p>
           <p className="mt-1 text-xs text-slate-500">Escopo premium de monitoramento e RCA.</p>
         </div>
@@ -82,7 +88,7 @@ export default function ValueEnginePage() {
               Como vender diferente
             </div>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              A conversa deixa de ser &quot;temos dashboard e tickets&quot; e vira &quot;protegemos X reais, reduzimos Y horas de indisponibilidade e sabemos onde expandir o contrato&quot;.
+              A conversa deixa de ser &quot;temos painel e chamados&quot; e vira &quot;protegemos X reais, reduzimos Y horas de indisponibilidade e sabemos onde expandir o contrato&quot;.
             </p>
           </div>
           <div className="border border-emerald-200 bg-emerald-50 p-5">
@@ -91,20 +97,20 @@ export default function ValueEnginePage() {
               Oferta premium sugerida
             </div>
             <ul className="mt-3 space-y-2 text-sm leading-5 text-emerald-950">
-              <li>Risk Radar para compliance, recall e cyber.</li>
-              <li>RCA Copilot com evidencias e pacote OEM.</li>
-              <li>Relatorio mensal executivo de ROI e renovacao.</li>
+              <li>Radar de Risco para compliance, recall e cibersegurança.</li>
+              <li>RCA Copilot com evidências e pacote para fabricante.</li>
+              <li>Relatório mensal executivo de ROI e renovação.</li>
             </ul>
           </div>
           <div className="border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
               <FileText size={16} />
-              Entregaveis que geram renovacao
+              Entregáveis que geram renovação
             </div>
             <ul className="mt-3 space-y-2 text-sm leading-5 text-slate-600">
               <li>Resumo executivo mensal para diretoria.</li>
-              <li>Ranking de ativos que justificam expansao.</li>
-              <li>Pacote de evidencia para qualidade, auditoria e fornecedor.</li>
+              <li>Ranking de ativos que justificam expansão.</li>
+              <li>Pacote de evidências para qualidade, auditoria e fornecedor.</li>
               <li>Comparativo antes/depois de SLA, MTTR e disponibilidade.</li>
             </ul>
           </div>
@@ -119,7 +125,7 @@ export default function ValueEnginePage() {
                     {scenario.period}
                   </span>
                   <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${renewalTone[scenario.renewalRisk]}`}>
-                    risco de renovacao {scenario.renewalRisk}
+                    risco de renovação {renewalLabel[scenario.renewalRisk]}
                   </span>
                 </div>
                 <h2 className="mt-3 text-2xl font-bold text-slate-950">{scenario.clientProfile}</h2>
@@ -144,7 +150,7 @@ export default function ValueEnginePage() {
                 <div className="p-4">
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase text-slate-500">
                     <LineChart size={14} />
-                    Expansao
+                    Expansão
                   </div>
                   <p className="mt-1 text-2xl font-bold text-slate-950">{formatCurrency(scenario.renewalExpansionBRL)}</p>
                 </div>
