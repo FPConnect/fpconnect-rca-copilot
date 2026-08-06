@@ -6,9 +6,9 @@ import Header from "@/components/Header";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAuthFreePage = pathname === "/login" || pathname === "/";
+  const isLogin = pathname === "/login";
 
-  if (isAuthFreePage) {
+  if (isLogin) {
     return <main className="min-h-screen p-6 bg-gray-50">{children}</main>;
   }
 
