@@ -1,15 +1,5 @@
 import Link from "next/link";
-import {
-  Monitor,
-  HeartPulse,
-  Bell,
-  Ticket,
-  BarChart2,
-  Settings,
-  ShieldAlert,
-  BookOpenCheck,
-  CircleDollarSign,
-} from "lucide-react";
+import { Monitor, HeartPulse, Bell, Ticket, BarChart2, Settings } from "lucide-react";
 
 type PerformanceStatProps = { title: string; value: string; unit: string; trend: string };
 
@@ -32,9 +22,6 @@ const TICKET_CARDS = [
 ];
 
 const ONBOARDING_STEPS = [
-  { href: "/risk-radar", icon: ShieldAlert, title: "Ative o Clinical Risk Radar", description: "Cruze UDI, firmware, recall, cyber e risco regulatorio por equipamento." },
-  { href: "/evidence-copilot", icon: BookOpenCheck, title: "Use RCA com evidencia", description: "Gere causa provavel com manuais, historico, contencao e pacote para fornecedor." },
-  { href: "/value-engine", icon: CircleDollarSign, title: "Mostre ROI e renovacao", description: "Converta downtime evitado em valor financeiro e expansao contratual." },
   { href: "/machines", icon: Monitor, title: "Cadastre suas máquinas", description: "Adicione os equipamentos hospitalares que deseja monitorar." },
   { href: "/health-checks", icon: HeartPulse, title: "Configure verificações de saúde", description: "Defina verificações periódicas de disponibilidade para cada equipamento." },
   { href: "/alerts", icon: Bell, title: "Ative alertas", description: "Receba notificações em tempo real quando um equipamento apresentar falha." },

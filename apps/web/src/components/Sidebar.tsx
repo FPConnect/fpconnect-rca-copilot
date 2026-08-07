@@ -10,9 +10,6 @@ import {
   BarChart2,
   Wrench,
   ShieldCheck,
-  ShieldAlert,
-  BookOpenCheck,
-  CircleDollarSign,
   History,
   Settings,
   Ticket,
@@ -23,9 +20,6 @@ import { useSidebar } from "@/contexts/SidebarContext";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/risk-radar", label: "Risk Radar", icon: ShieldAlert },
-  { href: "/evidence-copilot", label: "RCA Evidence", icon: BookOpenCheck },
-  { href: "/value-engine", label: "Value Engine", icon: CircleDollarSign },
   { href: "/machines", label: "Máquinas", icon: Monitor },
   { href: "/health-checks", label: "Health Checks", icon: HeartPulse },
   { href: "/alerts", label: "Alertas", icon: Bell },
