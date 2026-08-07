@@ -1,0 +1,69 @@
+# Add/remove sources freely. The engine polls these feeds and stores new items.
+# IMPORTANT: LinkedIn Premium is NOT an API. Do not scrape LinkedIn.
+# Use only official APIs or manual exports for LinkedIn content.
+
+sources:
+  - name: CISA Alerts (US-CERT)
+    type: rss
+    url: https://www.cisa.gov/uscert/ncas/alerts.xml
+    tags: [cybersecurity, ransomware, healthcare]
+
+  - name: CISA Advisories
+    type: rss
+    url: https://www.cisa.gov/cybersecurity-advisories.xml
+    tags: [cybersecurity, cve]
+
+  - name: PubMed (Predictive Maintenance)
+    type: rss
+    url: https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=predictive+maintenance+medical+equipment&sort=date
+    tags: [predictive_maintenance, research]
+
+  - name: PubMed (HL7 + Interoperability)
+    type: rss
+    url: https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=HL7+FHIR+interoperability&sort=date
+    tags: [hl7, fhir, interoperability, research]
+
+  # Add regulatory RSS feeds here (direct RSS URLs). Example categories:
+  # - FDA medical device recalls
+  # - ANVISA alerts
+  # - MHRA/EMA updates
+
+  # --- DHS / Digital Health Solutions (Nihon Kohden NKDHS) ---
+  # Products: HealthConnect (EMR/HL7), VirtualCare (remote ICU), DataInsight (analytics)
+  # Products include: Enterprise Gateway, NKAnywhere, NetKonnect, Prefense, ViTrac, CoMET
+  # https://www.digitalhealthsolutions.com
+
+  - name: MedCity News
+    type: rss
+    url: https://medcitynews.com/feed/
+    tags: [digital_health, healthtech, medtech, dhs]
+
+  - name: Fierce Healthcare
+    type: rss
+    url: https://www.fiercehealthcare.com/rss/xml
+    tags: [digital_health, health_it, policy, dhs]
+
+  - name: PubMed (Remote Patient Monitoring)
+    type: rss
+    url: https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=remote+patient+monitoring+hospital&sort=date
+    tags: [research, remote_monitoring, dhs, virtualcare]
+
+  - name: PubMed (EMR Integration Medical Devices)
+    type: rss
+    url: https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=EMR+integration+medical+device+HL7&sort=date
+    tags: [research, emr, hl7, dhs, healthconnect]
+
+  - name: PubMed (ICU Digital Health Telemetry)
+    type: rss
+    url: https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=ICU+digital+health+telemetry+monitoring&sort=date
+    tags: [research, icu, telemetry, dhs, datainsight]
+
+  - name: PubMed (Clinical Decision Support AI)
+    type: rss
+    url: https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=clinical+decision+support+AI+patient+monitoring&sort=date
+    tags: [research, ai, clinical_decision, dhs]
+
+  - name: FDA Medical Device Recalls
+    type: rss
+    url: https://www.fda.gov/medical-devices/medical-device-recalls/rss.xml
+    tags: [regulatory, fda, recalls, medtech, dhs]

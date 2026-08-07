@@ -63,12 +63,17 @@ export function NotificationProvider({
     }
   }, [notifications]);
 
+  // Adiciona suporte a notificações push via Web Push API
+  function sendPushNotification(title: string, message?: string) {
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, { body: message });
+    }
+  }
+
   const addNotification = useCallback(
     (type: NotificationType, title: string, message?: string) => {
       const notification: Notification = {
-        id: typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random()}`,
+        id: Math.random().toString(36).slice(2),
         type,
         title,
         message,
@@ -76,6 +81,7 @@ export function NotificationProvider({
         createdAt: new Date().toISOString(),
       };
       setNotifications((prev) => [notification, ...prev].slice(0, 100));
+      sendPushNotification(title, message);
     },
     [],
   );
@@ -139,4 +145,58 @@ export function useToastDismiss(
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [id, remove, delay]);
+}
+
+// Hook simples para lidar com permissões e envio de Web Notifications
+// Usado pela página de Métricas (gráficos de uptime)
+export function useNotification() {
+  const [permission, setPermission] = useState<NotificationPermission>(
+    typeof window !== "undefined" && "Notification" in window
+      ? Notification.permission
+      : "default",
+  );
+
+  const requestPermission = useCallback(async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+
+    try {
+      const result = await Notification.requestPermission();
+      setPermission(result);
+    } catch {
+      // ignore errors
+    }
+  }, []);
+
+  const sendNotification = useCallback(
+    (title: string, options?: NotificationOptions) => {
+      if (typeof window === "undefined" || !("Notification" in window)) return;
+      if (permission !== "granted") return;
+
+      try {
+        new Notification(title, options);
+      } catch {
+        // ignore errors
+      }
+    },
+    [permission],
+  );
+
+  const scheduleAlert = useCallback(
+    (title: string, options?: NotificationOptions, delay = 0) => {
+      if (typeof window === "undefined" || !("Notification" in window)) return;
+
+      setTimeout(() => {
+        if (Notification.permission === "granted") {
+          try {
+            new Notification(title, options);
+          } catch {
+            // ignore errors
+          }
+        }
+      }, delay);
+    },
+    [],
+  );
+
+  return { permission, requestPermission, sendNotification, scheduleAlert };
 }

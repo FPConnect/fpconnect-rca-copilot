@@ -1,5 +1,24 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+function isLocalApi(url: string): boolean {
+  return url.includes("localhost") || url.includes("127.0.0.1");
+}
+
+function ensureSecureApiUrl(): void {
+  if (!isLocalApi(API_URL) && !API_URL.startsWith("https://")) {
+    throw new ApiError(400, "Remote API URLs must use HTTPS.");
+  }
+}
+
+function getAuthHeaders(): HeadersInit {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  const token = window.sessionStorage.getItem("access_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -10,36 +29,12 @@ export class ApiError extends Error {
   }
 }
 
-function getAuthToken() {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("auth_token");
-}
-
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const token = getAuthToken();
-  const res = await fetch(`${API_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options?.headers,
-    },
-    ...options,
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => res.statusText);
-    throw new ApiError(res.status, text);
-  }
-  return res.json() as Promise<T>;
-}
-
 export interface Machine {
-  id: number;
-  code: string;
+  id: string;
   name: string;
   location: string;
   status: "online" | "offline" | "warning";
-  type: string;
-  last_check: string;
+  lastCheck: string;
 }
 
 export interface Ticket {
@@ -47,11 +42,20 @@ export interface Ticket {
   title: string;
   status: string;
   priority: string;
+  description?: string | null;
+  device_id?: string | null;
+  location?: string | null;
+  creator_id?: number;
+  assignee_id?: number | null;
+  escalation_level?: number | null;
 }
 
 export interface CreateTicketPayload {
   title: string;
   priority: string;
+  description?: string;
+  device_id?: string;
+  location?: string;
 }
 
 export interface HealthStatus {
@@ -59,353 +63,295 @@ export interface HealthStatus {
   version?: string;
 }
 
-export interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  access_token: string;
-  token_type: string;
-  refresh_token?: string;
-}
-
-export interface RegisterPayload {
-  email: string;
-  password: string;
-  full_name?: string;
-  phone_number?: string;
-  verification_code?: string;
-}
-
-export interface VerificationCodePayload {
-  email: string;
-  phone_number: string;
-}
-
-export interface VerificationCodeResponse {
-  status: string;
-  to: string;
-  provider: string;
-  expires_in_seconds: number;
-  verification_code?: string | null;
-}
-
-export interface UserProfile {
+export interface IntelItem {
   id: number;
-  email: string;
-  full_name?: string | null;
-  phone_number?: string | null;
-  role: string;
-  access_level?: number;
-}
-
-export interface UpdateProfilePayload {
-  email?: string;
-  full_name?: string;
-  phone_number?: string;
-}
-
-export interface Playbook {
-  id: number;
+  source: string;
+  url: string;
   title: string;
-  equipment: string;
-  steps: string;
-  files?: string | null;
+  published_at?: string | null;
+  fetched_at: string;
+  topic?: string | null;
+  summary_pt?: string | null;
+  summary_en?: string | null;
 }
 
-export interface CreatePlaybookPayload {
-  title: string;
-  equipment: string;
-  steps: string;
-  files?: string | null;
+export interface IntelTopics {
+  topics: string[];
 }
 
-export interface SLAContract {
-  id: number;
-  equipment: string;
-  vendor: string;
-  response_time_hours: number;
-  sla_compliance: number;
-  days_to_expire?: number | null;
-  alert?: string | null;
+export interface IntelIngestResult {
+  inserted: number;
+  skipped: number;
+  sources: number;
 }
 
-export interface AnalyzeResponse {
-  ticket_id: number;
-  root_cause: string;
-  explanation: string;
-  recommendation: string;
+export interface AgentChatReply {
+  reply: string;
+  backend: "rules" | "openai" | string;
 }
 
-export interface SmsResponse {
-  status: string;
-  to: string;
-  provider: string;
-  delivered: boolean;
+function shouldUseDemoMode(): boolean {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+    return true;
+  }
+
+  const pointsToLocalApi =
+    API_URL.includes("localhost") || API_URL.includes("127.0.0.1");
+
+  if (!pointsToLocalApi) {
+    return false;
+  }
+
+  if (typeof window === "undefined") {
+    return process.env.VERCEL === "1";
+  }
+
+  return !["localhost", "127.0.0.1"].includes(window.location.hostname);
 }
 
-const TICKETS_STORAGE_KEY = "fpconnect_preview_tickets";
-const LEGACY_PREVIEW_USERS_KEY = "fpconnect_preview_users";
-const PREVIEW_PROFILE_KEY = "fpconnect_profile";
-
-type TestAccount = UserProfile & { password: string };
-
-const TEST_ACCOUNTS: TestAccount[] = [
-  { id: 1, email: "master@fpconnect.com", password: "Master@2024Secure!", full_name: "Master", role: "master", access_level: 5 },
-  { id: 2, email: "admin_teste@fpconnect.com", password: "Admin@123", full_name: "Administrador", role: "admin", access_level: 4 },
-  { id: 3, email: "gerente_teste@fpconnect.com", password: "Gerente@123", full_name: "Gerente", role: "manager", access_level: 3 },
-  { id: 4, email: "usuario_teste@fpconnect.com", password: "Usuario@123", full_name: "Usuário", role: "user", access_level: 2 },
-  { id: 5, email: "visitante_teste@fpconnect.com", password: "Visitante@123", full_name: "Visitante", role: "visitor", access_level: 1 },
+const DEMO_TICKETS: Ticket[] = [
+  {
+    id: 101,
+    title: "Ventilador UTI com alarmes intermitentes",
+    status: "open",
+    priority: "critical",
+    description: "Equipe relata interrupções curtas e repetidas durante o turno da noite.",
+    location: "UTI 2",
+    device_id: "VENT-UTI-02",
+    escalation_level: 2,
+  },
+  {
+    id: 102,
+    title: "Monitor multiparamétrico com latência no traçado",
+    status: "in_progress",
+    priority: "high",
+    description: "A atualização do display está lenta e o histórico mostra degradação nas últimas 24h.",
+    location: "Enfermaria A",
+    device_id: "MON-ENF-14",
+    escalation_level: 1,
+  },
+  {
+    id: 103,
+    title: "ECG da recepção precisa de calibração",
+    status: "resolved",
+    priority: "medium",
+    description: "Calibração concluída e liberada para uso.",
+    location: "Recepção",
+    device_id: "ECG-REC-01",
+    escalation_level: 0,
+  },
 ];
 
-const FALLBACK_MACHINES: Machine[] = [
+const DEMO_INTEL_ITEMS: IntelItem[] = [
   {
     id: 1,
-    code: "MRI-01",
-    name: "MRI Scanner",
-    location: "Radiologia",
-    status: "online",
-    type: "imaging",
-    last_check: "2026-04-15T08:30:00-03:00",
+    source: "FDA Recall Feed",
+    url: "https://www.fda.gov/medical-devices/medical-device-recalls",
+    title: "Recall preventivo de bomba de infusão por falha intermitente",
+    published_at: "2026-03-08T14:30:00Z",
+    fetched_at: "2026-03-10T03:00:00Z",
+    topic: "recalls",
+    summary_pt: "Fabricante orienta inspeção imediata de lote específico devido a parada inesperada em baixa frequência.",
+    summary_en: "Manufacturer recommends immediate inspection of a specific lot due to rare unexpected stoppage.",
   },
   {
     id: 2,
-    code: "ECG-02",
-    name: "ECG Monitor",
-    location: "UTI",
-    status: "warning",
-    type: "monitoring",
-    last_check: "2026-04-15T08:26:00-03:00",
+    source: "ECRI Alerts",
+    url: "https://www.ecri.org/components/HRCAlerts/Pages/default.aspx",
+    title: "Boletim sobre manutenção preditiva em equipamentos críticos",
+    published_at: "2026-03-07T11:00:00Z",
+    fetched_at: "2026-03-10T03:00:00Z",
+    topic: "maintenance",
+    summary_pt: "Reforça monitoramento de vibração, temperatura e alarmes reincidentes para reduzir indisponibilidade.",
+    summary_en: "Highlights vibration, temperature, and repeated alarms monitoring to reduce downtime.",
   },
   {
     id: 3,
-    code: "VENT-03",
-    name: "Ventilator",
-    location: "UTI 2",
-    status: "online",
-    type: "life-support",
-    last_check: "2026-04-15T08:31:00-03:00",
-  },
-  {
-    id: 4,
-    code: "DEF-04",
-    name: "Defibrillator",
-    location: "Emergência",
-    status: "offline",
-    type: "life-support",
-    last_check: "2026-04-15T07:45:00-03:00",
+    source: "Healthcare IT News",
+    url: "https://www.healthcareitnews.com/",
+    title: "Hospitais ampliam uso de copilots operacionais para engenharia clínica",
+    published_at: "2026-03-06T09:15:00Z",
+    fetched_at: "2026-03-10T03:00:00Z",
+    topic: "ai",
+    summary_pt: "Adoção cresce em times que precisam priorizar chamados, rastrear ativos e antecipar incidentes.",
+    summary_en: "Adoption grows among teams prioritizing service calls, tracking assets, and anticipating incidents.",
   },
 ];
 
+let demoTicketsState = [...DEMO_TICKETS];
 
-const FALLBACK_PLAYBOOKS: Playbook[] = [
-  { id: 1, title: "Troca e validação de sensor SpO2", equipment: "Monitor Multiparamétrico", steps: "1. Isolar leito.\n2. Trocar cabo/sensor.\n3. Validar curva e alarmes.\n4. Registrar evento.", files: null },
-  { id: 2, title: "Diagnóstico de circuito ventilatório obstruído", equipment: "Ventilador Pulmonar", steps: "1. Verificar circuito.\n2. Inspecionar filtro HME.\n3. Rodar autoteste.\n4. Liberar com checklist.", files: null },
-];
+function parseJsonBody(options?: RequestInit): Record<string, unknown> {
+  if (!options?.body || typeof options.body !== "string") {
+    return {};
+  }
 
-const FALLBACK_CONTRACTS: SLAContract[] = [
-  { id: 1, equipment: "Ventilador Pulmonar", vendor: "MedTech Care", response_time_hours: 4, sla_compliance: 97.5, days_to_expire: 20, alert: "Vencimento próximo" },
-  { id: 2, equipment: "Ressonância Magnética 1.5T", vendor: "Imagem Prime", response_time_hours: 8, sla_compliance: 94, days_to_expire: 75, alert: null },
-];
-
-const FALLBACK_TICKETS: Ticket[] = [
-  { id: 101, title: "Ventilador UTI com alarmes intermitentes", status: "open", priority: "critical" },
-  { id: 102, title: "Monitor ECG com latência alta", status: "in_progress", priority: "high" },
-  { id: 103, title: "Calibração preventiva do MRI Scanner", status: "resolved", priority: "medium" },
-];
-
-function readPreviewTickets(): Ticket[] {
-  if (typeof window === "undefined") return FALLBACK_TICKETS;
   try {
-    const raw = localStorage.getItem(TICKETS_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Ticket[]) : FALLBACK_TICKETS;
+    return JSON.parse(options.body) as Record<string, unknown>;
   } catch {
-    return FALLBACK_TICKETS;
+    return {};
   }
 }
 
-function writePreviewTickets(tickets: Ticket[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(tickets));
-}
+function buildDemoAgentReply(message: string): AgentChatReply {
+  const text = message.toLowerCase();
 
-function readPreviewProfilePhone(): string {
-  if (typeof window === "undefined") return "";
-  try {
-    const raw = localStorage.getItem(PREVIEW_PROFILE_KEY);
-    if (!raw) return "";
-    const profile = JSON.parse(raw) as { phone?: string };
-    return profile.phone || "";
-  } catch {
-    return "";
+  if (text.includes("crític") || text.includes("critic")) {
+    return {
+      backend: "rules",
+      reply:
+        "Os casos mais críticos na simulação são o ventilador da UTI e o monitor com latência. Eu priorizaria contenção clínica, validação de logs e checagem de peças de reposição ainda hoje.",
+    };
   }
+
+  if (text.includes("prior")) {
+    return {
+      backend: "rules",
+      reply:
+        "Use impacto clínico, frequência de falha e tempo médio de restauração para ordenar a fila. Na base demo, o ventilador deve ficar no topo, seguido pelo monitor com degradação de traçado.",
+    };
+  }
+
+  return {
+    backend: "rules",
+    reply:
+      "Modo demo ativo. Posso simular priorização de tickets, próximos passos técnicos e argumentos de valor para operação clínica sem depender do backend público.",
+  };
 }
 
-function clearLegacyPreviewCredentials() {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(LEGACY_PREVIEW_USERS_KEY);
+function demoResponse<T>(path: string, options?: RequestInit): T {
+  if (path === "/health") {
+    return { status: "ok", version: "demo-web" } as T;
+  }
+
+  if (path === "/machines") {
+    return [
+      { id: "MRI-01", name: "MRI Scanner", location: "Radiologia", status: "online", lastCheck: "2026-03-10T02:45:00Z" },
+      { id: "VENT-02", name: "Ventilator", location: "UTI 2", status: "warning", lastCheck: "2026-03-10T02:40:00Z" },
+      { id: "ECG-01", name: "ECG Monitor", location: "Recepção", status: "offline", lastCheck: "2026-03-10T01:50:00Z" },
+    ] as T;
+  }
+
+  if (path === "/tickets" && (!options?.method || options.method === "GET")) {
+    return [...demoTicketsState] as T;
+  }
+
+  if (path === "/tickets" && options?.method === "POST") {
+    const payload = parseJsonBody(options);
+    const priority = String(payload.priority ?? "medium");
+    const created: Ticket = {
+      id: Date.now(),
+      title: String(payload.title ?? "Novo ticket"),
+      priority,
+      description: typeof payload.description === "string" ? payload.description : undefined,
+      status: "open",
+      device_id: typeof payload.device_id === "string" ? payload.device_id : undefined,
+      location: typeof payload.location === "string" ? payload.location : undefined,
+      escalation_level: priority === "critical" ? 2 : priority === "high" ? 1 : 0,
+    };
+    demoTicketsState = [created, ...demoTicketsState];
+    return created as T;
+  }
+
+  if (path === "/intel/topics") {
+    return { topics: ["recalls", "maintenance", "ai"] } as T;
+  }
+
+  if (path.startsWith("/intel/items")) {
+    const url = new URL(path, "https://demo.fpconnect.local");
+    const topic = url.searchParams.get("topic");
+    const items = topic
+      ? DEMO_INTEL_ITEMS.filter((item) => item.topic === topic)
+      : DEMO_INTEL_ITEMS;
+    return items as T;
+  }
+
+  if (path === "/intel/ingest/once") {
+    return { inserted: 3, skipped: 12, sources: 4 } as T;
+  }
+
+  if (path === "/agent/chat") {
+    const payload = parseJsonBody(options);
+    return buildDemoAgentReply(String(payload.message ?? "")) as T;
+  }
+
+  if (path === "/agent/tickets/analyze") {
+    const payload = parseJsonBody(options);
+    const ticket = (payload.ticket as Record<string, unknown> | undefined) ?? {};
+    const title = String(ticket.title ?? "ticket selecionado");
+    const priority = String(ticket.priority ?? "medium");
+    return {
+      backend: "rules",
+      reply:
+        `Para ${title}, eu começaria confirmando impacto clínico, revisando histórico recente e validando causa provável ligada à prioridade ${priority}. Se o sintoma persistir, escale fornecedor e separe equipamento backup antes de encerrar o chamado.`,
+    } as T;
+  }
+
+  throw new Error(`No demo response configured for ${path}`);
 }
 
-async function login(data: LoginPayload): Promise<LoginResponse> {
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  if (shouldUseDemoMode()) {
+    return demoResponse<T>(path, options);
+  }
+
   try {
-    return await request<LoginResponse>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify(data),
+    ensureSecureApiUrl();
+    const res = await fetch(`${API_URL}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...getAuthHeaders(),
+        ...options?.headers,
+      },
+      ...options,
     });
+    if (!res.ok) {
+      const text = await res.text().catch(() => res.statusText);
+      throw new ApiError(res.status, text);
+    }
+    return res.json() as Promise<T>;
   } catch (error) {
-    clearLegacyPreviewCredentials();
-    const previewAccount = TEST_ACCOUNTS.find(
-      (account) =>
-        account.email === data.email.trim().toLowerCase() &&
-        account.password === data.password,
-    );
-
-    if (!previewAccount) {
+    if (error instanceof ApiError) {
       throw error;
     }
 
-    localStorage.setItem(
-      PREVIEW_PROFILE_KEY,
-      JSON.stringify({
-        name: previewAccount.full_name,
-        email: previewAccount.email,
-        phone: "",
-      }),
-    );
-
-    return {
-      access_token: `fpconnect-preview-token-${previewAccount.role}`,
-      token_type: "bearer",
-    };
+    return demoResponse<T>(path, options);
   }
-}
-
-async function sendVerificationCode(data: VerificationCodePayload): Promise<VerificationCodeResponse> {
-  return withFallback(
-    () => request<VerificationCodeResponse>("/auth/verification-code", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-    () => ({
-      status: "sent",
-      to: data.phone_number,
-      provider: "preview-local",
-      expires_in_seconds: 10 * 60,
-      verification_code: "123456",
-    }),
-  );
-}
-
-async function register(data: RegisterPayload): Promise<UserProfile> {
-  try {
-    const path = data.verification_code ? "/auth/register/verify" : "/auth/register";
-    return await request<UserProfile>(path, {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  } catch (error) {
-    clearLegacyPreviewCredentials();
-    throw error;
-  }
-}
-
-async function getMe(): Promise<UserProfile> {
-  return request<UserProfile>("/auth/me");
-}
-
-async function updateMe(data: UpdateProfilePayload): Promise<UserProfile> {
-  return request<UserProfile>("/auth/me", {
-    method: "PATCH",
-    body: JSON.stringify(data),
-  });
-}
-
-async function sendSmsNotification(message: string): Promise<SmsResponse> {
-  return withFallback(
-    () => request<SmsResponse>("/notifications/sms", {
-      method: "POST",
-      body: JSON.stringify({ message }),
-    }),
-    () => ({
-      status: "sent",
-      to: readPreviewProfilePhone(),
-      provider: "preview-local",
-      delivered: true,
-    }),
-  );
-}
-
-async function withFallback<T>(requestFn: () => Promise<T>, fallbackFn: () => T): Promise<T> {
-  try {
-    return await requestFn();
-  } catch {
-    return fallbackFn();
-  }
-}
-
-async function createPlaybook(data: CreatePlaybookPayload): Promise<Playbook> {
-  return withFallback(
-    () => request<Playbook>("/playbooks/", { method: "POST", body: JSON.stringify(data) }),
-    () => ({ id: Date.now(), ...data }),
-  );
-}
-
-async function analyzeIncident(ticketId: number): Promise<AnalyzeResponse> {
-  return withFallback(
-    () =>
-      request<AnalyzeResponse>("/analyze", {
-        method: "POST",
-        body: JSON.stringify({ ticket_id: ticketId }),
-      }),
-    () => ({
-      ticket_id: ticketId,
-      root_cause: "Falha intermitente em sensor ou conexão do equipamento",
-      explanation: "Diagnóstico em modo preview baseado nos chamados clínicos locais. Valide cabos, sensores, histórico de alarmes e condições de uso antes de liberar o equipamento.",
-      recommendation: "Isolar o equipamento, executar checklist funcional, substituir acessórios suspeitos e registrar evidências no chamado.",
-    }),
-  );
-}
-
-async function createTicket(data: CreateTicketPayload): Promise<Ticket> {
-  return withFallback(
-    () => request<Ticket>("/tickets", { method: "POST", body: JSON.stringify(data) }),
-    () => {
-      const tickets = readPreviewTickets();
-      const ticket: Ticket = {
-        id: Date.now(),
-        title: data.title,
-        priority: data.priority,
-        status: "open",
-      };
-      writePreviewTickets([ticket, ...tickets]);
-      return ticket;
-    },
-  );
 }
 
 export const api = {
-  health: () => withFallback(() => request<HealthStatus>("/health"), () => ({ status: "ok", version: "preview" })),
-  login,
-  register,
-  sendVerificationCode,
-  getMe,
-  updateMe,
-  testAccounts: TEST_ACCOUNTS.map((account) => ({
-    id: account.id,
-    email: account.email,
-    full_name: account.full_name,
-    phone_number: account.phone_number,
-    role: account.role,
-    access_level: account.access_level,
-  })),
-  clearLegacyPreviewCredentials,
-  sendSmsNotification,
-  analyzeIncident,
-  getPlaybooks: () => withFallback(() => request<Playbook[]>("/playbooks/"), () => FALLBACK_PLAYBOOKS),
-  createPlaybook,
-  getContracts: () => withFallback(() => request<SLAContract[]>("/contracts/"), () => FALLBACK_CONTRACTS),
-  getMachines: () => withFallback(() => request<Machine[]>("/machines"), () => FALLBACK_MACHINES),
-  getTickets: () => withFallback(() => request<Ticket[]>("/tickets"), readPreviewTickets),
-  createTicket,
+  health: () => request<HealthStatus>("/health"),
+  getMachines: () => request<Machine[]>("/machines"),
+  getTickets: () => request<Ticket[]>("/tickets"),
+  createTicket: (data: CreateTicketPayload) =>
+    request<Ticket>("/tickets", { method: "POST", body: JSON.stringify(data) }),
+
+  // Intel/Radar
+  getIntelTopics: () => request<IntelTopics>("/intel/topics"),
+  getIntelItems: (topic?: string, limit: number = 50) => {
+    const qs = new URLSearchParams();
+    if (topic) qs.set("topic", topic);
+    qs.set("limit", String(limit));
+    return request<IntelItem[]>(`/intel/items?${qs.toString()}`);
+  },
+  runIntelIngestOnce: () => request<IntelIngestResult>("/intel/ingest/once", { method: "POST" }),
+
+  // Agent endpoints
+  agentChat: (message: string) =>
+    request<AgentChatReply>("/agent/chat", {
+      method: "POST",
+      body: JSON.stringify({ message }),
+    }),
+  agentAnalyzeTicket: (ticket: Ticket, question: string) =>
+    request<AgentChatReply>("/agent/tickets/analyze", {
+      method: "POST",
+      body: JSON.stringify({
+        ticket: {
+          title: ticket.title,
+          description: ticket.description ?? undefined,
+          priority: ticket.priority,
+          status: ticket.status,
+        },
+        question,
+      }),
+    }),
 };

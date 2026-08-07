@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Pagination from "@/components/Pagination";
 import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
-import { api, Machine } from "@/services/api";
+
+const INITIAL_MACHINES = [
+  { id: "M001", name: "MRI Scanner", location: "Ward A", status: "online", lastCheck: "2 min ago", type: "imaging" },
+  { id: "M002", name: "ECG Monitor", location: "ICU", status: "warning", lastCheck: "5 min ago", type: "monitoring" },
+  { id: "M003", name: "Ventilator", location: "Ward B", status: "online", lastCheck: "1 min ago", type: "life-support" },
+  { id: "M004", name: "Defibrillator", location: "Emergency", status: "offline", lastCheck: "1 hour ago", type: "life-support" },
+  { id: "M005", name: "Patient Monitor", location: "Ward C", status: "online", lastCheck: "3 min ago", type: "monitoring" },
+  { id: "M006", name: "Infusion Pump", location: "Ward A", status: "online", lastCheck: "2 min ago", type: "infusion" },
+];
 
 const STATUS_COLORS: Record<string, string> = {
   online: "bg-green-100 text-green-700",
@@ -37,19 +45,40 @@ const FILTERS = [
 const PAGE_SIZE = 4;
 
 export default function MachinesPage() {
-  const [machines, setMachines] = useState<Machine[]>([]);
+  const [machines, setMachines] = useState(INITIAL_MACHINES);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
 
+  // Simulação IoT: atualiza status e lastCheck periodicamente
   useEffect(() => {
-    api.getMachines().then(setMachines).catch(() => setMachines([]));
+    const interval = setInterval(() => {
+      setMachines((prev) =>
+        prev.map((m) => {
+          // Simula status aleatório
+          const statuses = ["online", "warning", "offline"];
+          const newStatus = statuses[Math.floor(Math.random() * statuses.length)];
+          // Simula tempo de último check
+          const minutes = Math.floor(Math.random() * 60);
+          return {
+            ...m,
+            status: newStatus,
+            lastCheck: `${minutes} min ago`,
+          };
+        })
+      );
+    }, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return machines.filter((m) => {
-      const matchSearch = !q || m.name.toLowerCase().includes(q) || m.code.toLowerCase().includes(q) || m.location.toLowerCase().includes(q);
+      const matchSearch =
+        !q ||
+        m.name.toLowerCase().includes(q) ||
+        m.id.toLowerCase().includes(q) ||
+        m.location.toLowerCase().includes(q);
       const matchStatus = !filters.status || m.status === filters.status;
       const matchType = !filters.type || m.type === filters.type;
       return matchSearch && matchStatus && matchType;
@@ -60,29 +89,75 @@ export default function MachinesPage() {
   const safePage = Math.min(page, totalPages);
   const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPage(1);
+  };
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
   return (
     <div className="max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Máquinas</h1>
       <div className="flex flex-wrap gap-3 mb-4">
-        <SearchBar placeholder="Pesquisar máquinas..." value={search} onChange={(v) => { setSearch(v); setPage(1); }} className="w-64" />
-        <FilterBar filters={FILTERS} values={filters} onChange={(key, value) => { setFilters((prev) => ({ ...prev, [key]: value })); setPage(1); }} onClear={() => { setFilters({}); setPage(1); }} />
+        <SearchBar
+          placeholder="Pesquisar máquinas..."
+          value={search}
+          onChange={handleSearch}
+          className="w-64"
+        />
+        <FilterBar
+          filters={FILTERS}
+          values={filters}
+          onChange={handleFilterChange}
+          onClear={() => { setFilters({}); setPage(1); }}
+        />
       </div>
       <div className="bg-white rounded-xl shadow overflow-x-auto">
-        <table className="w-full text-sm min-w-[600px]"><thead className="bg-gray-50 border-b border-gray-200"><tr>{["ID", "Nome", "Localização", "Status", "Último Check"].map((h) => <th key={h} className="px-4 py-3 text-left font-semibold text-gray-600">{h}</th>)}</tr></thead>
+        <table className="w-full text-sm min-w-[600px]">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              {["ID", "Nome", "Localização", "Status", "Último Check"].map((h) => (
+                <th key={h} className="px-4 py-3 text-left font-semibold text-gray-600">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
           <tbody className="divide-y divide-gray-100">
-            {paginated.length === 0 ? <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Nenhuma máquina encontrada.</td></tr> : paginated.map((m) => (
-              <tr key={m.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-mono text-gray-500">{m.code}</td>
-                <td className="px-4 py-3 font-medium text-gray-900">{m.name}</td>
-                <td className="px-4 py-3 text-gray-600">{m.location}</td>
-                <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[m.status]}`}>{m.status}</span></td>
-                <td className="px-4 py-3 text-gray-500">{new Date(m.last_check).toLocaleString("pt-BR")}</td>
+            {paginated.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
+                  Nenhuma máquina encontrada.
+                </td>
               </tr>
-            ))}
+            ) : (
+              paginated.map((m) => (
+                <tr key={m.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 font-mono text-gray-500">{m.id}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">{m.name}</td>
+                  <td className="px-4 py-3 text-gray-600">{m.location}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[m.status]}`}>
+                      {m.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">{m.lastCheck}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
-      <Pagination page={safePage} totalPages={totalPages} onPrev={() => setPage((p) => Math.max(1, p - 1))} onNext={() => setPage((p) => Math.min(totalPages, p + 1))} />
+      <Pagination
+        page={safePage}
+        totalPages={totalPages}
+        onPrev={() => setPage((p) => Math.max(1, p - 1))}
+        onNext={() => setPage((p) => Math.min(totalPages, p + 1))}
+      />
     </div>
   );
 }

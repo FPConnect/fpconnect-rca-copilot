@@ -16,24 +16,7 @@ const STATUS_COLORS: Record<string, string> = {
   completed: "bg-green-100 text-green-700",
 };
 
-const MAINTENANCE_STORAGE_KEY = "fpconnect_maintenance_schedule";
-
-function readSchedule() {
-  if (typeof window === "undefined") return SCHEDULED;
-  try {
-    const raw = localStorage.getItem(MAINTENANCE_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as typeof SCHEDULED) : SCHEDULED;
-  } catch {
-    return SCHEDULED;
-  }
-}
-
-function writeSchedule(schedule: typeof SCHEDULED) {
-  localStorage.setItem(MAINTENANCE_STORAGE_KEY, JSON.stringify(schedule));
-}
-
 export default function MaintenancePage() {
-  const [schedule, setSchedule] = useState(readSchedule);
   const [modalOpen, setModalOpen] = useState(false);
   const [machine, setMachine] = useState("");
   const [date, setDate] = useState("");
@@ -41,19 +24,6 @@ export default function MaintenancePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const nextSchedule = [
-      {
-        id: Date.now(),
-        machine: machine.trim(),
-        type,
-        date,
-        technician: "Admin",
-        status: "scheduled",
-      },
-      ...schedule,
-    ];
-    setSchedule(nextSchedule);
-    writeSchedule(nextSchedule);
     setModalOpen(false);
     setMachine("");
     setDate("");
@@ -84,7 +54,7 @@ export default function MaintenancePage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {schedule.map((s) => (
+            {SCHEDULED.map((s) => (
               <tr key={s.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 font-medium text-gray-900">{s.machine}</td>
                 <td className="px-4 py-3 text-gray-600">{s.type}</td>

@@ -1,82 +1,55 @@
 """FPConnect RCA Copilot — FastAPI application entry point."""
 
-from datetime import datetime, timezone
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-import structlog
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.responses import Response
 
-from app.api.routes import analyze, auth, contracts, enterprise, machines, notifications, playbooks, tickets
+from app.api.routes import auth, intel, tickets, agent
+from app.api.routes import n8n as n8n_routes
 from app.core.config import settings
-from app.core.database import Base, SessionLocal, engine
-from app.core.security import limiter
-from app.core.test_accounts import reset_test_accounts
-from app.models import machine, playbook, ticket, user  # noqa: F401
+from app.core.database import Base, engine  # noqa: F401 — Base used by Alembic
 
-structlog.configure(
-    processors=[
-        structlog.processors.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.JSONRenderer(),
-    ]
-)
-log = structlog.get_logger()
-
-
-class LoggingMiddleware(BaseHTTPMiddleware):
-    """Emit structured JSON logs for HTTP requests."""
-
-    async def dispatch(self, request: Request, call_next):
-        start = datetime.now(timezone.utc)
-        response = await call_next(request)
-        duration = (datetime.now(timezone.utc) - start).total_seconds()
-        log.info(
-            "http_request",
-            method=request.method,
-            path=request.url.path,
-            status=response.status_code,
-            duration=duration,
-        )
-        return response
-
-
-# Create database tables on startup
-Base.metadata.create_all(bind=engine)
-
-if settings.app_env == "development":
-    with SessionLocal() as seed_db:
-        reset_test_accounts(seed_db)
+# Tables are managed by Alembic migrations — do NOT call create_all here.
 
 app = FastAPI(
     title="FPConnect RCA Copilot API",
     description="RCA Copilot & Availability Engine for Healthcare/MedTech",
     version="1.0.0",
 )
-app.add_middleware(LoggingMiddleware)
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS middleware: explicit allowlist (required when credentials are enabled)
+settings.validate_runtime_security()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_origin_regex=settings.cors_origin_regex,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Internal-Key", "X-Api-Key"],
 )
 
 # Routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
-app.include_router(machines.router, prefix="/machines", tags=["machines"])
-app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
-app.include_router(analyze.router, prefix="/analyze", tags=["clinical-diagnosis"])
-app.include_router(playbooks.router, prefix="/playbooks", tags=["playbooks"])
-app.include_router(contracts.router, prefix="/contracts", tags=["contracts"])
-app.include_router(enterprise.router, prefix="/enterprise", tags=["enterprise"])
+app.include_router(intel.router, prefix="/intel", tags=["intel"])
+app.include_router(n8n_routes.router)
+app.include_router(agent.router)
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response: Response = await call_next(request)
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    response.headers.setdefault("Cross-Origin-Resource-Policy", "same-site")
+    if settings.app_env.lower() == "production":
+        response.headers.setdefault(
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains",
+        )
+    return response
 
 
 @app.get("/health")

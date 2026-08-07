@@ -1,0 +1,47 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: fpconnect_intel
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/fpconnect_intel
+      SOURCES_YAML: /app/sources.yaml
+      POLL_INTERVAL_SECONDS: 900
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      GITHUB_REPO: ${GITHUB_REPO}
+      APP_LANG: bilingual
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./sources.yaml:/app/sources.yaml:ro
+
+  ingest_loop:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/fpconnect_intel
+      SOURCES_YAML: /app/sources.yaml
+      POLL_INTERVAL_SECONDS: 900
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      GITHUB_REPO: ${GITHUB_REPO}
+      APP_LANG: bilingual
+    command: ["python", "-m", "app.scripts.ingest_loop"]
+    volumes:
+      - ./sources.yaml:/app/sources.yaml:ro
+
+volumes:
+  db_data:

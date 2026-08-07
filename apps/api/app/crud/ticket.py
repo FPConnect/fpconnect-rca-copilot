@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
-from app.models.ticket import Ticket, TicketAttachment
+from app.models.ticket import Ticket
 from app.schemas.ticket import TicketCreate, TicketUpdate
 
 
@@ -57,51 +57,3 @@ def delete_ticket(db: Session, ticket_id: int) -> bool:
     db.delete(db_ticket)
     db.commit()
     return True
-
-
-def create_ticket_attachment(
-    db: Session,
-    *,
-    ticket_id: int,
-    uploader_id: int,
-    object_key: str,
-    filename: str,
-    content_type: str,
-    size_bytes: int,
-) -> TicketAttachment:
-    """Persist metadata for an uploaded ticket attachment."""
-    db_attachment = TicketAttachment(
-        ticket_id=ticket_id,
-        uploader_id=uploader_id,
-        object_key=object_key,
-        filename=filename,
-        content_type=content_type,
-        size_bytes=size_bytes,
-    )
-    db.add(db_attachment)
-    db.commit()
-    db.refresh(db_attachment)
-    return db_attachment
-
-
-def get_ticket_attachments(db: Session, ticket_id: int) -> List[TicketAttachment]:
-    """Retrieve all attachments for a ticket."""
-    return db.query(TicketAttachment).filter(TicketAttachment.ticket_id == ticket_id).all()
-
-
-def complete_ticket_analysis(
-    db: Session,
-    ticket: Ticket,
-    *,
-    root_cause: str,
-    recommendation: str,
-) -> Ticket:
-    """Persist root-cause analysis results for an incident."""
-    from datetime import datetime, timezone
-
-    ticket.root_cause = root_cause
-    ticket.recommendation = recommendation
-    ticket.analysis_completed = datetime.now(timezone.utc)
-    db.commit()
-    db.refresh(ticket)
-    return ticket

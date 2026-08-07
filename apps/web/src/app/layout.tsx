@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
+import { SystemPreferencesProvider } from "@/contexts/SystemPreferencesContext";
+import Sidebar from "@/components/Sidebar";
+import Header from "@/components/Header";
 import ToastManager from "@/components/ToastManager";
-import AppShell from "@/components/AppShell";
-import { AuthProvider } from "@/contexts/AuthContext";
-import AuthGuard from "@/components/AuthGuard";
-import LanguageRuntime from "@/components/LanguageRuntime";
 
 export const metadata: Metadata = {
   title: "FPConnect RCA Copilot",
@@ -20,34 +19,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                var raw = localStorage.getItem('fpconnect_system_preferences');
-                var theme = raw ? JSON.parse(raw).theme : 'light';
-                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var useDark = theme === 'dark' || (theme === 'system' && prefersDark);
-                document.documentElement.classList.toggle('dark', useDark);
-                document.documentElement.dataset.theme = theme;
-              } catch (_) {}
-            `,
-          }}
-        />
-      </head>
-      <body>
-        <AuthProvider>
-          <AuthGuard>
-            <NotificationProvider>
-              <SidebarProvider>
-                <AppShell>{children}</AppShell>
-                <ToastManager />
-                <LanguageRuntime />
-              </SidebarProvider>
-            </NotificationProvider>
-          </AuthGuard>
-        </AuthProvider>
+      <body className="bg-gray-50 text-gray-900 transition-colors dark:bg-gray-950 dark:text-gray-100">
+        <SystemPreferencesProvider>
+          <NotificationProvider>
+            <SidebarProvider>
+              <div className="flex min-h-screen bg-gray-50 transition-colors dark:bg-gray-950">
+                <Sidebar />
+                <div className="flex-1 flex flex-col min-w-0">
+                  <Header />
+                  <main className="flex-1 p-6">{children}</main>
+                </div>
+              </div>
+              <ToastManager />
+            </SidebarProvider>
+          </NotificationProvider>
+        </SystemPreferencesProvider>
       </body>
     </html>
   );

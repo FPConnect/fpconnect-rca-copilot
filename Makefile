@@ -50,6 +50,3 @@ dev-mobile:
 
 format-api:
 	cd apps/api && ruff format app/ tests/
-
-seed-api:
-	cd apps/api && python scripts/seed_clinical.py

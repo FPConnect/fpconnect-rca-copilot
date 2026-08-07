@@ -6,19 +6,16 @@ import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
 
 const USERS = [
-  { id: 1, name: "Master", email: "master@fpconnect.com", role: "master", accessLevel: 5, status: "active" },
-  { id: 2, name: "Administrador", email: "admin_teste@fpconnect.com", role: "admin", accessLevel: 4, status: "active" },
-  { id: 3, name: "Gerente", email: "gerente_teste@fpconnect.com", role: "manager", accessLevel: 3, status: "active" },
-  { id: 4, name: "Usuário", email: "usuario_teste@fpconnect.com", role: "user", accessLevel: 2, status: "active" },
-  { id: 5, name: "Visitante", email: "visitante_teste@fpconnect.com", role: "visitor", accessLevel: 1, status: "active" },
+  { id: 1, name: "João Silva", email: "joao@hospital.com", role: "admin", status: "active" },
+  { id: 2, name: "Maria Santos", email: "maria@hospital.com", role: "technician", status: "active" },
+  { id: 3, name: "Carlos Rocha", email: "carlos@hospital.com", role: "viewer", status: "inactive" },
+  { id: 4, name: "Ana Lima", email: "ana@hospital.com", role: "technician", status: "active" },
 ];
 
 const ROLE_COLORS: Record<string, string> = {
-  master: "bg-amber-100 text-amber-800",
   admin: "bg-purple-100 text-purple-700",
-  manager: "bg-blue-100 text-blue-700",
-  user: "bg-green-100 text-green-700",
-  visitor: "bg-gray-100 text-gray-700",
+  technician: "bg-blue-100 text-blue-700",
+  viewer: "bg-gray-100 text-gray-700",
 };
 
 const FILTERS = [
@@ -26,11 +23,9 @@ const FILTERS = [
     key: "role",
     label: "Perfil",
     options: [
-      { label: "Master", value: "master" },
-      { label: "Administrador", value: "admin" },
-      { label: "Gerente", value: "manager" },
-      { label: "Usuário", value: "user" },
-      { label: "Visitante", value: "visitor" },
+      { label: "Admin", value: "admin" },
+      { label: "Técnico", value: "technician" },
+      { label: "Visualizador", value: "viewer" },
     ],
   },
   {
@@ -90,7 +85,7 @@ export default function AccessControlPage() {
         <table className="w-full text-sm min-w-[600px]">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              {["Nome", "Email", "Perfil", "Nível", "Status", "Ações"].map((h) => (
+              {["Nome", "Email", "Perfil", "Status", "Ações"].map((h) => (
                 <th key={h} className="px-4 py-3 text-left font-semibold text-gray-600">
                   {h}
                 </th>
@@ -100,7 +95,7 @@ export default function AccessControlPage() {
           <tbody className="divide-y divide-gray-100">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
                   Nenhum usuário encontrado.
                 </td>
               </tr>
@@ -112,11 +107,6 @@ export default function AccessControlPage() {
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${ROLE_COLORS[u.role]}`}>
                       {u.role}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-                      {u.accessLevel}
                     </span>
                   </td>
                   <td className="px-4 py-3">

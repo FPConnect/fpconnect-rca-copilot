@@ -1,0 +1,71 @@
+# FPConnect Intel/Radar — public & reliable sources
+#
+# Notes:
+# - Add/remove feeds as needed.
+# - Prefer primary/official sources for regulatory and security.
+
+sources:
+  - name: "CISA Advisories"
+    type: "rss"
+    url: "https://www.cisa.gov/uscert/ncas/all.xml"
+    tags: ["cybersecurity", "cisa", "advisory"]
+
+  - name: "NVD CVE Feed (recent)"
+    type: "rss"
+    url: "https://nvd.nist.gov/feeds/xml/cve/misc/nvd-rss.xml"
+    tags: ["cybersecurity", "cve", "vulnerability"]
+
+  - name: "FDA Medical Devices"
+    type: "rss"
+    url: "https://www.fda.gov/medical-devices/medical-device-recalls/rss.xml"
+    tags: ["regulatory", "fda", "medtech"]
+
+  - name: "WHO News"
+    type: "rss"
+    url: "https://www.who.int/rss-feeds/news-english.xml"
+    tags: ["healthcare", "policy"]
+
+  - name: "Nature Digital Health"
+    type: "rss"
+    url: "https://www.nature.com/subjects/medical-research.rss"
+    tags: ["healthtech", "research"]
+
+  # --- DHS / Digital Health Solutions (Nihon Kohden DHS) ---
+  # Nihon Kohden DHS focuses on HealthConnect (EMR integration),
+  # VitalCare (remote patient monitoring), and DataInsight (clinical analytics).
+  # https://www.digitalhealthsolutions.com
+
+  - name: "MedCity News"
+    type: "rss"
+    url: "https://medcitynews.com/feed/"
+    tags: ["digital-health", "healthtech", "medtech", "dhs"]
+
+  - name: "Fierce Healthcare"
+    type: "rss"
+    url: "https://www.fiercehealthcare.com/rss/xml"
+    tags: ["digital-health", "health-it", "policy", "dhs"]
+
+  - name: "PubMed (Remote Patient Monitoring)"
+    type: "rss"
+    url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=remote+patient+monitoring+hospital&sort=date"
+    tags: ["research", "remote-monitoring", "dhs", "virtualcare"]
+
+  - name: "PubMed (EMR Integration Medical Devices)"
+    type: "rss"
+    url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=EMR+integration+medical+device+HL7&sort=date"
+    tags: ["research", "emr", "hl7", "dhs", "healthconnect"]
+
+  - name: "PubMed (ICU Digital Health)"
+    type: "rss"
+    url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=ICU+digital+health+telemetry+monitoring&sort=date"
+    tags: ["research", "icu", "telemetry", "dhs", "datainsight"]
+
+  - name: "PubMed (Clinical Decision Support AI)"
+    type: "rss"
+    url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1/?term=clinical+decision+support+AI+patient+monitoring&sort=date"
+    tags: ["research", "ai", "clinical-decision", "dhs"]
+
+  - name: "HealthIT.gov Blog (ASTP/ONC)"
+    type: "rss"
+    url: "https://www.healthit.gov/feed"
+    tags: ["health-it", "interoperability", "policy", "dhs"]

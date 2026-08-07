@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agente-autonomo"
+version = "0.1.0"
+description = "Agente autônomo local com ferramentas de sistema (terminal, URL, TTS, RDP)."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "Flavio" }
+]
+license = { text = "MIT" }
+keywords = ["agent", "automation", "cli"]
+
+dependencies = [
+  "pyttsx3>=2.90",
+  "openai>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+]
+llms = [
+  "anthropic>=0.25.0",
+  "google-generativeai>=0.5.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent_core*"]
+
+[project.scripts]
+agente-autonomo = "agent_core.cli:main"

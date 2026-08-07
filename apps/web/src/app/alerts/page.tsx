@@ -40,33 +40,13 @@ const FILTERS = [
   },
 ];
 
-const ALERTS_STORAGE_KEY = "fpconnect_alerts";
-
-function readAlerts() {
-  if (typeof window === "undefined") return ALERTS;
-  try {
-    const raw = localStorage.getItem(ALERTS_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as typeof ALERTS) : ALERTS;
-  } catch {
-    return ALERTS;
-  }
-}
-
-function writeAlerts(alerts: typeof ALERTS) {
-  localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(alerts));
-}
-
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState(readAlerts);
+  const [alerts, setAlerts] = useState(ALERTS);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
 
   const acknowledge = (id: number) => {
-    setAlerts((prev) => {
-      const next = prev.map((a) => (a.id === id ? { ...a, acknowledged: true } : a));
-      writeAlerts(next);
-      return next;
-    });
+    setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, acknowledged: true } : a)));
   };
 
   const filtered = useMemo(() => {

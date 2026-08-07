@@ -66,12 +66,9 @@ Deploy the full stack for free using managed cloud services — no server manage
    NEXT_PUBLIC_API_URL=https://fpconnect-api.up.railway.app
    NEXT_PUBLIC_APP_NAME=FPConnect
    NEXT_PUBLIC_APP_VERSION=1.0.0
-   NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
    ```
 
-5. Add the production domain `fpconnect.tec.br` in **Vercel → Project → Settings → Domains**.
-6. Configure DNS with the records shown by Vercel. See `docs/DOMAIN_MIGRATION.md` for the complete migration and validation checklist.
-7. Click **Deploy**. The app goes live at `https://fpconnect.tec.br` after DNS validation.
+5. Click **Deploy**. The app goes live at `https://<project>.vercel.app`.
 
 ### 5. CI/CD — GitHub Actions
 
