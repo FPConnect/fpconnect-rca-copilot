@@ -183,6 +183,51 @@ const PT_TO_EN: Record<string, string> = {
   "Avançar": "Next",
   "Redirecionando para login...": "Redirecting to login...",
   "Carregando sessão...": "Loading session...",
+  "Plataforma de monitoramento para operações hospitalares": "Monitoring platform for hospital operations",
+  "Visibilidade total para": "Total visibility for",
+  "Engenharia Clínica e TI Biomédica": "Clinical Engineering and Biomedical IT",
+  "O FPConnect centraliza monitoramento, alertas, tickets e histórico operacional para sua equipe tomar decisões rápidas e reduzir indisponibilidade de equipamentos de missão crítica.": "FPConnect centralizes monitoring, alerts, tickets, and operational history so your team can make fast decisions and reduce downtime for mission-critical equipment.",
+  "Acessar plataforma": "Access platform",
+  "Ver painel operacional": "View operational dashboard",
+  "Indicadores operacionais": "Operational indicators",
+  "Equipamentos monitoráveis": "Monitorable equipment",
+  "Redução média de MTTR": "Average MTTR reduction",
+  "SLA de disponibilidade": "Availability SLA",
+  "Observabilidade em tempo real": "Real-time observability",
+  "Monitore disponibilidade, alertas e comportamento de equipamentos críticos em um único painel.": "Monitor availability, alerts, and critical equipment behavior in a single dashboard.",
+  "Resposta rápida a incidentes": "Fast incident response",
+  "Abra e acompanhe tickets com contexto técnico para acelerar análise RCA e reduzir MTTR.": "Open and track tickets with technical context to accelerate RCA analysis and reduce MTTR.",
+  "Confiabilidade operacional": "Operational reliability",
+  "Padronize verificações e priorize riscos para manter continuidade clínica e segurança do paciente.": "Standardize checks and prioritize risks to maintain clinical continuity and patient safety.",
+  "Degustação gratuita": "Free trial",
+  "Plano Basic para experimentar sem custo": "Basic plan to try at no cost",
+  "Acesse o modo gratuito com limite máximo para conhecer a experiência do FPConnect sem compromisso. Ideal para validação inicial com sua equipe.": "Access the free mode with defined limits to experience FPConnect with no commitment. Ideal for initial validation with your team.",
+  "Testar plano Basic": "Try Basic plan",
+  "Menu": "Menu",
+  "Planos": "Plans",
+  "Abra para visualizar os planos pagos em formato de carrossel.": "Open to view the paid plans in carousel format.",
+  "Abrir / Fechar": "Open / Close",
+  "Operação clínica completa com diagnóstico inteligente e colaboração de equipe.": "Complete clinical operation with intelligent diagnostics and team collaboration.",
+  "RCA avançado": "Advanced RCA",
+  "Playbooks operacionais": "Operational playbooks",
+  "Relatórios executivos": "Executive reports",
+  "Suporte prioritário": "Priority support",
+  "Para operações críticas com alta disponibilidade e governança multiunidade.": "For critical operations with high availability and multi-unit governance.",
+  "Tudo do Premium": "Everything in Premium",
+  "Contratos/SLA avançados": "Advanced contracts/SLA",
+  "Prioridade máxima de processamento": "Maximum processing priority",
+  "Acompanhamento estratégico": "Strategic guidance",
+  "Consultoria": "Consulting",
+  "Plano consultivo para transformação operacional com apoio especialista dedicado.": "Consulting plan for operational transformation with dedicated expert support.",
+  "Tudo do VIP": "Everything in VIP",
+  "Squad consultivo": "Consulting squad",
+  "Roadmap de eficiência": "Efficiency roadmap",
+  "Implantação assistida": "Assisted implementation",
+  "Quero este plano": "I want this plan",
+  "Com o FPConnect, reduzimos o tempo entre o alerta e a tomada de decisão. O time de engenharia clínica ganhou previsibilidade.": "With FPConnect, we reduced the time between alert and decision-making. The clinical engineering team gained predictability.",
+  "Coordenadora de Engenharia Clínica": "Clinical Engineering Coordinator",
+  "A visão de incidentes e causa raiz trouxe clareza para priorização. Hoje atuamos de forma muito mais proativa.": "The incident and root-cause view brought clarity to prioritization. Today we act much more proactively.",
+  "Gestor de Operações Hospitalares": "Hospital Operations Manager",
 };
 
 const EN_TO_PT = Object.fromEntries(
@@ -207,7 +252,8 @@ function translateValue(value: string, language: Language): string {
   if (!trimmed) return value;
 
   const dictionary = language === "en-US" ? PT_TO_EN : EN_TO_PT;
-  const translated = dictionary[trimmed];
+  const normalized = trimmed.replace(/\s+/g, " ");
+  const translated = dictionary[trimmed] ?? dictionary[normalized];
   if (translated) return value.replace(trimmed, translated);
 
   if (language === "en-US") {
@@ -224,6 +270,7 @@ function translateValue(value: string, language: Language): string {
 function translateTextNode(node: Text, language: Language) {
   const parent = node.parentElement;
   if (!parent || ["SCRIPT", "STYLE", "TEXTAREA"].includes(parent.tagName)) return;
+  if (parent.closest("[data-no-translate]")) return;
   if (!originalText.has(node)) {
     originalText.set(node, node.nodeValue ?? "");
   }
@@ -233,6 +280,8 @@ function translateTextNode(node: Text, language: Language) {
 }
 
 function translateElementAttributes(element: Element, language: Language) {
+  if (element.closest("[data-no-translate]")) return;
+
   const attributes = ["placeholder", "aria-label", "title"];
   let stored = originalAttributes.get(element);
   if (!stored) {

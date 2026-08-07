@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Quote,
 } from "lucide-react";
+import LandingLanguageSwitcher from "@/components/LandingLanguageSwitcher";
 
 const HIGHLIGHTS = [
   {
@@ -77,6 +78,10 @@ export default function LandingPage() {
     <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.25),_transparent_45%),radial-gradient(circle_at_80%_20%,_rgba(59,130,246,0.2),_transparent_35%)]" />
       <div className="relative mx-auto max-w-6xl px-6 pb-16 pt-12 md:pt-20">
+        <div className="mb-8 flex justify-end">
+          <LandingLanguageSwitcher />
+        </div>
+
         <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-200">
           <ShieldCheck size={14} /> Plataforma de monitoramento para operações hospitalares
         </div>
@@ -90,8 +95,7 @@ export default function LandingPage() {
               </span>
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
-              O FPConnect centraliza monitoramento, alertas, tickets e histórico operacional para sua equipe tomar
-              decisões rápidas e reduzir indisponibilidade de equipamentos de missão crítica.
+              O FPConnect centraliza monitoramento, alertas, tickets e histórico operacional para sua equipe tomar decisões rápidas e reduzir indisponibilidade de equipamentos de missão crítica.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -148,8 +152,7 @@ export default function LandingPage() {
               </p>
               <h2 className="mt-3 text-2xl font-black text-white sm:text-3xl">Plano Basic para experimentar sem custo</h2>
               <p className="mt-2 text-sm leading-relaxed text-emerald-100/90 sm:text-base">
-                Acesse o modo gratuito com limite máximo para conhecer a experiência do FPConnect sem compromisso.
-                Ideal para validação inicial com sua equipe.
+                Acesse o modo gratuito com limite máximo para conhecer a experiência do FPConnect sem compromisso. Ideal para validação inicial com sua equipe.
               </p>
             </div>
             <Link
