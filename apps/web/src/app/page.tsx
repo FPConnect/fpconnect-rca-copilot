@@ -10,8 +10,23 @@ import {
   Sparkles,
   ChevronRight,
   Quote,
+  Target,
+  Eye,
+  HeartHandshake,
+  Building2,
+  HelpCircle,
+  CheckCircle2,
 } from "lucide-react";
 import LandingLanguageSwitcher from "@/components/LandingLanguageSwitcher";
+import LandingFaqSearch from "@/components/LandingFaqSearch";
+
+const NAV_LINKS = [
+  { href: "#missao", label: "Missão" },
+  { href: "#visao", label: "Visão" },
+  { href: "#valores", label: "Valores" },
+  { href: "#quem-somos", label: "Quem somos" },
+  { href: "#faq", label: "Ajuda / FAQs" },
+];
 
 const HIGHLIGHTS = [
   {
@@ -35,6 +50,42 @@ const KPI = [
   { label: "Equipamentos monitoráveis", value: "1.200+", icon: Server },
   { label: "Redução média de MTTR", value: "-32%", icon: Clock3 },
   { label: "SLA de disponibilidade", value: "99,9%", icon: Stethoscope },
+];
+
+const INSTITUTIONAL = [
+  {
+    id: "missao",
+    icon: Target,
+    title: "Missão",
+    description:
+      "Conectar engenharia clínica, TI biomédica e operação hospitalar em uma plataforma única para reduzir indisponibilidade, acelerar resposta a incidentes e proteger a segurança do paciente.",
+  },
+  {
+    id: "visao",
+    icon: Eye,
+    title: "Visão",
+    description:
+      "Ser a plataforma de referência para operações hospitalares orientadas por dados, tornando cada decisão de disponibilidade, manutenção e risco mais rápida, rastreável e confiável.",
+  },
+];
+
+const VALUES = [
+  {
+    title: "Segurança do paciente",
+    description: "Toda priorização parte do impacto clínico e da continuidade assistencial.",
+  },
+  {
+    title: "Confiabilidade operacional",
+    description: "Alertas, tickets e métricas precisam sustentar decisões consistentes no dia a dia.",
+  },
+  {
+    title: "Clareza para decisão",
+    description: "Dados técnicos devem virar contexto simples para gestores, equipes e fornecedores.",
+  },
+  {
+    title: "Rastreabilidade",
+    description: "Cada ocorrência deve manter histórico, responsável, evidência e evolução visíveis.",
+  },
 ];
 
 const PAID_PLANS = [
@@ -78,8 +129,30 @@ export default function LandingPage() {
     <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.25),_transparent_45%),radial-gradient(circle_at_80%_20%,_rgba(59,130,246,0.2),_transparent_35%)]" />
       <div className="relative mx-auto max-w-6xl px-6 pb-16 pt-12 md:pt-20">
-        <div className="mb-8 flex justify-end">
-          <LandingLanguageSwitcher />
+        <div className="mb-10 flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <Link href="/" className="inline-flex flex-col leading-none">
+              <span className="text-lg font-black text-white">FPConnect</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-cyan-200">
+                Technologies
+              </span>
+            </Link>
+            <LandingLanguageSwitcher />
+          </div>
+          <nav
+            aria-label="Navegação institucional"
+            className="flex flex-wrap gap-2 text-xs font-bold text-slate-300"
+          >
+            {NAV_LINKS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-full border border-slate-700 bg-slate-900/60 px-3 py-2 transition hover:border-cyan-300 hover:text-cyan-100"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
         </div>
 
         <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-200">
@@ -142,6 +215,71 @@ export default function LandingPage() {
               <p className="mt-2 text-sm leading-relaxed text-slate-300">{description}</p>
             </article>
           ))}
+        </section>
+
+        <section className="mt-16 grid gap-4 lg:grid-cols-2">
+          {INSTITUTIONAL.map(({ id, icon: Icon, title, description }) => (
+            <article
+              key={title}
+              id={id}
+              className="scroll-mt-8 rounded-2xl border border-slate-700 bg-slate-900/70 p-6 shadow-lg shadow-slate-900/50"
+            >
+              <div className="mb-4 inline-flex rounded-xl bg-cyan-500/15 p-3 text-cyan-300">
+                <Icon size={22} />
+              </div>
+              <h2 className="text-2xl font-black text-white">{title}</h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base">{description}</p>
+            </article>
+          ))}
+        </section>
+
+        <section id="valores" className="mt-12 scroll-mt-8">
+          <div className="mb-5 flex items-center gap-3">
+            <span className="inline-flex rounded-xl bg-emerald-500/15 p-3 text-emerald-300">
+              <HeartHandshake size={22} />
+            </span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">
+                Cultura operacional
+              </p>
+              <h2 className="text-2xl font-black text-white">Valores</h2>
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {VALUES.map((value) => (
+              <article key={value.title} className="rounded-2xl border border-slate-700 bg-slate-900/70 p-5">
+                <CheckCircle2 size={18} className="text-emerald-300" />
+                <h3 className="mt-3 text-base font-black text-white">{value.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">{value.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section
+          id="quem-somos"
+          className="mt-12 scroll-mt-8 rounded-2xl border border-slate-700 bg-slate-900/70 p-6 shadow-xl shadow-slate-900/40"
+        >
+          <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div>
+              <div className="mb-4 inline-flex rounded-xl bg-blue-500/15 p-3 text-blue-300">
+                <Building2 size={22} />
+              </div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-200">Institucional</p>
+              <h2 className="mt-2 text-2xl font-black text-white">Quem somos</h2>
+            </div>
+            <div className="space-y-3 text-sm leading-relaxed text-slate-300 sm:text-base">
+              <p>
+                Somos a FPConnect Technologies, uma empresa focada em tecnologia para engenharia clínica, TI biomédica e operações hospitalares.
+              </p>
+              <p>
+                Criamos uma plataforma para centralizar monitoramento, chamados, histórico e métricas de disponibilidade em ambientes de missão crítica.
+              </p>
+              <p>
+                Nosso compromisso é entregar uma operação mais previsível, rastreável e preparada para tomada de decisão.
+              </p>
+            </div>
+          </div>
         </section>
 
         <section className="mt-14 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-6 shadow-lg shadow-emerald-950/30">
@@ -218,6 +356,26 @@ export default function LandingPage() {
             </article>
           ))}
         </section>
+
+        <section
+          id="faq"
+          className="mt-12 scroll-mt-8 rounded-2xl border border-slate-700 bg-slate-900/70 p-6 shadow-xl shadow-slate-900/40"
+        >
+          <div className="mb-5 flex items-center gap-3">
+            <span className="inline-flex rounded-xl bg-amber-500/15 p-3 text-amber-300">
+              <HelpCircle size={22} />
+            </span>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-200">Suporte</p>
+              <h2 className="text-2xl font-black text-white">Ajuda / FAQs</h2>
+            </div>
+          </div>
+          <LandingFaqSearch />
+        </section>
+
+        <footer className="mt-14 border-t border-slate-800 pt-6 text-center text-sm text-slate-400">
+          FPConnect™ - Marca registrada. © 2026 Todos os direitos reservados.
+        </footer>
       </div>
     </div>
   );
