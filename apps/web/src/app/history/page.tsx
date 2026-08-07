@@ -4,10 +4,6 @@ import { useMemo, useState } from "react";
 import Pagination from "@/components/Pagination";
 import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import { addReportBranding } from "@/lib/report-branding";
-import { downloadCsv } from "@/utils/downloadCsv";
 
 const EVENTS = [
   { id: 1, action: "Ticket criado", user: "João Silva", resource: "MRI Scanner offline", time: "2026-02-26 14:32", type: "ticket" },
@@ -61,53 +57,9 @@ export default function HistoryPage() {
     setPage(1);
   };
 
-  async function exportPDF() {
-    const doc = new jsPDF();
-    const currentY = await addReportBranding(doc, {
-      title: "Histórico de Incidentes FPConnect",
-      subtitle: "Linha do tempo operacional com eventos, usuários envolvidos e recursos afetados.",
-      rightLabel: "Trilha auditável",
-      pageNumber: 1,
-      totalPages: 1,
-    });
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(51, 65, 85);
-    filtered.forEach((e, i) => {
-      doc.text(
-        `${e.time} - ${e.action} (${e.user}) - ${e.resource}`.slice(0, 92),
-        14,
-        currentY + i * 7.5,
-      );
-    });
-    doc.save("historico-incidentes.pdf");
-  }
-
-  function exportExcel() {
-    downloadCsv("historico-incidentes.csv", filtered);
-  }
-
-  async function exportPNG() {
-    const table = document.getElementById("history-table");
-    if (table) {
-      const canvas = await html2canvas(table);
-      const url = canvas.toDataURL("image/png");
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "historico-incidentes.png";
-      a.click();
-    }
-  }
-
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Histórico de Incidentes</h1>
-      <div className="flex gap-4 mb-6">
-        <button onClick={exportPDF} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700">Exportar PDF</button>
-        <button onClick={exportExcel} className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700">Exportar Excel</button>
-        <button onClick={exportPNG} className="px-4 py-2 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700">Exportar PNG</button>
-      </div>
+    <div className="max-w-5xl mx-auto">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6">Histórico de Auditoria</h1>
       <div className="flex flex-wrap gap-3 mb-4">
         <SearchBar
           placeholder="Pesquisar histórico..."
@@ -123,7 +75,7 @@ export default function HistoryPage() {
         />
       </div>
       <div className="bg-white rounded-xl shadow overflow-x-auto">
-        <table id="history-table" className="w-full text-sm min-w-[600px]">
+        <table className="w-full text-sm min-w-[600px]">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               {["Ação", "Usuário", "Recurso", "Data/Hora"].map((h) => (

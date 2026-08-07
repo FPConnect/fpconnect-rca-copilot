@@ -7,36 +7,27 @@ import {
   Monitor,
   HeartPulse,
   Bell,
-  Brain,
   BarChart2,
   Wrench,
   ShieldCheck,
   History,
   Settings,
   Ticket,
-  Radar,
-  Cpu,
   X,
 } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
-import FPConnectLogo from "@/components/FPConnectLogo";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/simulacoes", label: "Simulações", icon: Cpu },
-  { href: "/agent", label: "Centro de Simulação", icon: Brain },
+  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
   { href: "/machines", label: "Máquinas", icon: Monitor },
   { href: "/health-checks", label: "Health Checks", icon: HeartPulse },
   { href: "/alerts", label: "Alertas", icon: Bell },
   { href: "/tickets", label: "Tickets", icon: Ticket },
   { href: "/metrics", label: "Métricas", icon: BarChart2 },
   { href: "/maintenance", label: "Manutenção", icon: Wrench },
-  { href: "/intel", label: "Radar (Intel)", icon: Radar },
   { href: "/access-control", label: "Controle de Acesso", icon: ShieldCheck },
   { href: "/history", label: "Histórico", icon: History },
-  { href: "/demo-recursos", label: "Demo Recursos", icon: BarChart2 },
-  { href: "/dhs-resources", label: "DHS Resources", icon: Cpu },
 ];
 
 export default function Sidebar() {
@@ -47,7 +38,12 @@ export default function Sidebar() {
   const navContent = (
     <aside className="w-64 min-h-screen bg-gray-900 text-white flex flex-col">
       <div className="px-6 py-5 border-b border-gray-700 flex items-center justify-between">
-        <FPConnectLogo subtitle="Technologies" theme="dark" size="md" priority />
+        <div>
+          <span className="text-xl font-bold tracking-tight text-blue-400">
+            FPConnect
+          </span>
+          <span className="block text-xs text-gray-400 mt-0.5">Technologies</span>
+        </div>
         <button
           onClick={close}
           className="md:hidden p-1 rounded text-gray-400 hover:text-white"

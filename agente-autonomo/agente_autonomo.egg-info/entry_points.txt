@@ -1,2 +1,0 @@
-[console_scripts]
-agente-autonomo = agent_core.cli:main

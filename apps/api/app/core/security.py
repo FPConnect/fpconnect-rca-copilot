@@ -1,78 +1,88 @@
-"""JWT token creation and password hashing utilities."""
+"""Authentication, password policy, JWT, and rate-limit utilities."""
 
-import hmac
 from datetime import datetime, timedelta, timezone
+import re
 from typing import Optional
 
-from fastapi import Header, HTTPException, status
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+limiter = Limiter(key_func=get_remote_address)
+
+ALGORITHM = settings.algorithm
+ACCESS_TTL_MINUTES = settings.access_token_expire_minutes
+REFRESH_TTL_DAYS = settings.refresh_token_expire_days
 
 
 def hash_password(password: str) -> str:
-    """Hash a plain-text password."""
-    return pwd_context.hash(password)
+    """Hash a plain-text password using bcrypt."""
+    salt = bcrypt.gensalt(rounds=12)
+    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return hashed.decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
     """Verify a plain-text password against its hash."""
-    return pwd_context.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def validate_password(password: str) -> tuple[bool, list[str]]:
+    """Validate enterprise password complexity requirements."""
+    errors: list[str] = []
+    if len(password) < 8:
+        errors.append("min 8 chars")
+    if not re.search(r"[A-Z]", password):
+        errors.append("1 uppercase")
+    if not re.search(r"[a-z]", password):
+        errors.append("1 lowercase")
+    if not re.search(r"\d", password):
+        errors.append("1 digit")
+    return len(errors) == 0, errors
+
+
+def create_access_token(
+    data: dict,
+    expires_delta: Optional[timedelta] = None,
+    expires: Optional[timedelta] = None,
+) -> str:
     """Create a signed JWT access token."""
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (
-        expires_delta or timedelta(minutes=settings.access_token_expire_minutes)
+    now = datetime.now(timezone.utc)
+    ttl = expires_delta or expires or timedelta(minutes=ACCESS_TTL_MINUTES)
+    to_encode.update({"exp": now + ttl, "iat": now, "nbf": now, "type": "access"})
+    return jwt.encode(to_encode, settings.secret_key, algorithm=ALGORITHM)
+
+
+def create_refresh_token(data: dict) -> str:
+    """Create a signed JWT refresh token with a separate secret."""
+    to_encode = data.copy()
+    now = datetime.now(timezone.utc)
+    to_encode.update(
+        {
+            "exp": now + timedelta(days=REFRESH_TTL_DAYS),
+            "iat": now,
+            "nbf": now,
+            "type": "refresh",
+        }
     )
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+    return jwt.encode(to_encode, settings.refresh_secret_key, algorithm=ALGORITHM)
+
+
+def decode_token(token: str, secret: str) -> dict:
+    """Decode a JWT token with the supplied secret."""
+    return jwt.decode(token, secret, algorithms=[ALGORITHM])
 
 
 def decode_access_token(token: str) -> Optional[dict]:
-    """Decode and verify a JWT token, returning the payload or None."""
+    """Decode and verify an access token, returning the payload or None."""
     try:
-        return jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        payload = decode_token(token, settings.secret_key)
     except JWTError:
         return None
-
-
-def get_current_user_payload(authorization: Optional[str] = Header(None)) -> dict:
-    """Extract and validate the current user payload from a Bearer token."""
-
-    if settings.app_env == "development" and settings.allow_dev_anonymous_access and not authorization:
-        return {"sub": "1", "role": "admin", "dev_anonymous": True}
-
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
-
-    token = authorization.split(" ", 1)[1]
-    payload = decode_access_token(token)
-    if not payload or "sub" not in payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-        )
+    if payload.get("type") not in (None, "access"):
+        return None
     return payload
-
-
-def get_current_user_id(authorization: Optional[str] = Header(None)) -> int:
-    """Extract the authenticated user id from the current request."""
-
-    payload = get_current_user_payload(authorization)
-    return int(payload["sub"])
-
-
-def secrets_match(expected: Optional[str], provided: Optional[str]) -> bool:
-    """Compare shared secrets in constant time when both values exist."""
-
-    if not expected or not provided:
-        return False
-    return hmac.compare_digest(expected, provided)

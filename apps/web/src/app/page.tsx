@@ -49,7 +49,7 @@ export default function LandingPage() {
 
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/dashboard"
+                href="/login"
                 className="inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
               >
                 Acessar plataforma <ArrowRight size={16} />

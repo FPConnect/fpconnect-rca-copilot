@@ -1,30 +1,35 @@
-# Next.js build output
-apps/web/.next/
-apps/web/node_modules/
-apps/web/tsconfig.tsbuildinfo
+```
+# Database files
+*.db
 
-# Mobile app dependencies and build artifacts
-apps/mobile/node_modules/
-apps/mobile/.expo/
-apps/mobile/.expo-shared/
-apps/mobile/dist/
-node_modules
+# Environment
+.env
+.env.local
+.env.*
 
-# Local env files (never commit secrets)
-agente-autonomo/.env
-.vercel
-.env*.local
-
-# Python cache artifacts
-**/__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+.mypy_cache/
 .pytest_cache/
 
-# Agente autonomo generated QA/learning artifacts
-agente-autonomo/scripts/qa_loop_reports/*.log
-agente-autonomo/scripts/qa_loop_reports/*.json
-agente-autonomo/scripts/qa_loop_reports/*.pid
-agente-autonomo/scripts/qa_loop_reports/*.offset
-agente-autonomo/scripts/qa_loop_reports/*.heartbeat
+# Build artifacts
+dist/
+build/
+target/
+
+# Editors
+.vscode/
+.idea/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# System files
+.DS_Store
+Thumbs.db
+```
