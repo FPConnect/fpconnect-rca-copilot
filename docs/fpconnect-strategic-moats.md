@@ -1,4 +1,4 @@
-# FPConnect - Plano de abismos de diferenciacao
+# FPConnect - Plano de diferenciais estrategicos
 
 Data: 2026-08-13
 
@@ -51,7 +51,7 @@ vender um nivel acima: decisao clinica, risco executivo e receita protegida.
 - EQ2 HEMS CMMS:
   https://www.eq2llc.com/eq2-hems-cmms
 
-## Abismo 1 - Clinical Capacity Twin
+## Diferencial 1 - Clinical Capacity Twin
 
 ### Tese
 
@@ -77,7 +77,7 @@ continuidade e previsibilidade. Um digital twin operacional permite responder:
 4. Gerar relatorio executivo por unidade.
 5. Validar com 3 hospitais: "isso muda decisao de investimento?"
 
-## Abismo 2 - Device Trust Graph
+## Diferencial 2 - Device Trust Graph
 
 ### Tese
 
@@ -104,7 +104,7 @@ uma resposta unica:
 4. Gerar pacote de evidencia e carta para OEM.
 5. Medir percentual de ativos criticos com acao defensavel.
 
-## Abismo 3 - Executive Revenue Command
+## Diferencial 3 - Executive Revenue Command
 
 ### Tese
 

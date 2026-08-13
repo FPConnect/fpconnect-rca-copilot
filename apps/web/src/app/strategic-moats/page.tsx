@@ -72,13 +72,13 @@ export default function StrategicMoatsPage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
               <Target size={14} />
-              Abismos de diferenciação
+              Diferenciais estratégicos
             </div>
             <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950">
               FPConnect como sistema operacional de risco, capacidade e receita.
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Três apostas adicionadas como módulos independentes: simulação de
+              Três diferenciais adicionados como módulos independentes: simulação de
               capacidade clínica, grafo de confiança por dispositivo e comando
               executivo de receita.
             </p>
@@ -137,7 +137,7 @@ export default function StrategicMoatsPage() {
                       : "bg-slate-100 text-slate-600"
                   }`}
                 >
-                  Abismo {strategicMoats.findIndex((item) => item.id === moat.id) + 1}
+                  Diferencial {strategicMoats.findIndex((item) => item.id === moat.id) + 1}
                 </span>
               </div>
               <h2 className="mt-4 text-lg font-black text-slate-950">{moat.title}</h2>
