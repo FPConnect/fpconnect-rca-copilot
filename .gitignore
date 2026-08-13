@@ -16,9 +16,19 @@ __pycache__/
 .pytest_cache/
 
 # Build artifacts
+.next/
+apps/**/.next/
+.turbo/
 dist/
 build/
 target/
+*.tsbuildinfo
+
+# Local platform state
+.vercel/
+apps/**/.vercel/
+.expo/
+apps/**/.expo/
 
 # Editors
 .vscode/
