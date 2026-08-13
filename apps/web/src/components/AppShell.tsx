@@ -8,7 +8,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   if (pathname === "/") {
-    return <main className="min-h-screen bg-slate-950">{children}</main>;
+    return <>{children}</>;
   }
 
   if (pathname === "/login") {
