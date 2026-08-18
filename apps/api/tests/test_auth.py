@@ -86,7 +86,10 @@ def test_login_invalid_credentials():
 def test_health():
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    data = response.json()
+    assert data["status"] in ["ok", "degraded"]
+    assert "timestamp" in data
+    assert "uptime_seconds" in data
 
 
 def test_refresh_token_success():

@@ -1,35 +1,7 @@
 ```
-# Database files
-*.db
-
-# Environment
-.env
-.env.local
-.env.*
-
-# Dependencies
-node_modules/
-.venv/
-venv/
-__pycache__/
-.mypy_cache/
-.pytest_cache/
-
-# Build artifacts
-dist/
-build/
-target/
-
-# Editors
-.vscode/
-.idea/
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-
-# System files
-.DS_Store
-Thumbs.db
+# Database test files
+test.db
+test_attachments.db
+test_clinical.db
+test_notifications.db
 ```

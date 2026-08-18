@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./fpconnect.db"
     redis_url: str = "redis://localhost:6379/0"
 
+    # Rate limiting configuration
+    rate_limit_per_minute: int = 100
+    rate_limit_per_hour: int = 1000
+
     openai_api_key: str = "sk-placeholder"
 
     s3_endpoint_url: str = "http://localhost:9000"
