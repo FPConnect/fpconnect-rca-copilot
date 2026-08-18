@@ -24,6 +24,7 @@ from app.core.security_middleware import (
     RequestTimingMiddleware,
     AuditLogMiddleware,
 )
+from app.core.health_check import create_default_health_checker
 from app.services.metrics import collect_periodic_metrics, metrics, track_request
 
 structlog.configure(
@@ -62,7 +63,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 async def lifespan(app: FastAPI):
     """Manage application lifecycle events."""
     # Startup
-    log.info("application_starting", version="1.0.0", env=settings.app_env)
+    log.info("application_starting", version="1.2.0", env=settings.app_env)
     
     # Create database tables
     Base.metadata.create_all(bind=engine)
@@ -71,6 +72,13 @@ async def lifespan(app: FastAPI):
     if settings.app_env == "development":
         with SessionLocal() as seed_db:
             reset_test_accounts(seed_db)
+    
+    # Initialize health checker
+    from app.core.cache import get_client as get_redis_client
+    app.state.health_checker = create_default_health_checker(
+        db_session_factory=SessionLocal,
+        redis_client_factory=lambda: get_redis_client(),
+    )
     
     # Start background metrics collection
     metrics_task = asyncio.create_task(collect_periodic_metrics())
@@ -127,17 +135,60 @@ app.include_router(enterprise.router, prefix="/enterprise", tags=["enterprise"])
 
 
 @app.get("/health")
-def health_check():
-    """Enhanced health check with system metrics."""
+async def health_check():
+    """Enhanced health check with system metrics and dependency checks."""
     from app.services.metrics import get_system_health
     
+    # Get basic system health
     health = get_system_health()
+    
+    # Check if comprehensive health checker is available
+    health_checker = getattr(app.state, "health_checker", None)
+    if health_checker:
+        try:
+            detailed_health = await health_checker.check_all()
+            return {
+                "status": "ok" if detailed_health["overall_status"] == "healthy" else "degraded",
+                "system_status": health["status"],
+                "uptime_seconds": health.get("application", {}).get("uptime_seconds", 0),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "dependencies": detailed_health["checks"],
+                "summary": detailed_health["summary"],
+            }
+        except Exception as e:
+            log.error("health_check_detailed_failed", error=str(e))
+    
+    # Fallback to basic health check
     return {
         "status": "ok" if health["status"] in ["healthy", "warning"] else "degraded",
         "system_status": health["status"],
         "uptime_seconds": health.get("application", {}).get("uptime_seconds", 0),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+
+
+@app.get("/health/detailed")
+async def detailed_health_check():
+    """Comprehensive health check with all dependencies and statistics."""
+    health_checker = getattr(app.state, "health_checker", None)
+    if not health_checker:
+        return {"error": "Health checker not initialized", "status": "unavailable"}
+    
+    try:
+        detailed_health = await health_checker.check_all()
+        stats = health_checker.get_all_stats()
+        
+        return {
+            **detailed_health,
+            "statistics": stats,
+        }
+    except Exception as e:
+        log.error("detailed_health_check_failed", error=str(e))
+        return {
+            "overall_status": "error",
+            "error": str(e),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
 
 
 @app.get("/metrics")
