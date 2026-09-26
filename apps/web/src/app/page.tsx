@@ -27,40 +27,43 @@ const planOrder: PlanKey[] = ["basic", "premium", "vip", "consultoria"];
 
 const copy = {
   pt: {
-    badge: "Plataforma de monitoramento para operações hospitalares",
-    title: ["Visibilidade total", "para"],
-    titleAccent: ["Engenharia Clínica e", "TI Biomédica"],
+    badge: "Inteligência de dados para assistência técnica MedTech",
+    title: ["Transforme dados", "em"],
+    titleAccent: ["decisões de", "assistência técnica"],
     subtitle:
-      "O FPConnect centraliza monitoramento, alertas, tickets e histórico operacional para sua equipe tomar decisões rápidas e reduzir indisponibilidade de equipamentos de missão crítica.",
-    cta: "Acessar plataforma",
-    secondaryCta: "Ver painel operacional",
-    kpiTitle: "Indicadores operacionais",
+      "A FPConnect organiza tickets, logs e histórico de equipamentos para apoiar triagem, análise de causa raiz e acompanhamento de disponibilidade. RCA Copilot + Availability Engine, com validação da equipe técnica.",
+    cta: "Conversar sobre um piloto",
+    secondaryCta: "Acessar plataforma",
+    kpiTitle: "Como começar o piloto",
     kpis: [
-      { label: "Equipamentos monitoráveis", value: "1.200+", icon: Server },
-      { label: "Redução média de MTTR", value: "-32%", icon: Clock3 },
-      { label: "SLA de disponibilidade", value: "99,9%", icon: Stethoscope },
+      { label: "Amostra inicial de tickets", value: "20", icon: Server },
+      { label: "Logs disponíveis para análise", value: "1–2", icon: Clock3 },
+      { label: "Escopo e critérios", value: "A definir", icon: Stethoscope },
     ],
     highlights: [
       {
         icon: Activity,
-        title: "Observabilidade em tempo real",
-        description: "Monitore disponibilidade, alertas e comportamento de equipamentos críticos em um único painel.",
+        title: "Visibilidade dos dados disponíveis",
+        description: "Reúna tickets, histórico e indicadores; atualização e integrações são definidas no piloto.",
       },
       {
         icon: Target,
         title: "Resposta rápida a incidentes",
-        description: "Abra e acompanhe tickets com contexto técnico para acelerar análise RCA e reduzir MTTR.",
+        description: "Organize contexto técnico e hipóteses de causa raiz para revisão da equipe responsável.",
       },
       {
         icon: ShieldCheck,
         title: "Confiabilidade operacional",
-        description: "Padronize verificações e priorize riscos para manter continuidade clínica e segurança do paciente.",
+        description: "Estruture playbooks e prioridades com revisão técnica. A FPConnect apoia a análise de dados e não executa manutenção.",
       },
     ],
+    evidenceTitle: "Demonstração, piloto e resultado medido",
+    evidenceText: "A demonstração apresenta funcionalidades com dados ilustrativos. O piloto valida o uso com uma amostra autorizada da sua operação. Um resultado só será apresentado como caso medido com período, amostra, cálculo e autorização documentados. Não prometemos redução percentual de MTTR nem disponibilidade garantida.",
+    privacyText: "Compartilhe apenas dados autorizados, sem identificação de pacientes, credenciais ou informações confidenciais de terceiros. Canal, acesso e retenção são combinados antes do envio.",
     experimentEyebrow: "Experimente o FPConnect",
-    experimentTitle: "Conheça a plataforma com uma visão inicial da operação clínica.",
+    experimentTitle: "Da conversa inicial a uma demonstração com escopo definido.",
     experimentText:
-      "Use o Basic para abrir a primeira conversa comercial com dados, fluxo de chamados e visão executiva do que pode evoluir para operação assistida.",
+      "Começamos com uma conversa sobre sua operação. Combinamos uma amostra de 20 tickets e 1–2 logs, quando disponíveis e autorizados, para uma demonstração ou auditoria. Entregáveis, prazo e valor são definidos antes do piloto.",
     plansMiniTitle: "Planos",
     plansMiniText: "Recursos para evoluir da visão inicial para operação assistida, gestão de SLA e implantação executiva.",
     institutional: [
@@ -93,9 +96,6 @@ const copy = {
     chooseTitle: "Escolha como sua equipe vai operar",
     chooseText:
       "Premium e VIP são concluídos com a equipe comercial após apresentação e negociação. Consultoria é dimensionada caso a caso.",
-    monthly: "Mensal",
-    annual: "Anual",
-    annualDiscount: "-17%",
     resourceScale: "Escala de recursos",
     planHint:
       "Comece com uma visão inicial e avance quando precisar de chamados, RCA Copilot, playbooks, SLA e acompanhamento consultivo.",
@@ -168,40 +168,43 @@ const copy = {
     },
   },
   en: {
-    badge: "Monitoring platform for hospital operations",
-    title: ["Total visibility for"],
-    titleAccent: ["Clinical Engineering and", "Biomedical IT"],
+    badge: "Data intelligence for MedTech technical service",
+    title: ["Turn service data into"],
+    titleAccent: ["technical service", "decisions"],
     subtitle:
-      "FPConnect centralizes monitoring, alerts, tickets and operational history so your team can make faster decisions and reduce downtime for mission-critical equipment.",
-    cta: "Access platform",
-    secondaryCta: "View operations dashboard",
-    kpiTitle: "Operational indicators",
+      "FPConnect organizes tickets, logs and equipment history to support triage, root cause analysis and availability tracking. RCA Copilot + Availability Engine, with technical team validation.",
+    cta: "Discuss a pilot",
+    secondaryCta: "Access platform",
+    kpiTitle: "How to start a pilot",
     kpis: [
-      { label: "Monitorable assets", value: "1,200+", icon: Server },
-      { label: "Average MTTR reduction", value: "-32%", icon: Clock3 },
-      { label: "Availability SLA", value: "99.9%", icon: Stethoscope },
+      { label: "Initial ticket sample", value: "20", icon: Server },
+      { label: "Available logs for analysis", value: "1–2", icon: Clock3 },
+      { label: "Scope and criteria", value: "To agree", icon: Stethoscope },
     ],
     highlights: [
       {
         icon: Activity,
-        title: "Real-time observability",
-        description: "Monitor availability, alerts and critical equipment behavior from one operational panel.",
+        title: "Visibility into available data",
+        description: "Bring together tickets, history and indicators; updates and integrations are defined in the pilot.",
       },
       {
         icon: Target,
         title: "Fast incident response",
-        description: "Open and track tickets with technical context to accelerate RCA and reduce MTTR.",
+        description: "Organize technical context and root cause hypotheses for review by the responsible team.",
       },
       {
         icon: ShieldCheck,
         title: "Operational reliability",
-        description: "Standardize checks and prioritize risk to protect clinical continuity and patient safety.",
+        description: "Structure playbooks and priorities with technical review. FPConnect supports data analysis and does not perform maintenance.",
       },
     ],
+    evidenceTitle: "Demonstration, pilot and measured results",
+    evidenceText: "The demonstration presents features using illustrative data. A pilot validates use with an authorized sample from your operation. Results will only be presented as measured cases with a documented period, sample, calculation and authorization. We do not promise a percentage reduction in MTTR or guaranteed availability.",
+    privacyText: "Share only authorized data, without patient identifiers, credentials or third-party confidential information. Transfer channel, access and retention are agreed before sharing.",
     experimentEyebrow: "Try FPConnect",
-    experimentTitle: "Explore the platform with an initial view of clinical operations.",
+    experimentTitle: "From an initial conversation to a scoped demonstration.",
     experimentText:
-      "Use Basic to start the commercial conversation with data, ticket flow and an executive view of what can evolve into assisted operations.",
+      "Start with a discussion of your operation. Agree on a sample of 20 tickets and 1–2 logs, where available and authorized, for a demonstration or audit. Deliverables, timing and pricing are defined before the pilot.",
     plansMiniTitle: "Plans",
     plansMiniText: "Resources to evolve from initial visibility to assisted operations, SLA management and executive rollout.",
     institutional: [
@@ -234,9 +237,6 @@ const copy = {
     chooseTitle: "Choose how your team will operate",
     chooseText:
       "Premium and VIP are closed with the commercial team after presentation and negotiation. Consulting is scoped case by case.",
-    monthly: "Monthly",
-    annual: "Annual",
-    annualDiscount: "-17%",
     resourceScale: "Resource scale",
     planHint:
       "Start with initial visibility and advance when you need tickets, RCA Copilot, playbooks, SLA and consultative follow-up.",
@@ -371,7 +371,7 @@ export default function LandingPage() {
 
               <div className="mt-9 flex flex-wrap gap-4">
                 <Link
-                  href="/dashboard"
+                  href="https://wa.me/5547996789861"
                   className="inline-flex min-h-12 items-center justify-center gap-3 rounded-lg bg-cyan-400 px-6 text-base font-black text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:bg-cyan-300"
                 >
                   {t.cta}
@@ -397,7 +397,7 @@ export default function LandingPage() {
                       </span>
                       <span className="text-base text-slate-300">{label}</span>
                     </div>
-                    <strong className="text-2xl text-white">{value}</strong>
+                    <strong className="text-lg text-white">{value}</strong>
                   </div>
                 ))}
               </div>
@@ -444,6 +444,12 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-[1440px] px-6 py-12 sm:px-8">
+        <h2 className="text-2xl font-black">{t.evidenceTitle}</h2>
+        <p className="mt-4 max-w-5xl leading-7 text-slate-200">{t.evidenceText}</p>
+        <p className="mt-4 max-w-5xl leading-7 text-slate-300">{t.privacyText}</p>
+      </section>
+
       <section className="border-y border-slate-800 bg-[#020817]">
         <div className="mx-auto grid w-full max-w-[1440px] gap-4 px-6 py-8 sm:px-8 lg:grid-cols-5 lg:px-8">
           {t.institutional.map((item) => (
@@ -463,7 +469,7 @@ export default function LandingPage() {
               FPConnect
             </div>
             <Link
-              href="/dashboard"
+              href="https://wa.me/5547996789861"
               className="inline-flex min-h-11 items-center justify-center gap-3 rounded-lg bg-cyan-400 px-5 text-sm font-black text-slate-950 transition hover:bg-cyan-300"
             >
               {t.cta}
@@ -488,7 +494,7 @@ export default function LandingPage() {
                 {t.seePlans}
               </a>
               <a
-                href="mailto:contato@fpconnect.com.br"
+                href="https://wa.me/5547996789861"
                 className="inline-flex min-h-12 items-center justify-center rounded-lg border border-slate-600 px-7 text-base font-bold text-white transition hover:border-cyan-300"
               >
                 {t.sales}
@@ -514,19 +520,10 @@ export default function LandingPage() {
               </div>
 
               <div className="px-8 py-10">
-                <div className="grid gap-8 lg:grid-cols-[1fr_300px] lg:items-start">
+                <div className="grid gap-8">
                   <div>
                     <h4 className="text-2xl font-black text-white">{t.chooseTitle}</h4>
                     <p className="mt-3 max-w-3xl text-base leading-7 text-slate-300">{t.chooseText}</p>
-                  </div>
-                  <div className="flex items-center justify-start gap-6 lg:justify-end">
-                    <button className="rounded-lg bg-cyan-400 px-7 py-4 text-lg font-black text-white shadow-xl shadow-cyan-950/50">
-                      {t.monthly}
-                    </button>
-                    <div className="h-8 w-px bg-slate-700" />
-                    <button className="text-lg font-bold text-slate-300">
-                      {t.annual} <span className="ml-1 text-sm">{t.annualDiscount}</span>
-                    </button>
                   </div>
                 </div>
 
@@ -574,7 +571,7 @@ export default function LandingPage() {
                         <p className="mt-4 text-base leading-7 text-slate-300">{active.description}</p>
                         <div className="mt-8 text-5xl font-black text-white">{active.price}</div>
                         <Link
-                          href={activePlan === "consultoria" ? "https://wa.me/5547996789861" : "/dashboard"}
+                          href={activePlan === "basic" ? "/dashboard" : "https://wa.me/5547996789861"}
                           className="mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-lg border border-cyan-300 text-base font-black text-cyan-200 transition hover:bg-cyan-400 hover:text-slate-950"
                         >
                           {active.cta}
