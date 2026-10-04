@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Banknote,
   BrainCircuit,
-  CheckCircle2,
   ClipboardCheck,
   FileText,
   GitBranch,
@@ -25,6 +24,7 @@ import {
   stakeholderPerspectives,
   type MoatId,
 } from "@/lib/strategic-moats";
+import { APP_NAME } from "@/lib/brand";
 
 const moatIcon = {
   "capacity-twin": Activity,
@@ -42,11 +42,11 @@ const number = new Intl.NumberFormat("pt-BR");
 
 export default function StrategicMoatsPage() {
   const [selectedId, setSelectedId] = useState<MoatId>("capacity-twin");
-  const [downtimeHours, setDowntimeHours] = useState(18);
-  const [assetsAtRisk, setAssetsAtRisk] = useState(7);
-  const [hourlyClinicalValue, setHourlyClinicalValue] = useState(8500);
-  const [clinicalMultiplier, setClinicalMultiplier] = useState(2.2);
-  const [avoidableRate, setAvoidableRate] = useState(0.44);
+  const [downtimeHours, setDowntimeHours] = useState(0);
+  const [assetsAtRisk, setAssetsAtRisk] = useState(0);
+  const [hourlyClinicalValue, setHourlyClinicalValue] = useState(0);
+  const [clinicalMultiplier, setClinicalMultiplier] = useState(0);
+  const [avoidableRate, setAvoidableRate] = useState(0);
 
   const selectedMoat = useMemo(
     () => strategicMoats.find((moat) => moat.id === selectedId) ?? strategicMoats[0],
@@ -72,38 +72,36 @@ export default function StrategicMoatsPage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
               <Target size={14} />
-              Diferenciais estratégicos
+              Frentes de validação
             </div>
             <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950">
-              FPConnect como sistema operacional de risco, capacidade e receita.
+              {APP_NAME}: hipóteses de produto e posicionamento
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Três diferenciais adicionados como módulos independentes: simulação de
-              capacidade clínica, grafo de confiança por dispositivo e comando
-              executivo de receita.
+              Estas são propostas para validação, não funcionalidades disponíveis nem
+              resultados comprovados. O produto deve medir primeiro e automatizar
+              depois; a revisão e a decisão técnica permanecem humanas.
             </p>
           </div>
           <div className="grid min-w-[260px] grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-center">
             <div>
               <div className="text-2xl font-black text-slate-950">3</div>
               <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                Módulos
+                Frentes propostas
               </div>
             </div>
             <div>
-              <div className="text-2xl font-black text-emerald-700">
-                {projection.executiveScore}
-              </div>
+              <div className="text-sm font-black text-emerald-700">Em validação</div>
               <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                Score
+                Status
               </div>
             </div>
             <div>
               <div className="text-2xl font-black text-cyan-700">
-                {number.format(projection.avoidedHours)}h
+                {number.format(projection.scenarioHours)}h
               </div>
               <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                Evitadas
+                Cenário
               </div>
             </div>
           </div>
@@ -137,7 +135,7 @@ export default function StrategicMoatsPage() {
                       : "bg-slate-100 text-slate-600"
                   }`}
                 >
-                  Diferencial {strategicMoats.findIndex((item) => item.id === moat.id) + 1}
+                  Hipótese {strategicMoats.findIndex((item) => item.id === moat.id) + 1}
                 </span>
               </div>
               <h2 className="mt-4 text-lg font-black text-slate-950">{moat.title}</h2>
@@ -163,7 +161,7 @@ export default function StrategicMoatsPage() {
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                    Diferencial selecionado
+                    Hipótese selecionada
                   </p>
                   <h2 className="text-2xl font-black text-slate-950">
                     {selectedMoat.title}
@@ -200,14 +198,14 @@ export default function StrategicMoatsPage() {
             <div className="rounded-xl border border-slate-200 p-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-black text-slate-950">
                 <Radar size={18} className="text-amber-600" />
-                Sinais de mercado
+                Fontes a verificar
               </div>
               <div className="space-y-3">
                 {selectedMoat.sourceSignals.map((signal) => (
                   <div key={signal} className="flex gap-3">
-                    <CheckCircle2
+                    <FileText
                       size={18}
-                      className="mt-0.5 shrink-0 text-emerald-600"
+                      className="mt-0.5 shrink-0 text-amber-600"
                     />
                     <p className="text-sm leading-6 text-slate-600">{signal}</p>
                   </div>
@@ -219,7 +217,7 @@ export default function StrategicMoatsPage() {
           <div className="mt-6 rounded-xl border border-slate-200">
             <div className="border-b border-slate-200 px-4 py-3">
               <h3 className="text-sm font-black uppercase tracking-[0.14em] text-slate-500">
-                Simulação por stakeholder
+                Perspectivas a validar
               </h3>
             </div>
             <div className="grid divide-y divide-slate-200 lg:grid-cols-3 lg:divide-x lg:divide-y-0">
@@ -234,11 +232,11 @@ export default function StrategicMoatsPage() {
                   </p>
                   <p className="mt-1 text-sm leading-6 text-slate-600">{item.pain}</p>
                   <p className="mt-3 text-xs font-bold uppercase tracking-wide text-emerald-700">
-                    Promessa
+                    Hipótese de valor
                   </p>
                   <p className="mt-1 text-sm leading-6 text-slate-600">{item.promise}</p>
                   <p className="mt-3 text-xs font-bold uppercase tracking-wide text-cyan-700">
-                    Prova
+                    Evidência necessária
                   </p>
                   <p className="mt-1 text-sm leading-6 text-slate-600">{item.proof}</p>
                 </div>
@@ -255,63 +253,64 @@ export default function StrategicMoatsPage() {
               </div>
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                  Impacto simulado
+                  Cenário aritmético
                 </p>
                 <h2 className="text-xl font-black text-slate-950">
-                  Valor protegido
+                  Resultado ilustrativo
                 </h2>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <Metric label="Valor protegido" value={currency.format(projection.protectedValue)} />
-              <Metric label="Horas evitadas" value={`${number.format(projection.avoidedHours)}h`} />
-              <Metric label="Score executivo" value={`${projection.executiveScore}/99`} />
-              <Metric label="Ativos no cenário" value={number.format(assetsAtRisk)} />
+              <Metric label="Valor hipotético do cenário" value={currency.format(projection.scenarioValue)} />
+              <Metric label="Horas conforme premissas" value={`${number.format(projection.scenarioHours)}h`} />
+              <Metric label="Ativos informados" value={number.format(assetsAtRisk)} />
+              <Metric label="Parcela informada" value={`${Math.round(avoidableRate * 100)}%`} />
             </div>
 
             <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-6 text-amber-900">
-              {projection.boardMessage}
+              {projection.boardMessage} Valores zerados indicam premissas ainda não
+              informadas; não representam dados ou resultados observados.
             </div>
 
             <div className="mt-5 space-y-5">
               <Slider
-                label="Horas de downtime evitável"
+                label="Horas de indisponibilidade (premissa)"
                 value={downtimeHours}
-                min={2}
+                min={0}
                 max={72}
                 suffix="h"
                 onChange={setDowntimeHours}
               />
               <Slider
-                label="Ativos críticos no cenário"
+                label="Ativos considerados (premissa)"
                 value={assetsAtRisk}
-                min={1}
+                min={0}
                 max={20}
                 onChange={setAssetsAtRisk}
               />
               <Slider
-                label="Valor clínico-financeiro por hora"
+                label="Valor por hora (premissa do usuário)"
                 value={hourlyClinicalValue}
-                min={1500}
+                min={0}
                 max={30000}
                 step={500}
                 formatter={(value) => currency.format(value)}
                 onChange={setHourlyClinicalValue}
               />
               <Slider
-                label="Multiplicador de criticidade clínica"
+                label="Multiplicador (premissa do usuário)"
                 value={clinicalMultiplier}
-                min={1}
+                min={0}
                 max={4}
                 step={0.1}
                 suffix="x"
                 onChange={setClinicalMultiplier}
               />
               <Slider
-                label="Parcela evitável com FPConnect"
+                label="Parcela hipotética no cenário"
                 value={avoidableRate}
-                min={0.1}
+                min={0}
                 max={0.75}
                 step={0.01}
                 formatter={(value) => `${Math.round(value * 100)}%`}
@@ -323,7 +322,7 @@ export default function StrategicMoatsPage() {
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center gap-2 text-sm font-black text-slate-950">
               <ShieldAlert size={18} className="text-rose-600" />
-              Fontes que viram vantagem
+              Fontes para verificar
             </div>
             <div className="space-y-3">
               {evidenceSignals.map((signal) => (
@@ -354,7 +353,7 @@ export default function StrategicMoatsPage() {
           </div>
           <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700">
             <ClipboardCheck size={14} />
-            90 dias
+            Prazo a definir
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -362,9 +361,9 @@ export default function StrategicMoatsPage() {
             <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-6 py-3 font-black">Experimento</th>
-                <th className="px-6 py-3 font-black">Dono</th>
-                <th className="px-6 py-3 font-black">Métrica</th>
-                <th className="px-6 py-3 font-black">Sinal de aprovação</th>
+                <th className="px-6 py-3 font-black">Responsável</th>
+                <th className="px-6 py-3 font-black">Critério a combinar</th>
+                <th className="px-6 py-3 font-black">Sinal de validação</th>
                 <th className="px-6 py-3 font-black">Ativo inicial</th>
               </tr>
             </thead>
@@ -388,7 +387,7 @@ export default function StrategicMoatsPage() {
       <section className="grid gap-4 lg:grid-cols-3">
         <ActionCard
           icon={GitBranch}
-          title="Produto"
+          title="Próxima validação"
           text={selectedMoat.ninetyDayWedge}
         />
         <ActionCard
@@ -398,7 +397,7 @@ export default function StrategicMoatsPage() {
         />
         <ActionCard
           icon={Target}
-          title="Posicionamento"
+          title="Hipótese de posicionamento"
           text={selectedMoat.commercialEdge}
         />
       </section>

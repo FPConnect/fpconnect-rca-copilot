@@ -97,8 +97,8 @@ export default function LoginPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-2">
             {isRegister
-              ? "Cadastre seu usuário e confirme o código enviado por SMS para acessar o FPConnect RCA Copilot."
-              : "Acesse a plataforma FPConnect RCA Copilot. Recomenda-se começar com a conta Master."}
+              ? "Cadastre seu usuário e confirme o código enviado por SMS para continuar."
+              : "Acesse a plataforma para continuar."}
           </p>
         </div>
 

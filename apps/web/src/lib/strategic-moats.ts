@@ -38,9 +38,8 @@ export type ImpactInputs = {
 };
 
 export type ImpactProjection = {
-  protectedValue: number;
-  avoidedHours: number;
-  executiveScore: number;
+  scenarioValue: number;
+  scenarioHours: number;
   boardMessage: string;
 };
 
@@ -50,24 +49,25 @@ export const strategicMoats: StrategicMoat[] = [
     title: "Clinical Capacity Twin",
     shortTitle: "Capacity Twin",
     thesis:
-      "O FPConnect deixa de ser um painel de manutenção e passa a simular capacidade clínica: quais leitos, salas, filas e receitas ficam em risco quando um ativo crítico cai.",
+      "Hipótese de produto a validar: organizar dados de ativos e operação pode ajudar equipes a discutir cenários de indisponibilidade e contingência.",
     commercialEdge:
-      "Concorrentes vendem ordem de serviço; a FPConnect vende decisão de capacidade e risco assistencial antes da falha virar crise.",
+      "Hipótese de posicionamento: relacionar registros de manutenção a prioridades operacionais pode complementar a análise de ordens de serviço.",
     buyerHook:
-      "CEO, COO e diretoria assistencial enxergam disponibilidade de equipamentos como impacto em leito, centro cirúrgico, UTI, imagem e faturamento.",
-    proofMetric: "Valor clínico-financeiro protegido por hora de indisponibilidade evitada.",
+      "Validar com responsáveis operacionais se disponibilidade de equipamentos se relaciona a prioridades de leitos, procedimentos e exames.",
+    proofMetric:
+      "Evidência a definir com o cliente: dados disponíveis, critério de prioridade e resultado observado no piloto.",
     ninetyDayWedge:
-      "Começar com UTI, centro cirúrgico e diagnóstico por imagem, usando dados simples de ativos, criticidade, uso e histórico de tickets.",
+      "Avaliar uma linha de cuidado apenas após confirmar responsável, dor, dados exportáveis, orçamento e prazo.",
     sourceSignals: [
-      "Digital twins permitem testar cenários hospitalares antes de mudar operação real.",
-      "ECRI lista preparo para eventos de indisponibilidade digital como risco crítico de 2026.",
-      "CMMSs comuns ainda priorizam work order, compliance e manutenção, não capacidade clínica.",
+      "Verificar fontes públicas sobre simulação operacional e registrar a publicação, data e aplicação ao escopo.",
+      "Consultar publicações de risco da ECRI diretamente antes de citar qualquer achado ou ano.",
+      "Comparar funcionalidades de CMMSs com fontes atuais de cada fornecedor; não generalizar o mercado.",
     ],
     operatingLoop: [
-      "Mapear ativos críticos por linha de cuidado.",
-      "Converter falha em impacto de leito, procedimento, exame e receita.",
-      "Simular cenários de indisponibilidade e contingência.",
-      "Gerar plano executivo com prioridade, custo evitado e dono da ação.",
+      "Confirmar com o cliente os ativos e campos que podem ser analisados.",
+      "Descrever prioridades e critérios com a equipe responsável.",
+      "Apresentar cenários identificados como hipóteses, não como previsões.",
+      "Registrar revisão humana e evidências acordadas no piloto.",
     ],
   },
   {
@@ -75,24 +75,25 @@ export const strategicMoats: StrategicMoat[] = [
     title: "Device Trust Graph",
     shortTitle: "Trust Graph",
     thesis:
-      "Cada ativo vira um grafo vivo de confiança: UDI/GUDID, recall, SBOM, CVE/KEV, firmware, fornecedor, contrato, evidência interna e risco clínico.",
+      "Hipótese de produto a validar: relacionar inventário autorizado a fontes externas pode facilitar a revisão de informações por ativo.",
     commercialEdge:
-      "Em vez de mostrar alertas soltos, a FPConnect mostra a cadeia de responsabilidade e a próxima ação defensável para engenharia, TI, qualidade e compras.",
+      "Hipótese de posicionamento: reunir referências e evidências para revisão humana pode complementar alertas e registros existentes.",
     buyerHook:
-      "CISO, qualidade e engenharia clínica ganham uma trilha auditável para priorizar risco de legacy devices, recalls e obrigações de fornecedor.",
-    proofMetric: "Percentual de ativos críticos com evidência completa e ação recomendada auditável.",
+      "Validar com segurança, qualidade e engenharia clínica quais fontes, responsáveis e evidências são relevantes para cada revisão.",
+    proofMetric:
+      "Evidência a definir com o cliente: cobertura dos dados autorizados, rastreabilidade das fontes e utilidade na revisão.",
     ninetyDayWedge:
-      "Começar com ventiladores, bombas de infusão e imagem; cruzar inventário demo com recalls FDA, AccessGUDID, CISA KEV e SBOM simulado.",
+      "Começar somente com dados e fontes aprovados pelo cliente; confirmar identificadores, acesso, limites e atualização antes de qualquer cruzamento.",
     sourceSignals: [
-      "FDA reforça cybersecurity e uso de identificadores únicos de dispositivo.",
-      "AccessGUDID fornece API/RSS para consulta de dispositivos.",
-      "CISA atualizou elementos mínimos de SBOM em 2026; ECRI destaca legacy devices e falhas de recall.",
+      "Consultar fontes oficiais da FDA para a questão específica e registrar URL, data e limites de cobertura.",
+      "Verificar documentação vigente de UDI/GUDID e condições de consulta antes de propor integração.",
+      "Consultar fontes oficiais da CISA para KEV/SBOM; não presumir atualização, correspondência ou cobertura de dispositivo.",
     ],
     operatingLoop: [
-      "Normalizar ativo, modelo, UDI e firmware.",
-      "Cruzar recall, early alert, SBOM, CVE/KEV e histórico interno.",
-      "Classificar risco por exposição clínica, rede, paciente e fornecedor.",
-      "Gerar pacote de evidência para auditoria, OEM, compras e diretoria.",
+      "Confirmar autorização, identificadores e qualidade dos dados de inventário.",
+      "Consultar somente fontes externas aprovadas e registrar origem e data.",
+      "Apresentar correspondências como itens para validação, não como determinação de risco.",
+      "Encaminhar a revisão e decisão às pessoas autorizadas pelo cliente.",
     ],
   },
   {
@@ -100,24 +101,25 @@ export const strategicMoats: StrategicMoat[] = [
     title: "Executive Revenue Command",
     shortTitle: "Revenue Command",
     thesis:
-      "O sistema transforma operação em narrativa de venda: ROI, expansão contratual, SLA protegido, risco regulatório evitado e próxima proposta comercial por cliente.",
+      "Hipótese comercial a validar: evidências operacionais revisadas podem ajudar um sponsor a avaliar a continuidade ou expansão de um piloto.",
     commercialEdge:
-      "A FPConnect não só reduz MTTR; ela prova valor em linguagem de CFO e cria gatilhos para upgrade, consultoria, implantação multiunidade e contratos enterprise.",
+      "Hipótese de posicionamento: comunicar escopo, dados e aprendizados de um piloto pode apoiar conversas comerciais sem prometer ROI ou payback.",
     buyerHook:
-      "CFO e sponsor executivo recebem o racional de compra pronto: risco protegido, perda evitada, plano de adoção e payback por linha de cuidado.",
-    proofMetric: "Pipeline influenciado por evidência operacional e payback estimado por conta.",
+      "Validar com o sponsor quais evidências, critérios e próximos passos seriam necessários para avaliar uma contratação.",
+    proofMetric:
+      "Evidência a definir: retorno do sponsor, critérios de compra, escopo validado e resultados documentados com autorização.",
     ninetyDayWedge:
-      "Usar dados de demo e pilotos para criar business cases automáticos por perfil de hospital, começando por redes e hospitais com alta complexidade.",
+      "Usar aprendizados de pilotos pagos, se contratados, para revisar proposta, esforço, margem e critérios de continuidade.",
     sourceSignals: [
-      "Compradores exigem compliance, multi-site, integrações e implantação rápida.",
-      "Hospitais estão pressionados por custos, ataques cibernéticos e disponibilidade operacional.",
-      "Diferencial comercial real surge quando o produto vira argumento de diretoria, não apenas ferramenta técnica.",
+      "Confirmar com cada conta quem decide, qual dor foi validada, quais dados podem ser exportados e qual o prazo.",
+      "Distinguir projeções de resultados medidos e não apresentar cenários como histórico ou garantia.",
+      "Registrar autorização antes de divulgar nomes, depoimentos, resultados ou casos de clientes.",
     ],
     operatingLoop: [
-      "Medir valor protegido por ativo e unidade.",
-      "Gerar business case por stakeholder.",
-      "Recomendar pacote comercial e próximos passos.",
-      "Retroalimentar CRM, LinkedIn e proposta com evidências do produto.",
+      "Registrar o problema e o critério de sucesso acordados com o cliente.",
+      "Executar apenas o escopo contratado e autorizado.",
+      "Separar dados observados, premissas e limitações no resumo do piloto.",
+      "Revisar próximos passos com o sponsor, sem automatizar decisões comerciais.",
     ],
   },
 ];
@@ -126,61 +128,61 @@ export const stakeholderPerspectives: Record<MoatId, StakeholderPerspective[]> =
   "capacity-twin": [
     {
       stakeholder: "CEO / COO",
-      pain: "Indisponibilidade vira atraso assistencial e pressão reputacional.",
-      promise: "Simular onde a operação quebra antes do pico de demanda.",
-      proof: "Leitos, exames e procedimentos protegidos por plano de contingência.",
+      pain: "Hipótese de dor: indisponibilidade pode afetar prioridades operacionais e assistenciais.",
+      promise: "Hipótese de valor: organizar cenários para discussão com as áreas responsáveis.",
+      proof: "Evidência necessária: critérios, dados e avaliação registrados pelo cliente.",
     },
     {
       stakeholder: "Engenharia Clínica",
-      pain: "Prioridade de manutenção compete com urgências sem critério executivo.",
-      promise: "Fila de ação por impacto clínico real, não só status do chamado.",
-      proof: "Ativos ranqueados por criticalidade, uso e cascata operacional.",
+      pain: "Hipótese de dor: a equipe pode precisar conciliar chamados com outros critérios de prioridade.",
+      promise: "Hipótese de valor: estruturar critérios de revisão com os dados disponíveis.",
+      proof: "Evidência necessária: critérios aprovados e revisão da equipe responsável.",
     },
     {
       stakeholder: "CFO",
-      pain: "Downtime aparece como custo invisível e difícil de defender em orçamento.",
-      promise: "Converter horas evitadas em valor protegido e payback.",
-      proof: "Estimativa por hora, unidade, linha de cuidado e contrato.",
+      pain: "Hipótese de dor: pode ser difícil relacionar indisponibilidade a custos sem dados suficientes.",
+      promise: "Hipótese de valor: explicitar premissas para análise financeira pelo cliente.",
+      proof: "Evidência necessária: fontes, premissas e validação financeira do cliente.",
     },
   ],
   "trust-graph": [
     {
       stakeholder: "CISO / TI",
-      pain: "Legacy devices não podem ser tratados como endpoints comuns.",
-      promise: "Priorizar vulnerabilidade pelo impacto clínico e possibilidade operacional.",
-      proof: "CVE/KEV + firmware + localização + status de uso + mitigação.",
+      pain: "Hipótese de dor: contexto e restrições de dispositivos conectados podem variar entre clientes.",
+      promise: "Hipótese de valor: reunir referências verificáveis para revisão com TI e engenharia.",
+      proof: "Evidência necessária: fonte, data, identificador correspondente e validação humana.",
     },
     {
       stakeholder: "Qualidade / Regulatório",
-      pain: "Recall e evidência ficam dispersos entre e-mail, planilha e fornecedor.",
-      promise: "Pacote auditável por ativo, com fonte, decisão e responsável.",
-      proof: "Linha do tempo com recall, ação, anexo e aceite.",
+      pain: "Hipótese de dor: registros e evidências podem estar distribuídos entre sistemas e equipes.",
+      promise: "Hipótese de valor: organizar evidências autorizadas com origem rastreável.",
+      proof: "Evidência necessária: trilha validada pelo cliente; não representa certificação regulatória.",
     },
     {
       stakeholder: "Compras / Jurídico",
-      pain: "Fornecedor vende tecnologia sem clareza de SBOM, SLA e risco de ciclo de vida.",
-      promise: "Base objetiva para negociar suporte, troca, crédito ou mitigação.",
-      proof: "Checklist de cláusulas, evidência técnica e risco financeiro.",
+      pain: "Hipótese de dor: requisitos de fornecedor e ciclo de vida podem demandar consolidação.",
+      promise: "Hipótese de valor: preparar perguntas para análise de contratos e fornecedores.",
+      proof: "Evidência necessária: requisitos revisados pelas áreas jurídica e de compras.",
     },
   ],
   "revenue-command": [
     {
       stakeholder: "Sponsor executivo",
-      pain: "Ferramentas técnicas morrem no piloto quando não viram narrativa de valor.",
-      promise: "Criar a história de compra com números, riscos e próximos passos.",
-      proof: "Resumo executivo pronto para comitê e proposta.",
+      pain: "Hipótese de dor: resultados e critérios de continuidade podem não estar explícitos no piloto.",
+      promise: "Hipótese de valor: resumir escopo, observações e questões para revisão conjunta.",
+      proof: "Evidência necessária: resumo aprovado pelo sponsor e baseado em dados autorizados.",
     },
     {
-      stakeholder: "Vendas FPConnect",
-      pain: "Abordagem genérica compete com qualquer CMMS.",
-      promise: "Personalizar pitch por hospital, cargo, risco e maturidade.",
-      proof: "Mensagem, ROI e oferta recomendada por conta.",
+      stakeholder: "Comercial",
+      pain: "Hipótese de dor: pode faltar informação validada para adaptar uma proposta.",
+      promise: "Hipótese de valor: documentar dor, dados, decisor e critérios informados pela conta.",
+      proof: "Evidência necessária: confirmação do cliente; sem ROI ou resultado presumido.",
     },
     {
       stakeholder: "Customer Success",
-      pain: "Adoção inicial não necessariamente vira expansão.",
-      promise: "Detectar gatilhos de expansão com base no valor já capturado.",
-      proof: "Playbook de upgrade, consultoria e multiunidade.",
+      pain: "Hipótese de dor: a continuidade de um piloto pode depender de critérios ainda não acordados.",
+      promise: "Hipótese de valor: organizar perguntas e próximos passos para decisão humana.",
+      proof: "Evidência necessária: critérios e decisão registrados pelos responsáveis.",
     },
   ],
 };
@@ -188,104 +190,101 @@ export const stakeholderPerspectives: Record<MoatId, StakeholderPerspective[]> =
 export const experiments: Experiment[] = [
   {
     moatId: "capacity-twin",
-    name: "Simulador UTI + imagem em 7 dias",
-    owner: "Produto + Eng. Clínica",
-    metric: "Horas críticas convertidas em valor protegido",
-    passSignal: "Diretor entende impacto em menos de 3 minutos.",
-    firstAsset: "Ventilador, tomógrafo e monitor multiparamétrico",
+    name: "Entrevista sobre prioridade e indisponibilidade",
+    owner: "A definir com o sponsor",
+    metric: "Dor confirmada, dados disponíveis e critério acordado",
+    passSignal:
+      "Responsável confirma a dor, autoriza os dados necessários e acorda como avaliar o piloto.",
+    firstAsset: "Definido pelo cliente após validar escopo e acesso",
   },
   {
     moatId: "capacity-twin",
-    name: "Mapa de contingência por linha de cuidado",
-    owner: "Operações",
-    metric: "Tempo para decidir realocação",
-    passSignal: "Plano reduz decisão de contingência para menos de 15 minutos.",
-    firstAsset: "UTI adulto e centro cirúrgico",
+    name: "Revisão de cenário de contingência",
+    owner: "A definir com o cliente",
+    metric: "Utilidade percebida e limitações documentadas",
+    passSignal:
+      "Equipe responsável revisa o cenário e registra correções, limitações e decisão.",
+    firstAsset: "Linha de cuidado e ativo selecionados pelo cliente",
   },
   {
     moatId: "trust-graph",
-    name: "UDI + recall + firmware pack",
-    owner: "Produto + Segurança",
-    metric: "Ativos críticos com evidência completa",
-    passSignal: "Engenharia consegue abrir ticket OEM com anexos em 1 clique.",
-    firstAsset: "Bomba de infusão",
+    name: "Revisão de identificadores e fontes",
+    owner: "A definir com TI e Engenharia Clínica",
+    metric: "Correspondências verificadas e origem rastreável",
+    passSignal:
+      "Cliente valida identificadores, fontes, acesso e processo de revisão humana.",
+    firstAsset: "Selecionado pelo cliente; dados e consultas autorizados",
   },
   {
     moatId: "trust-graph",
-    name: "SBOM demand letter",
-    owner: "Jurídico + Compras",
-    metric: "Fornecedores com resposta formal",
-    passSignal: "Fornecedor entrega SBOM, mitigação ou plano de ciclo de vida.",
-    firstAsset: "Dispositivo conectado com firmware legado",
+    name: "Validação de evidências de fornecedor",
+    owner: "A definir com Compras e Jurídico",
+    metric: "Requisitos e evidências confirmados pelas áreas responsáveis",
+    passSignal:
+      "Áreas responsáveis aprovam o checklist e confirmam as fontes antes de utilizá-lo.",
+    firstAsset: "Fornecedor e escopo escolhidos pelo cliente",
   },
   {
     moatId: "revenue-command",
-    name: "Business case por hospital alvo",
-    owner: "Vendas + CS",
-    metric: "Reuniões executivas agendadas",
-    passSignal: "Mensagem gera resposta de sponsor com dor operacional real.",
-    firstAsset: "Hospitais com UTI, imagem e centro cirúrgico",
+    name: "Revisão de critérios de compra",
+    owner: "A definir com a conta",
+    metric: "Decisor, dor, orçamento, dados e prazo validados",
+    passSignal:
+      "Sponsor confirma os critérios e o próximo passo; nenhuma conversão é presumida.",
+    firstAsset: "Conta com interesse confirmado e dados autorizados",
   },
   {
     moatId: "revenue-command",
-    name: "Upgrade trigger em piloto",
-    owner: "CS + Produto",
-    metric: "Sinais de expansão por conta",
-    passSignal: "Piloto vira plano Premium/Consultoria com payback defendável.",
-    firstAsset: "Primeiro cliente com dados de tickets",
+    name: "Revisão de continuidade do piloto",
+    owner: "A definir com o sponsor",
+    metric: "Critérios de continuidade e esforço documentados",
+    passSignal:
+      "Sponsor avalia os resultados documentados e decide os próximos passos.",
+    firstAsset: "Piloto pago concluído, se contratado",
   },
 ];
 
 export const evidenceSignals = [
   {
-    label: "ECRI 2026",
-    value: "AI misuse, digital darkness, recall failure, legacy cyber risk",
-    posture: "Risco assistencial preventivo",
+    label: "ECRI",
+    value:
+      "Consultar a publicação aplicável diretamente; registrar edição, data, trecho e limites antes de citar.",
+    posture: "Fonte a verificar",
   },
   {
     label: "FDA",
-    value: "Cybersecurity, recalls, early alerts, UDI/GUDID",
-    posture: "Evidência regulatória por ativo",
+    value:
+      "Verificar a fonte oficial específica, seus identificadores, atualização e cobertura para o caso de uso.",
+    posture: "Consulta a validar",
   },
   {
     label: "CISA / SBOM",
-    value: "KEV + elementos mínimos de SBOM atualizados em 2026",
-    posture: "Transparência de software e cadeia de suprimentos",
+    value:
+      "Consultar documentação oficial vigente; não inferir correspondência de dispositivo ou risco clínico.",
+    posture: "Escopo a validar",
   },
   {
     label: "Mercado CMMS",
-    value: "Compliance, work orders, multi-site, preditivo e integrações",
-    posture: "Diferenciar acima do CMMS tradicional",
+    value:
+      "Comparar páginas e documentação atuais de fornecedores identificados antes de descrever capacidades.",
+    posture: "Pesquisa pendente",
   },
 ];
 
 export function calculateMoatImpact(inputs: ImpactInputs): ImpactProjection {
-  const avoidableRate = Math.min(Math.max(inputs.avoidableRate, 0), 0.9);
-  const avoidedHours = inputs.downtimeHours * inputs.assetsAtRisk * avoidableRate;
-  const protectedValue =
-    avoidedHours * inputs.hourlyClinicalValue * inputs.clinicalMultiplier;
-  const executiveScore = Math.min(
-    99,
-    Math.round(
-      48 +
-        inputs.assetsAtRisk * 4.5 +
-        inputs.clinicalMultiplier * 11 +
-        avoidableRate * 30 +
-        Math.min(inputs.downtimeHours, 72) * 0.22,
-    ),
-  );
-
-  const boardMessage =
-    protectedValue >= 500000
-      ? "Caso executivo forte: tratar como agenda de diretoria e proposta enterprise."
-      : protectedValue >= 180000
-        ? "Caso comercial bom: pilotar com sponsor operacional e CFO."
-        : "Caso de entrada: usar como diagnóstico para capturar dados reais.";
+  const downtimeHours = Math.max(0, inputs.downtimeHours);
+  const assetsAtRisk = Math.max(0, inputs.assetsAtRisk);
+  const hourlyClinicalValue = Math.max(0, inputs.hourlyClinicalValue);
+  const clinicalMultiplier = Math.max(0, inputs.clinicalMultiplier);
+  const avoidableRate = Math.min(Math.max(inputs.avoidableRate, 0), 1);
+  const scenarioHours = downtimeHours * assetsAtRisk * avoidableRate;
+  const scenarioValue =
+    scenarioHours * hourlyClinicalValue * clinicalMultiplier;
 
   return {
-    avoidedHours: Math.round(avoidedHours),
-    protectedValue: Math.round(protectedValue),
-    executiveScore,
-    boardMessage,
+    scenarioHours: Math.round(scenarioHours),
+    scenarioValue: Math.round(scenarioValue),
+    boardMessage:
+      "Cenário aritmético baseado somente nas premissas informadas. Não mede efeito do produto, economia realizada, redução de downtime nem retorno garantido.",
   };
 }

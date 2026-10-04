@@ -10,7 +10,9 @@ const PerformanceStat = ({ title, value, unit, trend }: PerformanceStatProps) =>
       <h3 className="text-3xl font-bold text-white">{value}</h3>
       <span className="text-sm text-slate-500">{unit}</span>
     </div>
-    <div className="mt-4 text-xs font-medium text-emerald-400">{trend} vs mês anterior</div>
+    <div className="mt-4 text-xs font-medium text-emerald-400">
+      {`Variação demonstrativa: ${trend}`}
+    </div>
   </div>
 );
 
@@ -36,9 +38,13 @@ export default function DashboardPage() {
       <section className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-900 p-6 text-white shadow-xl">
         <h1 className="text-3xl font-black tracking-tight">Dashboard Operacional</h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-200">
-          Acompanhe disponibilidade, risco e performance dos equipamentos em um painel unificado para resposta rápida.
+          Visualize a organização de disponibilidade, risco e performance de equipamentos em um painel de demonstração.
         </p>
       </section>
+
+      <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        Dados de demonstração: os valores abaixo são ilustrativos e não representam resultados medidos em operação de cliente.
+      </p>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {TICKET_CARDS.map((m) => (
@@ -62,7 +68,7 @@ export default function DashboardPage() {
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="mb-1 text-xl font-semibold text-gray-900">Primeiros Passos</h2>
         <p className="mb-5 text-sm text-gray-500">
-          Configure o FPConnect em poucos minutos para começar a monitorar os equipamentos da sua operação.
+          Configure os dados e preferências necessários para acompanhar os equipamentos da sua operação.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ONBOARDING_STEPS.map(({ href, icon: Icon, title, description }, index) => (

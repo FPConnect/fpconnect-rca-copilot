@@ -61,23 +61,22 @@ describe("clinical engineering web pages", () => {
     });
   });
 
-  it("renders the equipment list with recurrent failure indicator", async () => {
+  it("renders the equipment list with its current status", async () => {
     render(<EquipmentPage />);
 
-    expect(await screen.findByText("Equipamentos")).toBeInTheDocument();
+    expect(await screen.findByText("Máquinas")).toBeInTheDocument();
     expect(await screen.findByText("Monitor Multiparamétrico")).toBeInTheDocument();
-    expect(screen.getByText(/falhas recorrentes: 4/i)).toBeInTheDocument();
+    expect(screen.getByText("warning")).toBeInTheDocument();
   });
 
-  it("creates an incident from the clinical incident form", async () => {
+  it("creates a ticket from the current ticket form", async () => {
     render(<IncidentsPage />);
 
-    fireEvent.change(screen.getByLabelText("Descrição do chamado"), {
+    fireEvent.change(screen.getByPlaceholderText("Ticket title"), {
       target: { value: "Falha no monitor da UTI" },
     });
-    fireEvent.change(screen.getByLabelText("Equipamento"), { target: { value: "ECG-02" } });
-    fireEvent.change(screen.getByLabelText("Unidade clínica"), { target: { value: "UTI Adulto" } });
-    fireEvent.click(screen.getByRole("button", { name: "Criar chamado" }));
+    fireEvent.change(screen.getAllByRole("combobox")[0], { target: { value: "critical" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
     await waitFor(() => expect(mockedApi.createTicket).toHaveBeenCalled());
     expect(await screen.findByText("Falha no monitor da UTI")).toBeInTheDocument();
