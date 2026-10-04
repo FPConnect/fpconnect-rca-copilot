@@ -1,4 +1,4 @@
-# OPSPECTA / FPConnect Production Deployment
+# Production Deployment
 
 ## Cloud Deployment (Recommended)
 
@@ -39,7 +39,10 @@ Deploy the full stack for free using managed cloud services — no server manage
    ```env
    DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
    REDIS_URL=rediss://default:pass@host:port
+   APP_ENV=production
+   SEED_TEST_ACCOUNTS=false
    SECRET_KEY=<generate: python -c "import secrets; print(secrets.token_hex(32))">
+   REFRESH_SECRET_KEY=<generate a separate secret with at least 32 characters>
    ALGORITHM=HS256
    ACCESS_TOKEN_EXPIRE_MINUTES=30
    OPENAI_API_KEY=sk-...

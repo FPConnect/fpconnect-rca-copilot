@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.core.config import settings
 from app.core.database import Base, get_db
 from app.main import app
 
@@ -53,22 +54,36 @@ def auth_headers(phone_number: str = "+55 47 99678-9861") -> dict[str, str]:
     return {"Authorization": f"Bearer {response.json()['access_token']}"}
 
 
-def test_send_sms_notification_success():
+def test_send_sms_notification_returns_preview_without_claiming_delivery():
     headers = auth_headers()
 
     response = client.post(
         "/notifications/sms",
-        json={"message": "FPConnect SMS test"},
+        json={"message": "OPSPECTA SMS test"},
         headers=headers,
     )
 
     assert response.status_code == 200
     assert response.json() == {
-        "status": "sent",
+        "status": "preview",
         "to": "+55 47 99678-9861",
         "provider": "development-mock",
-        "delivered": True,
+        "delivered": False,
     }
+
+
+def test_send_sms_notification_fails_when_provider_is_not_configured(monkeypatch):
+    monkeypatch.setattr(settings, "app_env", "production")
+    headers = auth_headers()
+
+    response = client.post(
+        "/notifications/sms",
+        json={"message": "Production SMS test"},
+        headers=headers,
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "SMS delivery is not configured for this deployment"
 
 
 def test_send_sms_notification_requires_valid_phone():
@@ -76,7 +91,7 @@ def test_send_sms_notification_requires_valid_phone():
 
     response = client.post(
         "/notifications/sms",
-        json={"message": "FPConnect SMS test"},
+        json={"message": "OPSPECTA SMS test"},
         headers=headers,
     )
 

@@ -181,11 +181,11 @@ export default function SettingsScreen() {
           <View style={styles.dataRow}>
             <View style={styles.dataInfo}>
               <Text style={styles.dataLabel}>Export Data</Text>
-              <Text style={styles.dataDesc}>Download all your data as JSON</Text>
+              <Text style={styles.dataDesc}>Data export is not available in this preview.</Text>
             </View>
             <TouchableOpacity
               style={styles.outlineBtn}
-              onPress={() => Alert.alert("Export", "Your data will be sent by email.")}
+              onPress={() => Alert.alert("Export", "Data export is not available yet.")}
             >
               <Text style={styles.outlineBtnText}>Export</Text>
             </TouchableOpacity>

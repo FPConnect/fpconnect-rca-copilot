@@ -7,12 +7,12 @@ import AppShell from "@/components/AppShell";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthGuard from "@/components/AuthGuard";
 import LanguageRuntime from "@/components/LanguageRuntime";
-import { APP_NAME, PRODUCT_DESCRIPTOR } from "@/lib/brand";
+import { APP_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} | ${PRODUCT_DESCRIPTOR}`,
+  title: `${APP_NAME} | Assistência técnica MedTech`,
   description:
-    "Organize chamados, histórico técnico e indicadores disponíveis para apoiar equipes de assistência técnica MedTech.",
+    "Organize chamados, histórico técnico e acompanhamento de disponibilidade para apoiar a equipe de assistência técnica MedTech.",
 };
 
 export default function RootLayout({

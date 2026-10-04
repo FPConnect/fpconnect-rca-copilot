@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.core.config import settings
 from app.core.database import Base, get_db
 from app.main import app
 
@@ -114,9 +115,23 @@ def test_send_verification_code_success():
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "sent"
+    assert data["status"] == "generated"
     assert data["to"] == "***2172"
+    assert data["provider"] == "development-mock"
     assert data["verification_code"]
+    assert len(data["verification_code"]) == 6
+    assert data["verification_code"].isdigit()
+
+
+def test_send_verification_code_fails_when_sms_is_not_configured(monkeypatch):
+    monkeypatch.setattr(settings, "app_env", "production")
+    response = client.post(
+        "/auth/verification-code",
+        json={"email": "production-verify@example.com", "phone_number": "+55 51 98510-2172"},
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "SMS verification is not configured for this deployment"
 
 
 def test_register_with_verification_code_success():

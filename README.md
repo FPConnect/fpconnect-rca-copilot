@@ -1,7 +1,9 @@
-# OPSPECTA / FPConnect
-Operational intelligence for healthcare/MedTech service and assets. OPSPECTA is
-the working name under validation; FPConnect remains the legacy technical name
-for compatible identifiers and the canonical production domain.
+# OPSPECTA
+Assistive data organization for MedTech technical service operations
+
+OPSPECTA is the working display name under validation. FPConnect remains the
+historical project and technical compatibility identifier; no trademark
+registration or legal clearance is claimed.
 
 > **Web preview:** the frontend can run with local preview data for quick evaluation. API-backed workflows require authentication tokens from `/auth/login`.
 
@@ -15,7 +17,24 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — the app redirects to `/dashboard` automatically. No login needed.
+Open [http://localhost:3000](http://localhost:3000) to view the landing page.
+The authenticated workspace requires a working API and a valid account; local
+preview data is not an authentication mechanism.
+
+### Run the API locally
+
+```bash
+cd apps/api
+cp .env.example .env
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+To seed demo data and development test users, explicitly set
+`SEED_TEST_ACCOUNTS=true` and a unique `TEST_ACCOUNT_PASSWORD` of at least 12
+characters in `apps/api/.env`, then run `python scripts/seed_clinical.py`.
+Seeding replaces the password for the listed development accounts, so never
+enable it outside a disposable local development database.
 
 > To run on port 3001: `npm run dev -- -p 3001`
 
@@ -142,6 +161,7 @@ customer evidence or performance claims.
 4. Add the following environment variables in Railway's dashboard:
 
    ```
+   APP_ENV=production
    DATABASE_URL=<your Neon connection string>
    REDIS_URL=<your Upstash Redis URL>
    SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
@@ -170,7 +190,7 @@ customer evidence or performance claims.
 
    ```
    NEXT_PUBLIC_API_URL=<your Railway API URL from Step 3>
-   NEXT_PUBLIC_APP_NAME=FPConnect
+   NEXT_PUBLIC_APP_NAME=OPSPECTA
    NEXT_PUBLIC_APP_VERSION=1.0.0
    NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
    ```

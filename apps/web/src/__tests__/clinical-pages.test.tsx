@@ -27,13 +27,9 @@ describe("clinical engineering web pages", () => {
         id: 1,
         code: "ECG-02",
         name: "Monitor Multiparamétrico",
-        model: "IntelliVue MX450",
         location: "UTI Adulto",
         status: "warning",
         type: "monitoring",
-        criticality: "Alta",
-        last_failure: "Perda intermitente de SpO2",
-        recurrent_failures: 4,
         last_check: "2026-05-15T08:26:00Z",
       },
     ]);
@@ -43,9 +39,6 @@ describe("clinical engineering web pages", () => {
         title: "Perda intermitente de SpO2",
         status: "open",
         priority: "critical",
-        device_id: "ECG-02",
-        location: "UTI Adulto",
-        root_cause: "Sensor com mau contato",
       },
     ]);
     mockedApi.createTicket.mockImplementation(async (payload) => ({

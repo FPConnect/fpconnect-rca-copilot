@@ -9,8 +9,6 @@ type Language = "pt-BR" | "en-US";
 
 const PT_TO_EN: Record<string, string> = {
   "OPSPECTA": "OPSPECTA",
-  "Inteligência operacional para serviços e ativos de tecnologia em saúde": "Operational intelligence for health technology services and assets",
-  "OPSPECTA — nome de trabalho em validação. Projeto anteriormente denominado FPConnect.": "OPSPECTA — working name under validation. Previously known as FPConnect.",
   "Technologies": "Technologies",
   "Home": "Home",
   "Máquinas": "Machines",
@@ -24,7 +22,7 @@ const PT_TO_EN: Record<string, string> = {
   "Notificações": "Notifications",
   "Configurações": "Settings",
   "Sair": "Sign out",
-  "Healthcare Equipment Monitor": "Healthcare Equipment Monitor",
+  "Conta": "Account",
   "Dashboard Operacional": "Operational Dashboard",
   "Acompanhe disponibilidade, risco e performance dos equipamentos em um painel unificado para resposta rápida.": "Track availability, risk, and equipment performance in one unified panel for faster response.",
   "Tickets Abertos": "Open Tickets",
@@ -38,6 +36,7 @@ const PT_TO_EN: Record<string, string> = {
   "dias": "days",
   "vs mês anterior": "vs previous month",
   "Primeiros Passos": "First Steps",
+  "Configure o FPConnect em poucos minutos para começar a monitorar os equipamentos da sua operação.": "Configure FPConnect in a few minutes to start monitoring your operation's equipment.",
   "Cadastre suas máquinas": "Register your machines",
   "Adicione os equipamentos hospitalares que deseja monitorar.": "Add the hospital equipment you want to monitor.",
   "Configure verificações de saúde": "Configure health checks",
@@ -51,9 +50,11 @@ const PT_TO_EN: Record<string, string> = {
   "Personalize as configurações": "Customize settings",
   "Ajuste idioma, fuso horário e preferências de notificação.": "Adjust language, time zone, and notification preferences.",
   "Entrar": "Sign in",
+  "Acesse a plataforma FPConnect RCA Copilot.": "Access the FPConnect RCA Copilot platform.",
   "Email": "Email",
   "Senha": "Password",
   "Credenciais inválidas.": "Invalid credentials.",
+  "Não foi possível conectar à plataforma. Verifique sua conexão e tente novamente.": "Unable to connect to the platform. Check your connection and try again.",
   "Entrando...": "Signing in...",
   "Perfil do Usuário": "User Profile",
   "Nome": "Name",
@@ -166,6 +167,9 @@ const PT_TO_EN: Record<string, string> = {
   "Recurso": "Resource",
   "Data/Hora": "Date/Time",
   "Métricas de Performance": "Performance Metrics",
+  "Dados demonstrativos: os números e indicadores desta tela são estáticos e não representam telemetria, tickets ou resultados reais.": "Illustrative data: all figures and indicators on this screen are static and do not represent real telemetry, tickets, or outcomes.",
+  "Todos os indicadores e valores abaixo são dados demonstrativos estáticos, não resultados medidos da operação.": "All indicators and values below are static illustrative data, not measured operational results.",
+  "Variação demonstrativa": "Illustrative variation",
   "Uptime Médio": "Average Uptime",
   "MTBF (horas)": "MTBF (hours)",
   "MTTR (minutos)": "MTTR (minutes)",
@@ -190,14 +194,15 @@ const PT_TO_EN: Record<string, string> = {
   "Ver painel operacional": "View operational dashboard",
   "Indicadores operacionais": "Operational indicators",
   "Equipamentos monitoráveis": "Monitorable equipment",
-  "SLA de disponibilidade": "Availability SLA",
   "Observabilidade em tempo real": "Real-time observability",
   "Monitore disponibilidade, alertas e comportamento de equipamentos críticos em um único painel.": "Monitor availability, alerts, and critical equipment behavior in a single dashboard.",
   "Resposta rápida a incidentes": "Fast incident response",
+  "Abra e acompanhe tickets com contexto técnico para acelerar análise RCA e reduzir MTTR.": "Open and track tickets with technical context to accelerate RCA analysis and reduce MTTR.",
   "Confiabilidade operacional": "Operational reliability",
   "Padronize verificações e priorize riscos para manter continuidade clínica e segurança do paciente.": "Standardize checks and prioritize risks to maintain clinical continuity and patient safety.",
   "Degustação gratuita": "Free trial",
   "Plano Basic para experimentar sem custo": "Basic plan to try at no cost",
+  "Acesse o modo gratuito com limite máximo para conhecer a experiência do FPConnect sem compromisso. Ideal para validação inicial com sua equipe.": "Access the free mode with defined limits to experience FPConnect with no commitment. Ideal for initial validation with your team.",
   "Testar plano Basic": "Try Basic plan",
   "Menu": "Menu",
   "Planos": "Plans",
@@ -220,9 +225,6 @@ const PT_TO_EN: Record<string, string> = {
   "Roadmap de eficiência": "Efficiency roadmap",
   "Implantação assistida": "Assisted implementation",
   "Quero este plano": "I want this plan",
-  "Coordenadora de Engenharia Clínica": "Clinical Engineering Coordinator",
-  "A visão de incidentes e causa raiz trouxe clareza para priorização. Hoje atuamos de forma muito mais proativa.": "The incident and root-cause view brought clarity to prioritization. Today we act much more proactively.",
-  "Gestor de Operações Hospitalares": "Hospital Operations Manager",
   "Navegação institucional": "Institutional navigation",
   "Missão": "Mission",
   "Visão": "Vision",
@@ -239,8 +241,6 @@ const PT_TO_EN: Record<string, string> = {
   "Rastreabilidade": "Traceability",
   "Cada ocorrência deve manter histórico, responsável, evidência e evolução visíveis.": "Every occurrence should keep visible history, ownership, evidence, and progress.",
   "Institucional": "Institutional",
-  "Criamos uma plataforma para centralizar monitoramento, chamados, histórico e métricas de disponibilidade em ambientes de missão crítica.": "We built a platform to centralize monitoring, tickets, history, and availability metrics in mission-critical environments.",
-  "Nosso compromisso é entregar uma operação mais previsível, rastreável e preparada para tomada de decisão.": "Our commitment is to deliver a more predictable, traceable operation prepared for decision-making.",
   "Suporte": "Support",
   "Buscar nas FAQs...": "Search FAQs...",
   "Como cadastrar um novo equipamento?": "How do I register new equipment?",
@@ -254,16 +254,17 @@ const PT_TO_EN: Record<string, string> = {
   "Como configurar notificações?": "How do I configure notifications?",
   "Acesse Configurações > Notificações para personalizar.": "Open Settings > Notifications to customize.",
   "Nenhuma pergunta encontrada.": "No question found.",
-  "Dados de demonstração: os valores abaixo são ilustrativos e não representam resultados medidos em operação de cliente.": "Demonstration data: the values below are illustrative and do not represent measured results from a customer operation.",
-  "Disponibilidade demonstrativa por equipamento": "Illustrative availability by equipment",
 };
 
 const EN_TO_PT = Object.fromEntries(
   Object.entries(PT_TO_EN).map(([pt, en]) => [en, pt]),
 );
 
-const originalText = new WeakMap<Text, string>();
-const originalAttributes = new WeakMap<Element, Map<string, string>>();
+const originalText = new WeakMap<Text, { source: string; translated: string }>();
+const originalAttributes = new WeakMap<
+  Element,
+  Map<string, { source: string; translated: string }>
+>();
 
 function readLanguage(): Language {
   try {
@@ -287,25 +288,25 @@ function translateValue(value: string, language: Language): string {
   if (language === "en-US") {
     return value
       .replace(/^Página (\d+) de (\d+)$/, "Page $1 of $2")
-      .replace(/^(.+) vs semana anterior$/, "$1 vs previous week")
-      .replace(/^Variação demonstrativa: (.+)$/, "Illustrative variation: $1");
+      .replace(/^(.+) vs semana anterior$/, "$1 vs previous week");
   }
 
   return value
     .replace(/^Page (\d+) of (\d+)$/, "Página $1 de $2")
-    .replace(/^(.+) vs previous week$/, "$1 vs semana anterior")
-    .replace(/^Illustrative variation: (.+)$/, "Variação demonstrativa: $1");
+    .replace(/^(.+) vs previous week$/, "$1 vs semana anterior");
 }
 
 function translateTextNode(node: Text, language: Language) {
   const parent = node.parentElement;
   if (!parent || ["SCRIPT", "STYLE", "TEXTAREA"].includes(parent.tagName)) return;
   if (parent.closest("[data-no-translate]")) return;
-  if (!originalText.has(node)) {
-    originalText.set(node, node.nodeValue ?? "");
-  }
-  const base = originalText.get(node) ?? "";
-  const next = translateValue(base, language);
+  const current = node.nodeValue ?? "";
+  const previous = originalText.get(node);
+  const source = previous && current === previous.translated
+    ? previous.source
+    : current;
+  const next = translateValue(source, language);
+  originalText.set(node, { source, translated: next });
   if (node.nodeValue !== next) node.nodeValue = next;
 }
 
@@ -322,8 +323,12 @@ function translateElementAttributes(element: Element, language: Language) {
   for (const attr of attributes) {
     const current = element.getAttribute(attr);
     if (!current) continue;
-    if (!stored.has(attr)) stored.set(attr, current);
-    const next = translateValue(stored.get(attr) ?? current, language);
+    const previous = stored.get(attr);
+    const source = previous && current === previous.translated
+      ? previous.source
+      : current;
+    const next = translateValue(source, language);
+    stored.set(attr, { source, translated: next });
     if (current !== next) element.setAttribute(attr, next);
   }
 }

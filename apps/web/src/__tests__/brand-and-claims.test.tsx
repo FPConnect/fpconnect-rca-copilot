@@ -4,7 +4,7 @@ import StrategicMoatsPage from "@/app/strategic-moats/page";
 import DashboardPage from "@/app/dashboard/page";
 import MetricsPage from "@/app/metrics/page";
 import { calculateMoatImpact } from "@/lib/strategic-moats";
-import { getAppName, getBrandTransitionNotice } from "@/lib/brand";
+import { getAppName } from "@/lib/brand";
 
 describe("display name and commercial claims", () => {
   const originalAppName = process.env.NEXT_PUBLIC_APP_NAME;
@@ -17,10 +17,9 @@ describe("display name and commercial claims", () => {
     }
   });
 
-  it("uses OPSPECTA as the default and keeps the legacy name in the transition notice", () => {
+  it("uses OPSPECTA as the default and trims configured display names", () => {
     delete process.env.NEXT_PUBLIC_APP_NAME;
     expect(getAppName()).toBe("OPSPECTA");
-    expect(getBrandTransitionNotice()).toMatch(/FPConnect/);
 
     process.env.NEXT_PUBLIC_APP_NAME = "  OPSPECTA  ";
     expect(getAppName()).toBe("OPSPECTA");
@@ -61,25 +60,25 @@ describe("display name and commercial claims", () => {
     expect(projection.boardMessage).toMatch(/retorno garantido/);
   });
 
+  it("labels dashboard figures and trends as illustrative", () => {
+    render(<DashboardPage />);
+
+    expect(screen.getByRole("note")).toHaveTextContent(/Dados demonstrativos/);
+    expect(screen.getAllByText("Variação demonstrativa")).toHaveLength(3);
+  });
+
+  it("labels metrics values and trends as illustrative", () => {
+    render(<MetricsPage />);
+
+    expect(screen.getByRole("note")).toHaveTextContent(/dados demonstrativos estáticos/);
+    expect(screen.getAllByText("Variação demonstrativa")).toHaveLength(4);
+  });
+
   it("keeps the strategic scenario at zero until assumptions are entered", () => {
     render(<StrategicMoatsPage />);
 
     expect(screen.getByText("Valor hipotético do cenário")).toBeInTheDocument();
     expect(screen.getByText(/Cenário aritmético baseado somente nas premissas informadas/)).toBeInTheDocument();
     expect(screen.getAllByText("0h").length).toBeGreaterThanOrEqual(2);
-  });
-
-  it("labels dashboard figures as demonstration data", () => {
-    render(<DashboardPage />);
-
-    expect(screen.getByText(/Dados de demonstração:/)).toBeInTheDocument();
-    expect(screen.getByText("Variação demonstrativa: -12%")).toBeInTheDocument();
-  });
-
-  it("labels metrics figures as demonstration data", () => {
-    render(<MetricsPage />);
-
-    expect(screen.getByText(/Dados de demonstração:/)).toBeInTheDocument();
-    expect(screen.getByText("Disponibilidade demonstrativa por equipamento")).toBeInTheDocument();
   });
 });

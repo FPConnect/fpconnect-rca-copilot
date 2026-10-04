@@ -6,6 +6,7 @@ Run from apps/api:
 
 from datetime import datetime, timedelta, timezone
 
+from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
 from app.core.test_accounts import reset_test_accounts
 from app.models.machine import Machine
@@ -43,16 +44,23 @@ PLAYBOOKS = [
 ]
 
 
-def get_or_create_master(db):
-    reset_test_accounts(db)
+def get_or_create_master(db, password):
+    reset_test_accounts(db, password)
     return db.query(User).filter(User.email == "master@fpconnect.com").one()
 
 
 def seed():
+    if not settings.seed_test_accounts:
+        raise RuntimeError(
+            "Set APP_ENV=development, SEED_TEST_ACCOUNTS=true, and "
+            "TEST_ACCOUNT_PASSWORD (at least 12 characters) before loading demo data."
+        )
+    if settings.test_account_password is None:
+        raise RuntimeError("TEST_ACCOUNT_PASSWORD is required when SEED_TEST_ACCOUNTS is enabled.")
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
-        user = get_or_create_master(db)
+        user = get_or_create_master(db, settings.test_account_password)
         if db.query(Machine).count() == 0:
             for code, name, model, location, type_, criticality, status, recurrent in MACHINES:
                 db.add(

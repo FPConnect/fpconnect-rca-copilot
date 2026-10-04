@@ -1,9 +1,10 @@
-"""Notification routes for user communication preferences."""
+"""Notification routes with explicit delivery status."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user_id
+from app.core.config import settings
 from app.core.database import get_db
 from app.crud.user import get_user_by_id
 from app.schemas.notification import SmsNotificationRequest, SmsNotificationResponse
@@ -22,12 +23,13 @@ def send_sms_notification(
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db),
 ):
-    """Send an SMS notification to the current user's registered phone number.
+    """Return a preview response only when running in development."""
+    if settings.app_env != "development":
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="SMS delivery is not configured for this deployment",
+        )
 
-    The current implementation is a safe development/mock provider. It validates
-    the authenticated user and phone number, then returns the delivery contract
-    expected by the web client without storing SMS messages or credentials.
-    """
     user = get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -40,8 +42,8 @@ def send_sms_notification(
         )
 
     return SmsNotificationResponse(
-        status="sent",
+        status="preview",
         to=phone_number,
         provider="development-mock",
-        delivered=True,
+        delivered=False,
     )

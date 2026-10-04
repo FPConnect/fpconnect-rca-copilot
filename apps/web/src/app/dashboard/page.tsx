@@ -11,7 +11,7 @@ const PerformanceStat = ({ title, value, unit, trend }: PerformanceStatProps) =>
       <span className="text-sm text-slate-500">{unit}</span>
     </div>
     <div className="mt-4 text-xs font-medium text-emerald-400">
-      {`Variação demonstrativa: ${trend}`}
+      <span>Variação demonstrativa</span>: {trend}
     </div>
   </div>
 );
@@ -38,13 +38,12 @@ export default function DashboardPage() {
       <section className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-900 p-6 text-white shadow-xl">
         <h1 className="text-3xl font-black tracking-tight">Dashboard Operacional</h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-200">
-          Visualize a organização de disponibilidade, risco e performance de equipamentos em um painel de demonstração.
+          Acompanhe disponibilidade, risco e performance dos equipamentos em um painel unificado para resposta rápida.
+        </p>
+        <p role="note" className="mt-3 text-xs text-slate-300">
+          Dados demonstrativos: os números e indicadores desta tela são estáticos e não representam telemetria, tickets ou resultados reais.
         </p>
       </section>
-
-      <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-        Dados de demonstração: os valores abaixo são ilustrativos e não representam resultados medidos em operação de cliente.
-      </p>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {TICKET_CARDS.map((m) => (
