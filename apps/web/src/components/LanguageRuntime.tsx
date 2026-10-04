@@ -8,7 +8,9 @@ const LANGUAGE_CHANGE_EVENT = "fpconnect:language-change";
 type Language = "pt-BR" | "en-US";
 
 const PT_TO_EN: Record<string, string> = {
-  "FPConnect": "FPConnect",
+  "OPSPECTA": "OPSPECTA",
+  "Inteligência operacional para serviços e ativos de tecnologia em saúde": "Operational intelligence for health technology services and assets",
+  "OPSPECTA — nome de trabalho em validação. Projeto anteriormente denominado FPConnect.": "OPSPECTA — working name under validation. Previously known as FPConnect.",
   "Technologies": "Technologies",
   "Home": "Home",
   "Máquinas": "Machines",
@@ -36,7 +38,6 @@ const PT_TO_EN: Record<string, string> = {
   "dias": "days",
   "vs mês anterior": "vs previous month",
   "Primeiros Passos": "First Steps",
-  "Configure o FPConnect em poucos minutos para começar a monitorar os equipamentos da sua operação.": "Configure FPConnect in a few minutes to start monitoring your operation's equipment.",
   "Cadastre suas máquinas": "Register your machines",
   "Adicione os equipamentos hospitalares que deseja monitorar.": "Add the hospital equipment you want to monitor.",
   "Configure verificações de saúde": "Configure health checks",
@@ -50,7 +51,6 @@ const PT_TO_EN: Record<string, string> = {
   "Personalize as configurações": "Customize settings",
   "Ajuste idioma, fuso horário e preferências de notificação.": "Adjust language, time zone, and notification preferences.",
   "Entrar": "Sign in",
-  "Acesse a plataforma FPConnect RCA Copilot.": "Access the FPConnect RCA Copilot platform.",
   "Email": "Email",
   "Senha": "Password",
   "Credenciais inválidas.": "Invalid credentials.",
@@ -186,22 +186,18 @@ const PT_TO_EN: Record<string, string> = {
   "Plataforma de monitoramento para operações hospitalares": "Monitoring platform for hospital operations",
   "Visibilidade total para": "Total visibility for",
   "Engenharia Clínica e TI Biomédica": "Clinical Engineering and Biomedical IT",
-  "O FPConnect centraliza monitoramento, alertas, tickets e histórico operacional para sua equipe tomar decisões rápidas e reduzir indisponibilidade de equipamentos de missão crítica.": "FPConnect centralizes monitoring, alerts, tickets, and operational history so your team can make fast decisions and reduce downtime for mission-critical equipment.",
   "Acessar plataforma": "Access platform",
   "Ver painel operacional": "View operational dashboard",
   "Indicadores operacionais": "Operational indicators",
   "Equipamentos monitoráveis": "Monitorable equipment",
-  "Redução média de MTTR": "Average MTTR reduction",
   "SLA de disponibilidade": "Availability SLA",
   "Observabilidade em tempo real": "Real-time observability",
   "Monitore disponibilidade, alertas e comportamento de equipamentos críticos em um único painel.": "Monitor availability, alerts, and critical equipment behavior in a single dashboard.",
   "Resposta rápida a incidentes": "Fast incident response",
-  "Abra e acompanhe tickets com contexto técnico para acelerar análise RCA e reduzir MTTR.": "Open and track tickets with technical context to accelerate RCA analysis and reduce MTTR.",
   "Confiabilidade operacional": "Operational reliability",
   "Padronize verificações e priorize riscos para manter continuidade clínica e segurança do paciente.": "Standardize checks and prioritize risks to maintain clinical continuity and patient safety.",
   "Degustação gratuita": "Free trial",
   "Plano Basic para experimentar sem custo": "Basic plan to try at no cost",
-  "Acesse o modo gratuito com limite máximo para conhecer a experiência do FPConnect sem compromisso. Ideal para validação inicial com sua equipe.": "Access the free mode with defined limits to experience FPConnect with no commitment. Ideal for initial validation with your team.",
   "Testar plano Basic": "Try Basic plan",
   "Menu": "Menu",
   "Planos": "Plans",
@@ -224,7 +220,6 @@ const PT_TO_EN: Record<string, string> = {
   "Roadmap de eficiência": "Efficiency roadmap",
   "Implantação assistida": "Assisted implementation",
   "Quero este plano": "I want this plan",
-  "Com o FPConnect, reduzimos o tempo entre o alerta e a tomada de decisão. O time de engenharia clínica ganhou previsibilidade.": "With FPConnect, we reduced the time between alert and decision-making. The clinical engineering team gained predictability.",
   "Coordenadora de Engenharia Clínica": "Clinical Engineering Coordinator",
   "A visão de incidentes e causa raiz trouxe clareza para priorização. Hoje atuamos de forma muito mais proativa.": "The incident and root-cause view brought clarity to prioritization. Today we act much more proactively.",
   "Gestor de Operações Hospitalares": "Hospital Operations Manager",
@@ -234,7 +229,6 @@ const PT_TO_EN: Record<string, string> = {
   "Valores": "Values",
   "Quem somos": "Who we are",
   "Ajuda / FAQs": "Help / FAQs",
-  "Conectar engenharia clínica, TI biomédica e operação hospitalar em uma plataforma única para reduzir indisponibilidade, acelerar resposta a incidentes e proteger a segurança do paciente.": "Connect clinical engineering, biomedical IT, and hospital operations in a single platform to reduce downtime, accelerate incident response, and protect patient safety.",
   "Ser a plataforma de referência para operações hospitalares orientadas por dados, tornando cada decisão de disponibilidade, manutenção e risco mais rápida, rastreável e confiável.": "Become the reference platform for data-driven hospital operations, making every availability, maintenance, and risk decision faster, traceable, and reliable.",
   "Cultura operacional": "Operational culture",
   "Segurança do paciente": "Patient safety",
@@ -245,7 +239,6 @@ const PT_TO_EN: Record<string, string> = {
   "Rastreabilidade": "Traceability",
   "Cada ocorrência deve manter histórico, responsável, evidência e evolução visíveis.": "Every occurrence should keep visible history, ownership, evidence, and progress.",
   "Institucional": "Institutional",
-  "Somos a FPConnect Technologies, uma empresa focada em tecnologia para engenharia clínica, TI biomédica e operações hospitalares.": "We are FPConnect Technologies, a company focused on technology for clinical engineering, biomedical IT, and hospital operations.",
   "Criamos uma plataforma para centralizar monitoramento, chamados, histórico e métricas de disponibilidade em ambientes de missão crítica.": "We built a platform to centralize monitoring, tickets, history, and availability metrics in mission-critical environments.",
   "Nosso compromisso é entregar uma operação mais previsível, rastreável e preparada para tomada de decisão.": "Our commitment is to deliver a more predictable, traceable operation prepared for decision-making.",
   "Suporte": "Support",
@@ -261,7 +254,8 @@ const PT_TO_EN: Record<string, string> = {
   "Como configurar notificações?": "How do I configure notifications?",
   "Acesse Configurações > Notificações para personalizar.": "Open Settings > Notifications to customize.",
   "Nenhuma pergunta encontrada.": "No question found.",
-  "FPConnect™ - Marca registrada. © 2026 Todos os direitos reservados.": "FPConnect™ - Registered trademark. © 2026 All rights reserved.",
+  "Dados de demonstração: os valores abaixo são ilustrativos e não representam resultados medidos em operação de cliente.": "Demonstration data: the values below are illustrative and do not represent measured results from a customer operation.",
+  "Disponibilidade demonstrativa por equipamento": "Illustrative availability by equipment",
 };
 
 const EN_TO_PT = Object.fromEntries(
@@ -293,12 +287,14 @@ function translateValue(value: string, language: Language): string {
   if (language === "en-US") {
     return value
       .replace(/^Página (\d+) de (\d+)$/, "Page $1 of $2")
-      .replace(/^(.+) vs semana anterior$/, "$1 vs previous week");
+      .replace(/^(.+) vs semana anterior$/, "$1 vs previous week")
+      .replace(/^Variação demonstrativa: (.+)$/, "Illustrative variation: $1");
   }
 
   return value
     .replace(/^Page (\d+) of (\d+)$/, "Página $1 de $2")
-    .replace(/^(.+) vs previous week$/, "$1 vs semana anterior");
+    .replace(/^(.+) vs previous week$/, "$1 vs semana anterior")
+    .replace(/^Illustrative variation: (.+)$/, "Variação demonstrativa: $1");
 }
 
 function translateTextNode(node: Text, language: Language) {

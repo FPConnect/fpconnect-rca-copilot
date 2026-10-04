@@ -1,4 +1,4 @@
-# Production Deployment
+# OPSPECTA / FPConnect Production Deployment
 
 ## Cloud Deployment (Recommended)
 
@@ -64,7 +64,7 @@ Deploy the full stack for free using managed cloud services — no server manage
 
    ```env
    NEXT_PUBLIC_API_URL=https://fpconnect-api.up.railway.app
-   NEXT_PUBLIC_APP_NAME=FPConnect
+   NEXT_PUBLIC_APP_NAME=OPSPECTA
    NEXT_PUBLIC_APP_VERSION=1.0.0
    NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
    ```
@@ -150,4 +150,3 @@ certbot --nginx -d api.yourapp.com -d yourapp.com
 - API logs: `docker-compose logs -f api`
 - Database: `docker-compose exec db psql -U fpconnect`
 - All logs: `make logs`
-
