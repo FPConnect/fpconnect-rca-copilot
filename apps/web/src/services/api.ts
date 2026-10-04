@@ -147,17 +147,6 @@ export interface SmsResponse {
 
 const TICKETS_STORAGE_KEY = "fpconnect_preview_tickets";
 const LEGACY_PREVIEW_USERS_KEY = "fpconnect_preview_users";
-const PREVIEW_PROFILE_KEY = "fpconnect_profile";
-
-type TestAccount = UserProfile & { password: string };
-
-const TEST_ACCOUNTS: TestAccount[] = [
-  { id: 1, email: "master@fpconnect.com", password: "Master@2024Secure!", full_name: "Master", role: "master", access_level: 5 },
-  { id: 2, email: "admin_teste@fpconnect.com", password: "Admin@123", full_name: "Administrador", role: "admin", access_level: 4 },
-  { id: 3, email: "gerente_teste@fpconnect.com", password: "Gerente@123", full_name: "Gerente", role: "manager", access_level: 3 },
-  { id: 4, email: "usuario_teste@fpconnect.com", password: "Usuario@123", full_name: "Usuário", role: "user", access_level: 2 },
-  { id: 5, email: "visitante_teste@fpconnect.com", password: "Visitante@123", full_name: "Visitante", role: "visitor", access_level: 1 },
-];
 
 const FALLBACK_MACHINES: Machine[] = [
   {
@@ -230,84 +219,31 @@ function writePreviewTickets(tickets: Ticket[]) {
   localStorage.setItem(TICKETS_STORAGE_KEY, JSON.stringify(tickets));
 }
 
-function readPreviewProfilePhone(): string {
-  if (typeof window === "undefined") return "";
-  try {
-    const raw = localStorage.getItem(PREVIEW_PROFILE_KEY);
-    if (!raw) return "";
-    const profile = JSON.parse(raw) as { phone?: string };
-    return profile.phone || "";
-  } catch {
-    return "";
-  }
-}
-
 function clearLegacyPreviewCredentials() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(LEGACY_PREVIEW_USERS_KEY);
 }
 
 async function login(data: LoginPayload): Promise<LoginResponse> {
-  try {
-    return await request<LoginResponse>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  } catch (error) {
-    clearLegacyPreviewCredentials();
-    const previewAccount = TEST_ACCOUNTS.find(
-      (account) =>
-        account.email === data.email.trim().toLowerCase() &&
-        account.password === data.password,
-    );
-
-    if (!previewAccount) {
-      throw error;
-    }
-
-    localStorage.setItem(
-      PREVIEW_PROFILE_KEY,
-      JSON.stringify({
-        name: previewAccount.full_name,
-        email: previewAccount.email,
-        phone: "",
-      }),
-    );
-
-    return {
-      access_token: `fpconnect-preview-token-${previewAccount.role}`,
-      token_type: "bearer",
-    };
-  }
+  return request<LoginResponse>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 async function sendVerificationCode(data: VerificationCodePayload): Promise<VerificationCodeResponse> {
-  return withFallback(
-    () => request<VerificationCodeResponse>("/auth/verification-code", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }),
-    () => ({
-      status: "sent",
-      to: data.phone_number,
-      provider: "preview-local",
-      expires_in_seconds: 10 * 60,
-      verification_code: "123456",
-    }),
-  );
+  return request<VerificationCodeResponse>("/auth/verification-code", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 async function register(data: RegisterPayload): Promise<UserProfile> {
-  try {
-    const path = data.verification_code ? "/auth/register/verify" : "/auth/register";
-    return await request<UserProfile>(path, {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  } catch (error) {
-    clearLegacyPreviewCredentials();
-    throw error;
-  }
+  const path = data.verification_code ? "/auth/register/verify" : "/auth/register";
+  return request<UserProfile>(path, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 async function getMe(): Promise<UserProfile> {
@@ -322,18 +258,10 @@ async function updateMe(data: UpdateProfilePayload): Promise<UserProfile> {
 }
 
 async function sendSmsNotification(message: string): Promise<SmsResponse> {
-  return withFallback(
-    () => request<SmsResponse>("/notifications/sms", {
-      method: "POST",
-      body: JSON.stringify({ message }),
-    }),
-    () => ({
-      status: "sent",
-      to: readPreviewProfilePhone(),
-      provider: "preview-local",
-      delivered: true,
-    }),
-  );
+  return request<SmsResponse>("/notifications/sms", {
+    method: "POST",
+    body: JSON.stringify({ message }),
+  });
 }
 
 async function withFallback<T>(requestFn: () => Promise<T>, fallbackFn: () => T): Promise<T> {
@@ -391,14 +319,6 @@ export const api = {
   sendVerificationCode,
   getMe,
   updateMe,
-  testAccounts: TEST_ACCOUNTS.map((account) => ({
-    id: account.id,
-    email: account.email,
-    full_name: account.full_name,
-    phone_number: account.phone_number,
-    role: account.role,
-    access_level: account.access_level,
-  })),
   clearLegacyPreviewCredentials,
   sendSmsNotification,
   analyzeIncident,

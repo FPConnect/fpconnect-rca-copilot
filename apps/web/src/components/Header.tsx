@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { APP_NAME } from "@/lib/brand";
 
 export default function Header() {
   const [userOpen, setUserOpen] = useState(false);
@@ -24,7 +25,7 @@ export default function Header() {
           <Menu size={20} />
         </button>
         <h1 className="text-base font-semibold text-gray-700 hidden sm:block">
-          Healthcare Equipment Monitor
+          {APP_NAME}
         </h1>
       </div>
 
@@ -54,7 +55,7 @@ export default function Header() {
             <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
               <User size={16} className="text-white" />
             </div>
-            <span className="text-sm font-medium hidden sm:block">Admin</span>
+            <span className="text-sm font-medium hidden sm:block">Conta</span>
             <ChevronDown size={16} />
           </button>
           {userOpen && (
@@ -81,4 +82,3 @@ export default function Header() {
     </header>
   );
 }
-

@@ -6,11 +6,11 @@ import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
 
 const USERS = [
-  { id: 1, name: "Master", email: "master@fpconnect.com", role: "master", accessLevel: 5, status: "active" },
-  { id: 2, name: "Administrador", email: "admin_teste@fpconnect.com", role: "admin", accessLevel: 4, status: "active" },
-  { id: 3, name: "Gerente", email: "gerente_teste@fpconnect.com", role: "manager", accessLevel: 3, status: "active" },
-  { id: 4, name: "Usuário", email: "usuario_teste@fpconnect.com", role: "user", accessLevel: 2, status: "active" },
-  { id: 5, name: "Visitante", email: "visitante_teste@fpconnect.com", role: "visitor", accessLevel: 1, status: "active" },
+  { id: 1, name: "Master", email: "master@example.invalid", role: "master", accessLevel: 5, status: "active" },
+  { id: 2, name: "Administrador", email: "admin@example.invalid", role: "admin", accessLevel: 4, status: "active" },
+  { id: 3, name: "Gerente", email: "manager@example.invalid", role: "manager", accessLevel: 3, status: "active" },
+  { id: 4, name: "Usuário", email: "user@example.invalid", role: "user", accessLevel: 2, status: "active" },
+  { id: 5, name: "Visitante", email: "visitor@example.invalid", role: "visitor", accessLevel: 1, status: "active" },
 ];
 
 const ROLE_COLORS: Record<string, string> = {
@@ -70,6 +70,9 @@ export default function AccessControlPage() {
           Novo Usuário
         </button>
       </div>
+      <p role="note" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        Lista demonstrativa estática; os usuários exibidos não são contas reais.
+      </p>
 
       <div className="flex flex-wrap gap-3 mb-4">
         <SearchBar

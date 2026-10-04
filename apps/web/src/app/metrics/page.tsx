@@ -18,24 +18,23 @@ export default function MetricsPage() {
     <div className="max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Métricas de Performance</h1>
 
-      <p className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-        Dados de demonstração: os valores abaixo são ilustrativos e não representam resultados medidos em operação de cliente.
-      </p>
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {METRICS.map((m) => (
           <div key={m.label} className="bg-white rounded-xl shadow p-5">
             <p className="text-sm text-gray-500">{m.label}</p>
             <p className="text-3xl font-bold text-gray-900 mt-1">{m.value}</p>
             <p className={`text-sm font-medium mt-1 ${m.positive ? "text-green-600" : "text-red-600"}`}>
-              {`Variação demonstrativa: ${m.change}`}
+              <span>Variação demonstrativa</span>: {m.change}
             </p>
           </div>
         ))}
       </div>
 
       <div className="bg-white rounded-xl shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Disponibilidade demonstrativa por equipamento</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Uptime por Equipamento</h2>
+        <p role="note" className="mb-4 text-sm text-gray-500">
+          Todos os indicadores e valores abaixo são dados demonstrativos estáticos, não resultados medidos da operação.
+        </p>
         <div className="space-y-4">
           {PERFORMANCE.map((p) => (
             <div key={p.machine}>

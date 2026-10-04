@@ -1,7 +1,6 @@
 """Authentication routes: register and login."""
 
 from datetime import datetime, timedelta, timezone
-import hashlib
 import secrets
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -51,11 +50,8 @@ def _mask_phone(phone_number: str) -> str:
     return f"***{digits[-4:]}"
 
 
-def _generate_verification_code(email: str, phone_number: str) -> str:
+def _generate_verification_code() -> str:
     """Generate a six-digit registration code."""
-    if settings.app_env == "development":
-        digest = hashlib.sha256(f"{email}|{phone_number}|fpconnect".encode("utf-8")).hexdigest()
-        return str(int(digest[:8], 16) % 1_000_000).zfill(6)
     return f"{secrets.randbelow(1_000_000):06d}"
 
 
@@ -93,7 +89,13 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/verification-code", response_model=VerificationCodeResponse)
 def send_verification_code(payload: VerificationCodeRequest, db: Session = Depends(get_db)):
-    """Generate and send a registration verification code to the supplied phone number."""
+    """Generate a development verification code; no SMS is sent."""
+    if settings.app_env != "development":
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="SMS verification is not configured for this deployment",
+        )
+
     if get_user_by_email(db, payload.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -107,16 +109,15 @@ def send_verification_code(payload: VerificationCodeRequest, db: Session = Depen
             detail="A valid phone number is required to send the verification code",
         )
 
-    code = _generate_verification_code(str(payload.email), payload.phone_number)
+    code = _generate_verification_code()
     expires_at = datetime.now(timezone.utc) + timedelta(seconds=VERIFICATION_TTL_SECONDS)
     _verification_codes[_verification_key(str(payload.email))] = (code, expires_at)
-    response_code = code if settings.app_env == "development" else None
     return VerificationCodeResponse(
-        status="sent",
+        status="generated",
         to=_mask_phone(payload.phone_number),
-        provider="development-mock" if settings.app_env == "development" else "sms-provider",
+        provider="development-mock",
         expires_in_seconds=VERIFICATION_TTL_SECONDS,
-        verification_code=response_code,
+        verification_code=code,
     )
 
 

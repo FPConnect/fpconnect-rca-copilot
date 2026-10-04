@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { APP_NAME, PRODUCT_DESCRIPTOR } from "@/lib/brand";
+import { APP_NAME } from "@/lib/brand";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
@@ -43,7 +43,7 @@ export default function Sidebar() {
           <span className="text-xl font-bold tracking-tight text-blue-400">
             {APP_NAME}
           </span>
-          <span className="block text-xs text-gray-400 mt-0.5">{PRODUCT_DESCRIPTOR}</span>
+          <span className="block text-xs text-gray-400 mt-0.5">Assistência técnica MedTech</span>
         </div>
         <button
           onClick={close}

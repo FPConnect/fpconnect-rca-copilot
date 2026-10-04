@@ -1,9 +1,8 @@
-# OPSPECTA / FPConnect Architecture
+# FPConnect Architecture
 
 ## Overview
 
-OPSPECTA is the working display name for this monorepo. FPConnect remains in
-technical identifiers until a compatibility migration is explicitly planned.
+FPConnect is a monorepo containing:
 - **Backend API** (`apps/api/`) — FastAPI + PostgreSQL + Redis
 - **Web Frontend** (`apps/web/`) — Next.js 14 + Tailwind CSS + Clerk
 - **Mobile App** (`apps/mobile/`) — Expo React Native

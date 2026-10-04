@@ -1,4 +1,4 @@
-# OPSPECTA / FPConnect API Reference
+# API Reference
 
 Base URL: `http://localhost:8000`
 
@@ -40,9 +40,9 @@ Content-Type: application/json
   "phone_number": "+55 47 99678-9861"
 }
 
-Response 200:
+Response 200 (development only):
 {
-  "status": "sent",
+  "status": "generated",
   "to": "***9861",
   "provider": "development-mock",
   "expires_in_seconds": 600,
@@ -50,7 +50,7 @@ Response 200:
 }
 ```
 
-`verification_code` is returned only in development/preview mode. In production the code is sent by the configured SMS provider.
+The development mock generates and returns a random verification code locally; it does not send an SMS. In deployments without an SMS provider, this endpoint returns `503 Service Unavailable` and does not issue a code.
 
 ### Register with verification code
 ```
@@ -183,16 +183,16 @@ POST /notifications/sms
 Content-Type: application/json
 
 {
-  "message": "FPConnect: SMS ativado para alertas operacionais."
+  "message": "OPSPECTA: SMS ativado para alertas operacionais."
 }
 
-Response 200:
+Response 200 (development preview only):
 {
-  "status": "sent",
+  "status": "preview",
   "to": "+55 47 99678-9861",
   "provider": "development-mock",
-  "delivered": true
+  "delivered": false
 }
 ```
 
-The current provider is a development mock. It validates the authenticated user's `phone_number` and returns the same response contract expected by the web settings page.
+The development mock validates the authenticated user's `phone_number` but does not send an SMS. In deployments without a configured SMS provider, this endpoint returns `503 Service Unavailable`.
