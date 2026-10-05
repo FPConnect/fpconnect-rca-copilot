@@ -68,25 +68,46 @@ jobs:
     permissions:
       contents: read
     environment:
-      name: production
+      name: Production
       url: ${{ steps.deploy.outputs.url }}
+    defaults:
+      run:
+        working-directory: apps/web
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        run: npm install --global vercel@60.1.3
+
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          test -n "$VERCEL_TOKEN"
+          test -n "$VERCEL_ORG_ID"
+          test -n "$VERCEL_PROJECT_ID"
 
       - name: Pull Vercel environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=production --scope=fpconnects-projects
 
       - name: Build project
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --scope=fpconnects-projects
 
       - name: Deploy to Vercel
         id: deploy
+        shell: bash
         run: |
-          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          url=$(vercel deploy --prebuilt --prod --scope=fpconnects-projects)
           echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Update public aliases
+        shell: bash
+        run: |
+          vercel alias set "${{ steps.deploy.outputs.url }}" www.fpconnect.tec.br --scope=fpconnects-projects
+          vercel alias set "${{ steps.deploy.outputs.url }}" fpconnect.tec.br --scope=fpconnects-projects
 
   deploy-api:
     name: Deploy API to Railway
