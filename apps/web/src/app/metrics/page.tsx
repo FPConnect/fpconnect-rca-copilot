@@ -24,7 +24,7 @@ export default function MetricsPage() {
             <p className="text-sm text-gray-500">{m.label}</p>
             <p className="text-3xl font-bold text-gray-900 mt-1">{m.value}</p>
             <p className={`text-sm font-medium mt-1 ${m.positive ? "text-green-600" : "text-red-600"}`}>
-              {m.change} vs semana anterior
+              <span>Variação demonstrativa</span>: {m.change}
             </p>
           </div>
         ))}
@@ -32,6 +32,9 @@ export default function MetricsPage() {
 
       <div className="bg-white rounded-xl shadow p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Uptime por Equipamento</h2>
+        <p role="note" className="mb-4 text-sm text-gray-500">
+          Todos os indicadores e valores abaixo são dados demonstrativos estáticos, não resultados medidos da operação.
+        </p>
         <div className="space-y-4">
           {PERFORMANCE.map((p) => (
             <div key={p.machine}>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { APP_NAME } from "@/lib/brand";
 import {
   Activity,
   ArrowLeft,
@@ -31,14 +32,14 @@ const copy = {
     title: ["Transforme dados", "em"],
     titleAccent: ["decisões de", "assistência técnica"],
     subtitle:
-      "A FPConnect organiza tickets, logs e histórico de equipamentos para apoiar triagem, análise de causa raiz e acompanhamento de disponibilidade. RCA Copilot + Availability Engine, com validação da equipe técnica.",
+      `${APP_NAME} organiza chamados, logs e histórico de equipamentos para apoiar triagem, revisão de hipóteses de causa raiz e acompanhamento de disponibilidade. A análise é assistiva: a validação e a decisão técnica continuam com a equipe responsável.`,
     cta: "Conversar sobre um piloto",
     secondaryCta: "Acessar plataforma",
-    kpiTitle: "Como começar o piloto",
+    kpiTitle: "Referência do piloto de indicadores",
     kpis: [
-      { label: "Amostra inicial de tickets", value: "20", icon: Server },
-      { label: "Logs disponíveis para análise", value: "1–2", icon: Clock3 },
-      { label: "Escopo e critérios", value: "A definir", icon: Stethoscope },
+      { label: "Ordens de serviço", value: "Até 300", icon: Server },
+      { label: "Fonte / equipe / linha", value: "1", icon: Clock3 },
+      { label: "Prazo-alvo", value: "10 dias úteis", icon: Stethoscope },
     ],
     highlights: [
       {
@@ -48,24 +49,24 @@ const copy = {
       },
       {
         icon: Target,
-        title: "Resposta rápida a incidentes",
+        title: "Contexto para incidentes",
         description: "Organize contexto técnico e hipóteses de causa raiz para revisão da equipe responsável.",
       },
       {
         icon: ShieldCheck,
-        title: "Confiabilidade operacional",
-        description: "Estruture playbooks e prioridades com revisão técnica. A FPConnect apoia a análise de dados e não executa manutenção.",
+        title: "Revisão técnica",
+        description: "Organize playbooks e prioridades para revisão da equipe responsável. A plataforma não executa manutenção.",
       },
     ],
     evidenceTitle: "Demonstração, piloto e resultado medido",
     evidenceText: "A demonstração apresenta funcionalidades com dados ilustrativos. O piloto valida o uso com uma amostra autorizada da sua operação. Um resultado só será apresentado como caso medido com período, amostra, cálculo e autorização documentados. Não prometemos redução percentual de MTTR nem disponibilidade garantida.",
     privacyText: "Compartilhe apenas dados autorizados, sem identificação de pacientes, credenciais ou informações confidenciais de terceiros. Canal, acesso e retenção são combinados antes do envio.",
-    experimentEyebrow: "Experimente o FPConnect",
-    experimentTitle: "Da conversa inicial a uma demonstração com escopo definido.",
+    experimentEyebrow: `Experimente ${APP_NAME}`,
+    experimentTitle: "Defina escopo e critérios antes de contratar.",
     experimentText:
-      "Começamos com uma conversa sobre sua operação. Combinamos uma amostra de 20 tickets e 1–2 logs, quando disponíveis e autorizados, para uma demonstração ou auditoria. Entregáveis, prazo e valor são definidos antes do piloto.",
-    plansMiniTitle: "Planos",
-    plansMiniText: "Recursos para evoluir da visão inicial para operação assistida, gestão de SLA e implantação executiva.",
+      "O piloto de indicadores contempla até 300 ordens de serviço e uma fonte, equipe ou linha. Amostra, acesso, entregáveis, disponibilidade e critérios são confirmados antes da contratação; o prazo-alvo é de 10 dias úteis.",
+    plansMiniTitle: "Escopos de trabalho",
+    plansMiniText: "Opções de diagnóstico e piloto com escopo, fonte de dados e prazo-alvo explícitos.",
     institutional: [
       {
         title: "Missão",
@@ -73,7 +74,7 @@ const copy = {
       },
       {
         title: "Visão",
-        text: "Ser a camada de inteligência operacional que hospitais usam para reduzir downtime e proteger equipamentos críticos.",
+        text: "Objetivo: avaliar como dados operacionais podem apoiar a priorização de ativos e a discussão de indisponibilidade.",
       },
       {
         title: "Valores",
@@ -81,87 +82,73 @@ const copy = {
       },
       {
         title: "Quem somos",
-        text: "A FPConnect combina engenharia clínica, automação e software para transformar manutenção em gestão proativa.",
+        text: "Proposta em validação: apoiar equipes MedTech na organização de dados técnicos, revisão de hipóteses e acompanhamento operacional.",
       },
       {
         title: "Ajuda / FAQs",
-        text: "O piloto pode começar pequeno, com dados disponíveis, e evoluir para integrações, RCA Copilot, SLA e playbooks.",
+        text: "O escopo é combinado antes do trabalho. Integrações dependem da validação de acesso, dados, campos e limites técnicos.",
       },
     ],
-    pricingHeroTitle: "Planos para operar engenharia clínica com mais previsibilidade",
+    pricingHeroTitle: "Escopos de diagnóstico e piloto",
     pricingHeroSubtitle:
-      "Comece no Basic demonstrativo, avance para operação real no Premium, use o VIP para SLA crítico e contrate Consultoria para implantação assistida.",
-    seePlans: "Ver planos",
+      "Valores e prazos-alvo de referência. Escopo, dados, acesso e disponibilidade são confirmados antes da contratação.",
+    seePlans: "Ver escopos",
     sales: "Falar com vendas",
-    chooseTitle: "Escolha como sua equipe vai operar",
+    chooseTitle: "Escolha um escopo para avaliar",
     chooseText:
-      "Premium e VIP são concluídos com a equipe comercial após apresentação e negociação. Consultoria é dimensionada caso a caso.",
-    resourceScale: "Escala de recursos",
+      "Cada oferta depende da confirmação da fonte, qualidade dos dados, acesso e objetivo. A recorrência permanece uma hipótese a validar após pilotos pagos.",
+    resourceScale: "Opções de escopo",
     planHint:
-      "Comece com uma visão inicial e avance quando precisar de chamados, RCA Copilot, playbooks, SLA e acompanhamento consultivo.",
-    customSales: "Atendimento comercial personalizado",
+      "Os prazos são alvos de planejamento, sujeitos à disponibilidade e à validação dos dados e acessos antes do início.",
+    customSales: "Confirme escopo e disponibilidade antes da contratação",
     plans: {
       basic: {
-        name: "Basic",
-        label: "Visão inicial",
-        price: "Grátis",
-        cta: "Experimentar grátis",
-        description: "Visão inicial para conhecer o FPConnect com recursos limitados.",
+        name: "Diagnóstico de suporte",
+        label: "Escopo inicial",
+        price: "R$ 2.500",
+        cta: "Conversar sobre diagnóstico",
+        description: "Até 100 OS, 1 fonte, entrevista, gargalos e plano. Prazo-alvo: 5 dias úteis.",
         included: [
-          "Visão inicial do painel operacional",
-          "Acesso ao ambiente de demonstração",
-          "Solicitação de proposta comercial",
+          "Análise de até 100 ordens de serviço",
+          "Uma fonte de dados",
+          "Entrevista, gargalos e plano",
         ],
-        excluded: [
-          "Gestão real de chamados e equipamentos",
-          "Diagnóstico RCA Copilot",
-          "Gestão de contratos e SLA",
-          "Suporte prioritário",
-        ],
+        excluded: [],
       },
       premium: {
-        name: "Premium",
-        label: "Operação assistida",
-        price: "Sob proposta",
-        cta: "Solicitar proposta",
-        description: "Operação real com chamados, ativos, alertas e relatórios para a engenharia clínica.",
+        name: "Piloto de indicadores",
+        label: "Oferta recomendada",
+        price: "R$ 4.900",
+        cta: "Conversar sobre o piloto",
+        description: "Até 300 OS, 1 fonte/equipe/linha, dashboard e triagem. Prazo-alvo: 10 dias úteis.",
         included: [
-          "Tudo do Basic",
-          "Gestão real de chamados e equipamentos",
-          "Painel de disponibilidade e MTTR",
-          "Alertas operacionais",
-          "Relatórios gerenciais",
+          "Análise de até 300 ordens de serviço",
+          "Uma fonte, equipe ou linha",
+          "Dashboard e triagem",
         ],
-        excluded: ["SLA crítico avançado", "Implantação executiva completa"],
+        excluded: [],
       },
       vip: {
-        name: "VIP",
-        label: "SLA crítico",
-        price: "Sob contrato",
-        cta: "Falar com vendas",
-        description: "Camada para operação crítica com acompanhamento, SLA e priorização de riscos.",
+        name: "Piloto + automação assistida",
+        label: "Escopo ampliado",
+        price: "R$ 9.500",
+        cta: "Validar escopo do piloto",
+        description: "Piloto de indicadores + 1 fluxo e 1 integração, após validação técnica. Prazo-alvo: 15 dias úteis.",
         included: [
-          "Tudo do Premium",
-          "RCA Copilot",
-          "Playbooks operacionais",
-          "Gestão de contratos e SLA",
-          "Suporte prioritário",
+          "Escopo do piloto de indicadores",
+          "Um fluxo de automação assistida",
+          "Uma integração validada",
         ],
-        excluded: ["Consultoria presencial sob diagnóstico"],
+        excluded: [],
       },
       consultoria: {
-        name: "Consultoria",
-        label: "Implantação executiva",
-        price: "Sob diagnóstico",
-        cta: "Saiba mais pelo WhatsApp.",
-        description: "Para hospitais e redes que precisam de implantação assistida e governança executiva.",
+        name: "Recorrência",
+        label: "Hipótese a validar",
+        price: "R$ 1.500–3.000/mês",
+        cta: "Validar hipótese de recorrência",
+        description: "Faixa e escopo preliminares, a validar após pilotos pagos. Prazo e disponibilidade a definir.",
         included: [
-          "Tudo do VIP",
-          "Diagnóstico de maturidade da operação",
-          "Implantação assistida com plano de adoção",
-          "Treinamento para engenharia clínica e TI",
-          "Rituais mensais de melhoria operacional",
-          "Governança executiva com indicadores de risco",
+          "Dashboard, ritual e monitoramento são hipóteses de escopo a validar",
         ],
         excluded: [],
       },
@@ -172,14 +159,14 @@ const copy = {
     title: ["Turn service data into"],
     titleAccent: ["technical service", "decisions"],
     subtitle:
-      "FPConnect organizes tickets, logs and equipment history to support triage, root cause analysis and availability tracking. RCA Copilot + Availability Engine, with technical team validation.",
+      `${APP_NAME} organizes service records, logs and equipment history to support triage, review of root-cause hypotheses and availability tracking. Analysis is assistive: validation and technical decisions remain with the responsible team.`,
     cta: "Discuss a pilot",
     secondaryCta: "Access platform",
-    kpiTitle: "How to start a pilot",
+    kpiTitle: "Metrics pilot reference",
     kpis: [
-      { label: "Initial ticket sample", value: "20", icon: Server },
-      { label: "Available logs for analysis", value: "1–2", icon: Clock3 },
-      { label: "Scope and criteria", value: "To agree", icon: Stethoscope },
+      { label: "Service orders", value: "Up to 300", icon: Server },
+      { label: "Source / team / service line", value: "1", icon: Clock3 },
+      { label: "Target timeline", value: "10 business days", icon: Stethoscope },
     ],
     highlights: [
       {
@@ -189,24 +176,24 @@ const copy = {
       },
       {
         icon: Target,
-        title: "Fast incident response",
+        title: "Incident context",
         description: "Organize technical context and root cause hypotheses for review by the responsible team.",
       },
       {
         icon: ShieldCheck,
-        title: "Operational reliability",
-        description: "Structure playbooks and priorities with technical review. FPConnect supports data analysis and does not perform maintenance.",
+        title: "Technical review",
+        description: "Organize playbooks and priorities for review by the responsible team. The platform does not perform maintenance.",
       },
     ],
     evidenceTitle: "Demonstration, pilot and measured results",
     evidenceText: "The demonstration presents features using illustrative data. A pilot validates use with an authorized sample from your operation. Results will only be presented as measured cases with a documented period, sample, calculation and authorization. We do not promise a percentage reduction in MTTR or guaranteed availability.",
     privacyText: "Share only authorized data, without patient identifiers, credentials or third-party confidential information. Transfer channel, access and retention are agreed before sharing.",
-    experimentEyebrow: "Try FPConnect",
-    experimentTitle: "From an initial conversation to a scoped demonstration.",
+    experimentEyebrow: `Try ${APP_NAME}`,
+    experimentTitle: "Agree on scope and criteria before contracting.",
     experimentText:
-      "Start with a discussion of your operation. Agree on a sample of 20 tickets and 1–2 logs, where available and authorized, for a demonstration or audit. Deliverables, timing and pricing are defined before the pilot.",
-    plansMiniTitle: "Plans",
-    plansMiniText: "Resources to evolve from initial visibility to assisted operations, SLA management and executive rollout.",
+      "The metrics pilot covers up to 300 service orders and one source, team or service line. Sample, access, deliverables, availability and criteria are confirmed before contracting; the target timeline is 10 business days.",
+    plansMiniTitle: "Work scopes",
+    plansMiniText: "Diagnostic and pilot options with explicit data sources, scope and target timelines.",
     institutional: [
       {
         title: "Mission",
@@ -214,7 +201,7 @@ const copy = {
       },
       {
         title: "Vision",
-        text: "Become the operational intelligence layer hospitals use to reduce downtime and protect critical equipment.",
+        text: "Objective: assess how operational data can support asset prioritization and downtime discussions.",
       },
       {
         title: "Values",
@@ -222,87 +209,73 @@ const copy = {
       },
       {
         title: "About us",
-        text: "FPConnect combines clinical engineering, automation and software to turn maintenance into proactive management.",
+        text: "Proposal under validation: support MedTech teams in organizing technical data, reviewing hypotheses and tracking operations.",
       },
       {
         title: "Help / FAQs",
-        text: "The pilot can start small, using available data, and evolve to integrations, RCA Copilot, SLA and playbooks.",
+        text: "Scope is agreed before work begins. Integrations depend on validating access, data, fields and technical limits.",
       },
     ],
-    pricingHeroTitle: "Plans to run clinical engineering with more predictability",
+    pricingHeroTitle: "Diagnostic and pilot scopes",
     pricingHeroSubtitle:
-      "Start with the Basic demo, move to real operations with Premium, use VIP for critical SLA and hire Consulting for assisted rollout.",
-    seePlans: "View plans",
+      "Reference prices and target timelines. Scope, data, access and availability are confirmed before contracting.",
+    seePlans: "View scopes",
     sales: "Talk to sales",
-    chooseTitle: "Choose how your team will operate",
+    chooseTitle: "Choose a scope to evaluate",
     chooseText:
-      "Premium and VIP are closed with the commercial team after presentation and negotiation. Consulting is scoped case by case.",
-    resourceScale: "Resource scale",
+      "Each offer depends on confirming the source, data quality, access and objective. Recurring service remains a hypothesis to validate after paid pilots.",
+    resourceScale: "Scope options",
     planHint:
-      "Start with initial visibility and advance when you need tickets, RCA Copilot, playbooks, SLA and consultative follow-up.",
-    customSales: "Personalized commercial support",
+      "Timelines are planning targets, subject to availability and validation of data and access before work begins.",
+    customSales: "Confirm scope and availability before contracting",
     plans: {
       basic: {
-        name: "Basic",
-        label: "Initial visibility",
-        price: "Free",
-        cta: "Try free",
-        description: "Initial view to understand FPConnect with limited resources.",
+        name: "Support diagnosis",
+        label: "Initial scope",
+        price: "R$ 2,500",
+        cta: "Discuss the diagnosis",
+        description: "Up to 100 service orders, 1 source, interview, bottlenecks and action plan. Target: 5 business days.",
         included: [
-          "Initial operational dashboard",
-          "Demo environment access",
-          "Commercial proposal request",
+          "Analysis of up to 100 service orders",
+          "One data source",
+          "Interview, bottlenecks and action plan",
         ],
-        excluded: [
-          "Real ticket and asset management",
-          "RCA Copilot diagnosis",
-          "Contract and SLA management",
-          "Priority support",
-        ],
+        excluded: [],
       },
       premium: {
-        name: "Premium",
-        label: "Assisted operations",
-        price: "By proposal",
-        cta: "Request proposal",
-        description: "Real operations with tickets, assets, alerts and reports for clinical engineering.",
+        name: "Metrics pilot",
+        label: "Recommended offer",
+        price: "R$ 4,900",
+        cta: "Discuss the pilot",
+        description: "Up to 300 service orders, 1 source/team/service line, dashboard and triage. Target: 10 business days.",
         included: [
-          "Everything in Basic",
-          "Real ticket and asset management",
-          "Availability and MTTR dashboard",
-          "Operational alerts",
-          "Management reports",
+          "Analysis of up to 300 service orders",
+          "One source, team or service line",
+          "Dashboard and triage",
         ],
-        excluded: ["Advanced critical SLA", "Full executive rollout"],
+        excluded: [],
       },
       vip: {
-        name: "VIP",
-        label: "Critical SLA",
-        price: "By contract",
-        cta: "Talk to sales",
-        description: "Layer for critical operations with follow-up, SLA and risk prioritization.",
+        name: "Pilot + assisted automation",
+        label: "Expanded scope",
+        price: "R$ 9,500",
+        cta: "Validate pilot scope",
+        description: "Metrics pilot + 1 workflow and 1 integration, after technical validation. Target: 15 business days.",
         included: [
-          "Everything in Premium",
-          "RCA Copilot",
-          "Operational playbooks",
-          "Contract and SLA management",
-          "Priority support",
+          "Metrics pilot scope",
+          "One assisted automation workflow",
+          "One validated integration",
         ],
-        excluded: ["On-site consulting scoped by diagnosis"],
+        excluded: [],
       },
       consultoria: {
-        name: "Consulting",
-        label: "Executive rollout",
-        price: "By diagnosis",
-        cta: "Learn more via WhatsApp.",
-        description: "For hospitals and networks that need assisted rollout and executive governance.",
+        name: "Recurring service",
+        label: "Hypothesis to validate",
+        price: "R$ 1,500–3,000/month",
+        cta: "Validate recurring-service hypothesis",
+        description: "Preliminary price range and scope, to validate after paid pilots. Timeline and availability to be defined.",
         included: [
-          "Everything in VIP",
-          "Operational maturity diagnosis",
-          "Assisted rollout with adoption plan",
-          "Training for clinical engineering and IT",
-          "Monthly operational improvement rituals",
-          "Executive governance with risk indicators",
+          "Dashboard, review routine and monitoring are scope hypotheses to validate",
         ],
         excluded: [],
       },
@@ -466,7 +439,7 @@ export default function LandingPage() {
           <div className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between px-6 sm:px-8 lg:px-8">
             <div className="flex items-center gap-3 text-2xl font-black text-white">
               <ShieldCheck size={28} className="text-cyan-300" />
-              FPConnect
+              {APP_NAME}
             </div>
             <Link
               href="https://wa.me/5547996789861"
@@ -571,7 +544,7 @@ export default function LandingPage() {
                         <p className="mt-4 text-base leading-7 text-slate-300">{active.description}</p>
                         <div className="mt-8 text-5xl font-black text-white">{active.price}</div>
                         <Link
-                          href={activePlan === "basic" ? "/dashboard" : "https://wa.me/5547996789861"}
+                          href="https://wa.me/5547996789861"
                           className="mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-lg border border-cyan-300 text-base font-black text-cyan-200 transition hover:bg-cyan-400 hover:text-slate-950"
                         >
                           {active.cta}

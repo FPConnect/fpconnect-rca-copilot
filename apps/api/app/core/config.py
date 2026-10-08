@@ -7,12 +7,14 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     """Application settings."""
 
-    app_env: str = "development"
+    app_env: str = "production"
     secret_key: str = "dev-only-change-this-key-32-chars!!"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
     refresh_secret_key: str = "dev-only-refresh-key-32-chars!!!"
+    seed_test_accounts: bool = False
+    test_account_password: str | None = None
 
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
@@ -32,6 +34,11 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_security(self):
         """Prevent insecure key defaults outside development and enforce minimum key size."""
+        if self.seed_test_accounts:
+            if self.app_env != "development":
+                raise ValueError("SEED_TEST_ACCOUNTS can only be enabled in development")
+            if not self.test_account_password or len(self.test_account_password) < 12:
+                raise ValueError("TEST_ACCOUNT_PASSWORD must be at least 12 characters when seeding test accounts")
         if self.app_env != "development" and self.secret_key == "dev-only-change-this-key-32-chars!!":
             raise ValueError("SECRET_KEY must be set to a strong value")
         if len(self.secret_key) < 32:

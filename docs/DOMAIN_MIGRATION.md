@@ -1,11 +1,13 @@
 # Migração do domínio para `fpconnect.tec.br`
 
-Este documento descreve como publicar o FPConnect no domínio canônico `fpconnect.tec.br` e redirecionar o domínio antigo `hypersecit.com.br`.
+Este documento descreve como publicar a aplicação OPSPECTA no domínio técnico canônico `fpconnect.tec.br` e redirecionar o domínio antigo `hypersecit.com.br`. FPConnect e `fpconnect.tec.br` permanecem identificadores técnicos até uma migração formal.
 
 ## O que já fica preparado no código
 
 - `NEXT_PUBLIC_SITE_URL` passa a ter o valor esperado `https://fpconnect.tec.br` nos exemplos de ambiente.
 - A metadata do Next.js usa `NEXT_PUBLIC_SITE_URL` para canonical/Open Graph.
+- O nome exibido na Web é configurável por `NEXT_PUBLIC_APP_NAME`; os exemplos usam OPSPECTA, ainda em validação.
+- Na configuração Expo, somente `expo.name` controla o nome exibido; `slug`, `scheme` e identificadores nativos permanecem estáveis.
 - `apps/web/next.config.js` redireciona permanentemente:
   - `https://hypersecit.com.br/*` → `https://fpconnect.tec.br/*`
   - `https://www.hypersecit.com.br/*` → `https://fpconnect.tec.br/*`
@@ -39,7 +41,7 @@ No projeto Vercel da Web:
    ```env
    NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
    NEXT_PUBLIC_API_URL=https://<api-publica-de-producao>
-   NEXT_PUBLIC_APP_NAME=FPConnect
+   NEXT_PUBLIC_APP_NAME=OPSPECTA
    NEXT_PUBLIC_APP_VERSION=1.0.0
    ```
 5. Faça um novo deploy de produção após alterar as variáveis.

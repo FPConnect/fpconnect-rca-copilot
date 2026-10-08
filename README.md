@@ -1,5 +1,9 @@
-# fpconnect-rca-copilot
-RCA Copilot & Availability Engine for Healthcare/MedTech Operations
+# OPSPECTA
+Assistive data organization for MedTech technical service operations
+
+OPSPECTA is the working display name under validation. FPConnect remains the
+historical project and technical compatibility identifier; no trademark
+registration or legal clearance is claimed.
 
 > **Web preview:** the frontend can run with local preview data for quick evaluation. API-backed workflows require authentication tokens from `/auth/login`.
 
@@ -13,7 +17,24 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — the app redirects to `/dashboard` automatically. No login needed.
+Open [http://localhost:3000](http://localhost:3000) to view the landing page.
+The authenticated workspace requires a working API and a valid account; local
+preview data is not an authentication mechanism.
+
+### Run the API locally
+
+```bash
+cd apps/api
+cp .env.example .env
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+To seed demo data and development test users, explicitly set
+`SEED_TEST_ACCOUNTS=true` and a unique `TEST_ACCOUNT_PASSWORD` of at least 12
+characters in `apps/api/.env`, then run `python scripts/seed_clinical.py`.
+Seeding replaces the password for the listed development accounts, so never
+enable it outside a disposable local development database.
 
 > To run on port 3001: `npm run dev -- -p 3001`
 
@@ -64,7 +85,7 @@ Copy `apps/web/.env.example` to `apps/web/.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_APP_NAME=FPConnect
+NEXT_PUBLIC_APP_NAME=OPSPECTA
 NEXT_PUBLIC_APP_VERSION=1.0.0
 NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
 ```
@@ -72,9 +93,38 @@ NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
 | Variable | Default | Description |
 |---|---|---|
 | `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | FastAPI backend URL |
-| `NEXT_PUBLIC_APP_NAME` | `FPConnect` | Application name |
+| `NEXT_PUBLIC_APP_NAME` | `OPSPECTA` | Application display name |
 | `NEXT_PUBLIC_APP_VERSION` | `1.0.0` | Application version |
 | `NEXT_PUBLIC_SITE_URL` | `https://fpconnect.tec.br` | Canonical production URL used by metadata and domain redirects |
+
+`NEXT_PUBLIC_APP_NAME` controls the Web display name at build time and defaults
+to `OPSPECTA`. For the Expo app, update only `expo.name` in
+`apps/mobile/app.json` when a display-name change is approved. Keep the Expo
+`slug`, `scheme`, bundle/package identifiers, API contracts, and existing
+`fpconnect_*` storage keys unchanged unless a separate migration is planned.
+
+## Commercial scope and evidence
+
+Public offer descriptions are planning references, not guarantees. Confirm data
+availability, access, deliverables, acceptance criteria, and schedule with the
+customer before contracting. The current reference scopes are:
+
+| Offer | Reference price | Reference scope | Target timeline |
+|---|---:|---|---|
+| Support diagnosis | R$ 2,500 | Up to 100 service orders, one source, interview, bottlenecks, and action plan | 5 business days |
+| Metrics pilot | R$ 4,900 | Up to 300 service orders, one source/team/service line, dashboard, and triage | 10 business days |
+| Metrics pilot + assisted automation | R$ 9,500 | Metrics pilot scope, one workflow, and one integration after technical validation | 15 business days |
+
+Recurring service is a hypothesis to validate after paid pilots, not an
+established offer. Describe product capabilities as assistive unless verified
+in the current implementation. Demonstrations use illustrative data; report
+outcomes as measured only when the period, sample, calculation, and permission
+to disclose are documented.
+
+The Strategic Moats calculator is an arithmetic scenario using user-entered
+premises. Its values are not measured product impact, realized savings,
+downtime reduction, or a guaranteed return. Do not reuse its outputs as
+customer evidence or performance claims.
 
 ## Deploy to Production (Cloud)
 
@@ -111,6 +161,7 @@ NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
 4. Add the following environment variables in Railway's dashboard:
 
    ```
+   APP_ENV=production
    DATABASE_URL=<your Neon connection string>
    REDIS_URL=<your Upstash Redis URL>
    SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
@@ -139,7 +190,7 @@ NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
 
    ```
    NEXT_PUBLIC_API_URL=<your Railway API URL from Step 3>
-   NEXT_PUBLIC_APP_NAME=FPConnect
+   NEXT_PUBLIC_APP_NAME=OPSPECTA
    NEXT_PUBLIC_APP_VERSION=1.0.0
    NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
    ```

@@ -27,13 +27,9 @@ describe("clinical engineering web pages", () => {
         id: 1,
         code: "ECG-02",
         name: "Monitor Multiparamétrico",
-        model: "IntelliVue MX450",
         location: "UTI Adulto",
         status: "warning",
         type: "monitoring",
-        criticality: "Alta",
-        last_failure: "Perda intermitente de SpO2",
-        recurrent_failures: 4,
         last_check: "2026-05-15T08:26:00Z",
       },
     ]);
@@ -43,9 +39,6 @@ describe("clinical engineering web pages", () => {
         title: "Perda intermitente de SpO2",
         status: "open",
         priority: "critical",
-        device_id: "ECG-02",
-        location: "UTI Adulto",
-        root_cause: "Sensor com mau contato",
       },
     ]);
     mockedApi.createTicket.mockImplementation(async (payload) => ({
@@ -61,23 +54,22 @@ describe("clinical engineering web pages", () => {
     });
   });
 
-  it("renders the equipment list with recurrent failure indicator", async () => {
+  it("renders the equipment list with its current status", async () => {
     render(<EquipmentPage />);
 
-    expect(await screen.findByText("Equipamentos")).toBeInTheDocument();
+    expect(await screen.findByText("Máquinas")).toBeInTheDocument();
     expect(await screen.findByText("Monitor Multiparamétrico")).toBeInTheDocument();
-    expect(screen.getByText(/falhas recorrentes: 4/i)).toBeInTheDocument();
+    expect(screen.getByText("warning")).toBeInTheDocument();
   });
 
-  it("creates an incident from the clinical incident form", async () => {
+  it("creates a ticket from the current ticket form", async () => {
     render(<IncidentsPage />);
 
-    fireEvent.change(screen.getByLabelText("Descrição do chamado"), {
+    fireEvent.change(screen.getByPlaceholderText("Ticket title"), {
       target: { value: "Falha no monitor da UTI" },
     });
-    fireEvent.change(screen.getByLabelText("Equipamento"), { target: { value: "ECG-02" } });
-    fireEvent.change(screen.getByLabelText("Unidade clínica"), { target: { value: "UTI Adulto" } });
-    fireEvent.click(screen.getByRole("button", { name: "Criar chamado" }));
+    fireEvent.change(screen.getAllByRole("combobox")[0], { target: { value: "critical" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
     await waitFor(() => expect(mockedApi.createTicket).toHaveBeenCalled());
     expect(await screen.findByText("Falha no monitor da UTI")).toBeInTheDocument();

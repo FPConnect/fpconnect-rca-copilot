@@ -46,9 +46,11 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 # Create database tables on startup
 Base.metadata.create_all(bind=engine)
 
-if settings.app_env == "development":
+if settings.seed_test_accounts:
+    if settings.test_account_password is None:
+        raise RuntimeError("TEST_ACCOUNT_PASSWORD is required when SEED_TEST_ACCOUNTS is enabled")
     with SessionLocal() as seed_db:
-        reset_test_accounts(seed_db)
+        reset_test_accounts(seed_db, settings.test_account_password)
 
 app = FastAPI(
     title="FPConnect RCA Copilot API",

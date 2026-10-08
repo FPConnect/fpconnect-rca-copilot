@@ -42,9 +42,9 @@ const TIMEZONES = [
 ];
 
 const INITIAL_PROFILE: ProfileForm = {
-  name: "Master",
-  email: "master@fpconnect.com",
-  phone: "+55 47 99678-9861",
+  name: "",
+  email: "",
+  phone: "",
 };
 const INITIAL_SYSTEM: SystemPrefs = {
   theme: "light",
@@ -290,16 +290,24 @@ export default function SettingsPage() {
       return;
     }
     notifSave.save(async () => {
-      setNotifPrefs(notifDraft);
-      writeStorage(NOTIFICATION_STORAGE_KEY, notifDraft);
+      let preferencesToSave = notifDraft;
       if (notifDraft.sms) {
         try {
-          await api.sendSmsNotification("FPConnect: SMS ativado para alertas operacionais.");
-          addNotification("info", "SMS ativo", `Alerta de teste enviado para ${profile.phone}.`);
+          const response = await api.sendSmsNotification("OPSPECTA: SMS ativado para alertas operacionais.");
+          if (response.delivered) {
+            addNotification("info", "SMS ativo", `Alerta de teste enviado para ${profile.phone}.`);
+          } else {
+            preferencesToSave = { ...notifDraft, sms: false };
+            addNotification("warning", "SMS não enviado", "O provedor SMS está em modo de pré-visualização; nenhuma mensagem foi enviada.");
+          }
         } catch {
-          addNotification("info", "SMS ativo", `Alertas por SMS serão enviados para ${profile.phone}.`);
+          preferencesToSave = { ...notifDraft, sms: false };
+          addNotification("error", "SMS não ativado", "Não foi possível confirmar o envio. Verifique se há um provedor SMS configurado.");
         }
       }
+      setNotifPrefs(preferencesToSave);
+      setNotifDraft(preferencesToSave);
+      writeStorage(NOTIFICATION_STORAGE_KEY, preferencesToSave);
       addNotification("success", "Preferências de notificação salvas");
     });
   };

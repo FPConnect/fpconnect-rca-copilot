@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { APP_NAME } from "../lib/brand";
 
 interface HeaderProps {
   title: string;
@@ -12,8 +13,8 @@ export default function Header({ title, notificationCount = 0 }: HeaderProps) {
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         <View>
-          <Text style={styles.brand}>FPConnect</Text>
-          <Text style={styles.subtitle}>Technologies</Text>
+          <Text style={styles.brand}>{APP_NAME}</Text>
+          <Text style={styles.subtitle}>MedTech</Text>
         </View>
         <View style={styles.right}>
           <Text style={styles.title}>{title}</Text>

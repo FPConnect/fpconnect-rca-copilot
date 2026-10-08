@@ -39,7 +39,10 @@ Deploy the full stack for free using managed cloud services — no server manage
    ```env
    DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
    REDIS_URL=rediss://default:pass@host:port
+   APP_ENV=production
+   SEED_TEST_ACCOUNTS=false
    SECRET_KEY=<generate: python -c "import secrets; print(secrets.token_hex(32))">
+   REFRESH_SECRET_KEY=<generate a separate secret with at least 32 characters>
    ALGORITHM=HS256
    ACCESS_TOKEN_EXPIRE_MINUTES=30
    OPENAI_API_KEY=sk-...
@@ -64,7 +67,7 @@ Deploy the full stack for free using managed cloud services — no server manage
 
    ```env
    NEXT_PUBLIC_API_URL=https://fpconnect-api.up.railway.app
-   NEXT_PUBLIC_APP_NAME=FPConnect
+   NEXT_PUBLIC_APP_NAME=OPSPECTA
    NEXT_PUBLIC_APP_VERSION=1.0.0
    NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
    ```
@@ -150,4 +153,3 @@ certbot --nginx -d api.yourapp.com -d yourapp.com
 - API logs: `docker-compose logs -f api`
 - Database: `docker-compose exec db psql -U fpconnect`
 - All logs: `make logs`
-

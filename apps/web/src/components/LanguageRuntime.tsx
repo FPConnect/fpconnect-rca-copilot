@@ -8,7 +8,7 @@ const LANGUAGE_CHANGE_EVENT = "fpconnect:language-change";
 type Language = "pt-BR" | "en-US";
 
 const PT_TO_EN: Record<string, string> = {
-  "FPConnect": "FPConnect",
+  "OPSPECTA": "OPSPECTA",
   "Technologies": "Technologies",
   "Home": "Home",
   "Máquinas": "Machines",
@@ -22,7 +22,7 @@ const PT_TO_EN: Record<string, string> = {
   "Notificações": "Notifications",
   "Configurações": "Settings",
   "Sair": "Sign out",
-  "Healthcare Equipment Monitor": "Healthcare Equipment Monitor",
+  "Conta": "Account",
   "Dashboard Operacional": "Operational Dashboard",
   "Acompanhe disponibilidade, risco e performance dos equipamentos em um painel unificado para resposta rápida.": "Track availability, risk, and equipment performance in one unified panel for faster response.",
   "Tickets Abertos": "Open Tickets",
@@ -54,6 +54,7 @@ const PT_TO_EN: Record<string, string> = {
   "Email": "Email",
   "Senha": "Password",
   "Credenciais inválidas.": "Invalid credentials.",
+  "Não foi possível conectar à plataforma. Verifique sua conexão e tente novamente.": "Unable to connect to the platform. Check your connection and try again.",
   "Entrando...": "Signing in...",
   "Perfil do Usuário": "User Profile",
   "Nome": "Name",
@@ -166,6 +167,9 @@ const PT_TO_EN: Record<string, string> = {
   "Recurso": "Resource",
   "Data/Hora": "Date/Time",
   "Métricas de Performance": "Performance Metrics",
+  "Dados demonstrativos: os números e indicadores desta tela são estáticos e não representam telemetria, tickets ou resultados reais.": "Illustrative data: all figures and indicators on this screen are static and do not represent real telemetry, tickets, or outcomes.",
+  "Todos os indicadores e valores abaixo são dados demonstrativos estáticos, não resultados medidos da operação.": "All indicators and values below are static illustrative data, not measured operational results.",
+  "Variação demonstrativa": "Illustrative variation",
   "Uptime Médio": "Average Uptime",
   "MTBF (horas)": "MTBF (hours)",
   "MTTR (minutos)": "MTTR (minutes)",
@@ -186,13 +190,10 @@ const PT_TO_EN: Record<string, string> = {
   "Plataforma de monitoramento para operações hospitalares": "Monitoring platform for hospital operations",
   "Visibilidade total para": "Total visibility for",
   "Engenharia Clínica e TI Biomédica": "Clinical Engineering and Biomedical IT",
-  "O FPConnect centraliza monitoramento, alertas, tickets e histórico operacional para sua equipe tomar decisões rápidas e reduzir indisponibilidade de equipamentos de missão crítica.": "FPConnect centralizes monitoring, alerts, tickets, and operational history so your team can make fast decisions and reduce downtime for mission-critical equipment.",
   "Acessar plataforma": "Access platform",
   "Ver painel operacional": "View operational dashboard",
   "Indicadores operacionais": "Operational indicators",
   "Equipamentos monitoráveis": "Monitorable equipment",
-  "Redução média de MTTR": "Average MTTR reduction",
-  "SLA de disponibilidade": "Availability SLA",
   "Observabilidade em tempo real": "Real-time observability",
   "Monitore disponibilidade, alertas e comportamento de equipamentos críticos em um único painel.": "Monitor availability, alerts, and critical equipment behavior in a single dashboard.",
   "Resposta rápida a incidentes": "Fast incident response",
@@ -224,17 +225,12 @@ const PT_TO_EN: Record<string, string> = {
   "Roadmap de eficiência": "Efficiency roadmap",
   "Implantação assistida": "Assisted implementation",
   "Quero este plano": "I want this plan",
-  "Com o FPConnect, reduzimos o tempo entre o alerta e a tomada de decisão. O time de engenharia clínica ganhou previsibilidade.": "With FPConnect, we reduced the time between alert and decision-making. The clinical engineering team gained predictability.",
-  "Coordenadora de Engenharia Clínica": "Clinical Engineering Coordinator",
-  "A visão de incidentes e causa raiz trouxe clareza para priorização. Hoje atuamos de forma muito mais proativa.": "The incident and root-cause view brought clarity to prioritization. Today we act much more proactively.",
-  "Gestor de Operações Hospitalares": "Hospital Operations Manager",
   "Navegação institucional": "Institutional navigation",
   "Missão": "Mission",
   "Visão": "Vision",
   "Valores": "Values",
   "Quem somos": "Who we are",
   "Ajuda / FAQs": "Help / FAQs",
-  "Conectar engenharia clínica, TI biomédica e operação hospitalar em uma plataforma única para reduzir indisponibilidade, acelerar resposta a incidentes e proteger a segurança do paciente.": "Connect clinical engineering, biomedical IT, and hospital operations in a single platform to reduce downtime, accelerate incident response, and protect patient safety.",
   "Ser a plataforma de referência para operações hospitalares orientadas por dados, tornando cada decisão de disponibilidade, manutenção e risco mais rápida, rastreável e confiável.": "Become the reference platform for data-driven hospital operations, making every availability, maintenance, and risk decision faster, traceable, and reliable.",
   "Cultura operacional": "Operational culture",
   "Segurança do paciente": "Patient safety",
@@ -245,9 +241,6 @@ const PT_TO_EN: Record<string, string> = {
   "Rastreabilidade": "Traceability",
   "Cada ocorrência deve manter histórico, responsável, evidência e evolução visíveis.": "Every occurrence should keep visible history, ownership, evidence, and progress.",
   "Institucional": "Institutional",
-  "Somos a FPConnect Technologies, uma empresa focada em tecnologia para engenharia clínica, TI biomédica e operações hospitalares.": "We are FPConnect Technologies, a company focused on technology for clinical engineering, biomedical IT, and hospital operations.",
-  "Criamos uma plataforma para centralizar monitoramento, chamados, histórico e métricas de disponibilidade em ambientes de missão crítica.": "We built a platform to centralize monitoring, tickets, history, and availability metrics in mission-critical environments.",
-  "Nosso compromisso é entregar uma operação mais previsível, rastreável e preparada para tomada de decisão.": "Our commitment is to deliver a more predictable, traceable operation prepared for decision-making.",
   "Suporte": "Support",
   "Buscar nas FAQs...": "Search FAQs...",
   "Como cadastrar um novo equipamento?": "How do I register new equipment?",
@@ -261,15 +254,17 @@ const PT_TO_EN: Record<string, string> = {
   "Como configurar notificações?": "How do I configure notifications?",
   "Acesse Configurações > Notificações para personalizar.": "Open Settings > Notifications to customize.",
   "Nenhuma pergunta encontrada.": "No question found.",
-  "FPConnect™ - Marca registrada. © 2026 Todos os direitos reservados.": "FPConnect™ - Registered trademark. © 2026 All rights reserved.",
 };
 
 const EN_TO_PT = Object.fromEntries(
   Object.entries(PT_TO_EN).map(([pt, en]) => [en, pt]),
 );
 
-const originalText = new WeakMap<Text, string>();
-const originalAttributes = new WeakMap<Element, Map<string, string>>();
+const originalText = new WeakMap<Text, { source: string; translated: string }>();
+const originalAttributes = new WeakMap<
+  Element,
+  Map<string, { source: string; translated: string }>
+>();
 
 function readLanguage(): Language {
   try {
@@ -305,11 +300,13 @@ function translateTextNode(node: Text, language: Language) {
   const parent = node.parentElement;
   if (!parent || ["SCRIPT", "STYLE", "TEXTAREA"].includes(parent.tagName)) return;
   if (parent.closest("[data-no-translate]")) return;
-  if (!originalText.has(node)) {
-    originalText.set(node, node.nodeValue ?? "");
-  }
-  const base = originalText.get(node) ?? "";
-  const next = translateValue(base, language);
+  const current = node.nodeValue ?? "";
+  const previous = originalText.get(node);
+  const source = previous && current === previous.translated
+    ? previous.source
+    : current;
+  const next = translateValue(source, language);
+  originalText.set(node, { source, translated: next });
   if (node.nodeValue !== next) node.nodeValue = next;
 }
 
@@ -326,8 +323,12 @@ function translateElementAttributes(element: Element, language: Language) {
   for (const attr of attributes) {
     const current = element.getAttribute(attr);
     if (!current) continue;
-    if (!stored.has(attr)) stored.set(attr, current);
-    const next = translateValue(stored.get(attr) ?? current, language);
+    const previous = stored.get(attr);
+    const source = previous && current === previous.translated
+      ? previous.source
+      : current;
+    const next = translateValue(source, language);
+    stored.set(attr, { source, translated: next });
     if (current !== next) element.setAttribute(attr, next);
   }
 }

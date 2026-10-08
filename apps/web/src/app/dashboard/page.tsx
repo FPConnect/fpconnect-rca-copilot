@@ -10,7 +10,9 @@ const PerformanceStat = ({ title, value, unit, trend }: PerformanceStatProps) =>
       <h3 className="text-3xl font-bold text-white">{value}</h3>
       <span className="text-sm text-slate-500">{unit}</span>
     </div>
-    <div className="mt-4 text-xs font-medium text-emerald-400">{trend} vs mês anterior</div>
+    <div className="mt-4 text-xs font-medium text-emerald-400">
+      <span>Variação demonstrativa</span>: {trend}
+    </div>
   </div>
 );
 
@@ -38,6 +40,9 @@ export default function DashboardPage() {
         <p className="mt-2 max-w-2xl text-sm text-slate-200">
           Acompanhe disponibilidade, risco e performance dos equipamentos em um painel unificado para resposta rápida.
         </p>
+        <p role="note" className="mt-3 text-xs text-slate-300">
+          Dados demonstrativos: os números e indicadores desta tela são estáticos e não representam telemetria, tickets ou resultados reais.
+        </p>
       </section>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -62,7 +67,7 @@ export default function DashboardPage() {
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="mb-1 text-xl font-semibold text-gray-900">Primeiros Passos</h2>
         <p className="mb-5 text-sm text-gray-500">
-          Configure o FPConnect em poucos minutos para começar a monitorar os equipamentos da sua operação.
+          Configure os dados e preferências necessários para acompanhar os equipamentos da sua operação.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ONBOARDING_STEPS.map(({ href, icon: Icon, title, description }, index) => (

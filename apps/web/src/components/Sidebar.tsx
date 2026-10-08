@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { APP_NAME } from "@/lib/brand";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
@@ -40,9 +41,9 @@ export default function Sidebar() {
       <div className="px-6 py-5 border-b border-gray-700 flex items-center justify-between">
         <div>
           <span className="text-xl font-bold tracking-tight text-blue-400">
-            FPConnect
+            {APP_NAME}
           </span>
-          <span className="block text-xs text-gray-400 mt-0.5">Technologies</span>
+          <span className="block text-xs text-gray-400 mt-0.5">Assistência técnica MedTech</span>
         </div>
         <button
           onClick={close}
@@ -125,4 +126,3 @@ export default function Sidebar() {
     </>
   );
 }
-

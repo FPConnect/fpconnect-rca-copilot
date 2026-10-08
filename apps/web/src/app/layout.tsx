@@ -7,10 +7,12 @@ import AppShell from "@/components/AppShell";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthGuard from "@/components/AuthGuard";
 import LanguageRuntime from "@/components/LanguageRuntime";
+import { APP_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "FPConnect RCA Copilot",
-  description: "RCA Copilot & Availability Engine for Healthcare/MedTech",
+  title: `${APP_NAME} | Assistência técnica MedTech`,
+  description:
+    "Organize chamados, histórico técnico e acompanhamento de disponibilidade para apoiar a equipe de assistência técnica MedTech.",
 };
 
 export default function RootLayout({

@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, ScrollView, StyleSheet, SafeAreaView } from "react-native";
 import Card from "../src/components/Card";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { APP_NAME } from "../src/lib/brand";
 
 const METRICS = [
   {
@@ -56,7 +57,7 @@ export default function DashboardScreen() {
             <Text style={styles.bannerName}>Admin</Text>
           </View>
           <View style={styles.bannerBadge}>
-            <Text style={styles.bannerBadgeText}>FPConnect</Text>
+            <Text style={styles.bannerBadgeText}>{APP_NAME}</Text>
           </View>
         </View>
 
