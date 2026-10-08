@@ -20,6 +20,15 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+async function establishServerSession(token: string | null) {
+  const response = await fetch("/api/session", {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    cache: "no-store",
+  });
+  return response.ok;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,14 +36,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     api.clearLegacyPreviewCredentials();
     const stored = localStorage.getItem("auth_token");
-    if (stored) setToken(stored);
-    setIsLoading(false);
+    establishServerSession(stored).then((valid) => {
+      if (valid && stored) setToken(stored);
+      else localStorage.removeItem("auth_token");
+    }).catch(() => {
+      localStorage.removeItem("auth_token");
+    }).finally(() => setIsLoading(false));
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     const result = await api.login({ email, password });
+    if (!(await establishServerSession(result.access_token))) {
+      throw new Error("Não foi possível validar a sessão no servidor.");
+    }
     localStorage.setItem("auth_token", result.access_token);
     setToken(result.access_token);
+    // A full navigation discards any prefetched unauthenticated RSC response.
+    window.location.assign("/dashboard");
   }, []);
 
   const register = useCallback(async (data: {
@@ -51,6 +69,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem("auth_token");
     setToken(null);
+    void establishServerSession(null).catch(() => {
+      // The server independently revalidates the short-lived cookie on every request.
+    });
   }, []);
 
   const value = useMemo(

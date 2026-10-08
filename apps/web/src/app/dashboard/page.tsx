@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { isValidSession, SESSION_COOKIE } from "@/lib/server-session";
 import { Monitor, HeartPulse, Bell, Ticket, BarChart2, Settings } from "lucide-react";
 
 type PerformanceStatProps = { title: string; value: string; unit: string; trend: string };
@@ -30,9 +33,16 @@ const ONBOARDING_STEPS = [
   { href: "/settings", icon: Settings, title: "Personalize as configurações", description: "Ajuste idioma, fuso horário e preferências de notificação." },
 ];
 
-export default function DashboardPage() {
+export const dynamic = "force-dynamic";
+
+export default async function DashboardPage() {
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  if (!(await isValidSession(token))) redirect("/login");
   return (
     <div className="mx-auto max-w-6xl space-y-8">
+      <p role="note" className="rounded-lg bg-amber-50 p-4 text-amber-950">
+        Demonstração — dados fictícios. Estes indicadores não representam resultados de clientes nem uma operação em produção.
+      </p>
       <section className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-900 p-6 text-white shadow-xl">
         <h1 className="text-3xl font-black tracking-tight">Dashboard Operacional</h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-200">
