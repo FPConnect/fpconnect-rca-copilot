@@ -4,16 +4,15 @@ import { FormEvent, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/services/api";
 
-const DEFAULT_PHONE = "+55 47 99678-9861";
 
 export default function LoginPage() {
   const { login, register } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [name, setName] = useState("Master");
-  const [email, setEmail] = useState("master@fpconnect.com");
-  const [phone, setPhone] = useState(DEFAULT_PHONE);
-  const [password, setPassword] = useState("Master@2024Secure!");
-  const [confirmPassword, setConfirmPassword] = useState("Master@2024Secure!");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationSent, setVerificationSent] = useState(false);
   const [info, setInfo] = useState("");
@@ -98,20 +97,10 @@ export default function LoginPage() {
           <p className="text-sm text-gray-500 mt-2">
             {isRegister
               ? "Cadastre seu usuário e confirme o código enviado por SMS para acessar o FPConnect RCA Copilot."
-              : "Acesse a plataforma FPConnect RCA Copilot. Recomenda-se começar com a conta Master."}
+              : "Acesse a plataforma com sua conta autorizada."}
           </p>
         </div>
 
-        {!isRegister && (
-          <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs text-blue-900 space-y-1">
-            <p className="font-semibold">Contas de teste disponíveis</p>
-            <p>Master (5): master@fpconnect.com / Master@2024Secure!</p>
-            <p>Administrador (4): admin_teste@fpconnect.com / Admin@123</p>
-            <p>Gerente (3): gerente_teste@fpconnect.com / Gerente@123</p>
-            <p>Usuário (2): usuario_teste@fpconnect.com / Usuario@123</p>
-            <p>Visitante (1): visitante_teste@fpconnect.com / Visitante@123</p>
-          </div>
-        )}
 
         {isRegister && (
           <input

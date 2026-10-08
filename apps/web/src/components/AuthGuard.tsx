@@ -16,9 +16,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       router.replace("/login");
     }
 
-    if (isAuthenticated && pathname === "/login") {
-      router.replace("/dashboard");
-    }
   }, [isAuthenticated, isLoading, pathname, router]);
 
   if (isLoading) {

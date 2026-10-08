@@ -149,15 +149,7 @@ const TICKETS_STORAGE_KEY = "fpconnect_preview_tickets";
 const LEGACY_PREVIEW_USERS_KEY = "fpconnect_preview_users";
 const PREVIEW_PROFILE_KEY = "fpconnect_profile";
 
-type TestAccount = UserProfile & { password: string };
-
-const TEST_ACCOUNTS: TestAccount[] = [
-  { id: 1, email: "master@fpconnect.com", password: "Master@2024Secure!", full_name: "Master", role: "master", access_level: 5 },
-  { id: 2, email: "admin_teste@fpconnect.com", password: "Admin@123", full_name: "Administrador", role: "admin", access_level: 4 },
-  { id: 3, email: "gerente_teste@fpconnect.com", password: "Gerente@123", full_name: "Gerente", role: "manager", access_level: 3 },
-  { id: 4, email: "usuario_teste@fpconnect.com", password: "Usuario@123", full_name: "Usuário", role: "user", access_level: 2 },
-  { id: 5, email: "visitante_teste@fpconnect.com", password: "Visitante@123", full_name: "Visitante", role: "visitor", access_level: 1 },
-];
+const TEST_ACCOUNTS: UserProfile[] = [];
 
 const FALLBACK_MACHINES: Machine[] = [
   {
@@ -248,37 +240,11 @@ function clearLegacyPreviewCredentials() {
 }
 
 async function login(data: LoginPayload): Promise<LoginResponse> {
-  try {
-    return await request<LoginResponse>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  } catch (error) {
-    clearLegacyPreviewCredentials();
-    const previewAccount = TEST_ACCOUNTS.find(
-      (account) =>
-        account.email === data.email.trim().toLowerCase() &&
-        account.password === data.password,
-    );
-
-    if (!previewAccount) {
-      throw error;
-    }
-
-    localStorage.setItem(
-      PREVIEW_PROFILE_KEY,
-      JSON.stringify({
-        name: previewAccount.full_name,
-        email: previewAccount.email,
-        phone: "",
-      }),
-    );
-
-    return {
-      access_token: `fpconnect-preview-token-${previewAccount.role}`,
-      token_type: "bearer",
-    };
-  }
+  clearLegacyPreviewCredentials();
+  return request<LoginResponse>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 async function sendVerificationCode(data: VerificationCodePayload): Promise<VerificationCodeResponse> {

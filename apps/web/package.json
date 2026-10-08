@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "echo 'No tests yet' && exit 0"
+    "test": "node --test tests/*.test.cjs"
   },
   "dependencies": {
     "lucide-react": "^0.575.0",
