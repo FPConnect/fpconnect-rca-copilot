@@ -104,10 +104,9 @@ export default function LoginPage() {
           <p className="text-sm text-gray-500 mt-2">
             {isRegister
               ? "Cadastre seu usuário e confirme o código de verificação para continuar."
-              : "Acesse a plataforma para continuar."}
+              : "Acesse a plataforma com sua conta autorizada."}
           </p>
         </div>
-
         {isRegister && (
           <input
             className="w-full border rounded-lg px-3 py-2"

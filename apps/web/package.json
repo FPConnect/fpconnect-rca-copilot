@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint src",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand && node --test tests/*.test.cjs"
   },
   "dependencies": {
     "lucide-react": "^0.575.0",

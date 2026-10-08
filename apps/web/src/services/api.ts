@@ -225,6 +225,7 @@ function clearLegacyPreviewCredentials() {
 }
 
 async function login(data: LoginPayload): Promise<LoginResponse> {
+  clearLegacyPreviewCredentials();
   return request<LoginResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify(data),
