@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   ArrowRight,
@@ -190,6 +190,15 @@ export default function LandingPage() {
   const [activePlan, setActivePlan] = useState<PlanKey>("premium");
   const t = copy[locale];
   const active = useMemo(() => t.plans[activePlan], [activePlan, t.plans]);
+
+  useEffect(() => {
+    const previousLanguage = document.documentElement.lang;
+    document.documentElement.lang = locale === "pt" ? "pt-BR" : "en-US";
+
+    return () => {
+      document.documentElement.lang = previousLanguage;
+    };
+  }, [locale]);
 
   return (
     <main className="min-h-screen bg-white text-[#071a3d]" data-no-translate>

@@ -28,6 +28,7 @@ describe("display name and commercial claims", () => {
   it("shows the source-aligned offers in Portuguese and English", () => {
     render(<LandingPage />);
 
+    expect(document.documentElement).toHaveAttribute("lang", "pt-BR");
     expect(screen.queryByText("Amostra inicial de tickets")).not.toBeInTheDocument();
     expect(screen.queryByText("20")).not.toBeInTheDocument();
     expect(screen.getByText("Até 300")).toBeInTheDocument();
@@ -40,6 +41,7 @@ describe("display name and commercial claims", () => {
     expect(screen.queryByText(/R\$/)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "English" }));
+    expect(document.documentElement).toHaveAttribute("lang", "en-US");
     expect(screen.getByText("Metrics pilot reference")).toBeInTheDocument();
     expect(screen.getByText("Up to 300")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Metrics pilot Recommended offer$/ })).toBeInTheDocument();
