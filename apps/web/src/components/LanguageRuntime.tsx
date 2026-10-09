@@ -5,7 +5,7 @@ import { useEffect } from "react";
 const SYSTEM_STORAGE_KEY = "fpconnect_system_preferences";
 const LANGUAGE_CHANGE_EVENT = "fpconnect:language-change";
 
-type Language = "pt-BR" | "en-US";
+export type Language = "pt-BR" | "en-US";
 
 const PT_TO_EN: Record<string, string> = {
   "OPSPECTA": "OPSPECTA",
@@ -350,6 +350,22 @@ function applyLanguage(language: Language) {
 
 export function notifyLanguageChanged() {
   window.dispatchEvent(new Event(LANGUAGE_CHANGE_EVENT));
+}
+
+export function setLanguagePreference(language: Language) {
+  try {
+    const raw = localStorage.getItem(SYSTEM_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    const preferences = parsed && typeof parsed === "object" ? parsed : {};
+    localStorage.setItem(
+      SYSTEM_STORAGE_KEY,
+      JSON.stringify({ ...preferences, language }),
+    );
+  } catch {
+    // The active page still changes language when storage is unavailable.
+  }
+
+  notifyLanguageChanged();
 }
 
 export default function LanguageRuntime() {

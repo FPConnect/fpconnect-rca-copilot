@@ -17,6 +17,7 @@ import {
   Target,
 } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
+import { setLanguagePreference } from "@/components/LanguageRuntime";
 import { APP_NAME } from "@/lib/brand";
 
 type Locale = "pt" | "en";
@@ -191,6 +192,11 @@ export default function LandingPage() {
   const t = copy[locale];
   const active = useMemo(() => t.plans[activePlan], [activePlan, t.plans]);
 
+  const handleLocaleChange = (nextLocale: Locale) => {
+    setLanguagePreference(nextLocale === "pt" ? "pt-BR" : "en-US");
+    setLocale(nextLocale);
+  };
+
   useEffect(() => {
     const previousLanguage = document.documentElement.lang;
     document.documentElement.lang = locale === "pt" ? "pt-BR" : "en-US";
@@ -224,7 +230,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 aria-pressed={locale === "pt"}
-                onClick={() => setLocale("pt")}
+                onClick={() => handleLocaleChange("pt")}
                 className={`min-h-9 rounded-md px-3 ${locale === "pt" ? "bg-[#071a3d] text-white" : "text-slate-600"}`}
               >
                 Português
@@ -232,7 +238,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 aria-pressed={locale === "en"}
-                onClick={() => setLocale("en")}
+                onClick={() => handleLocaleChange("en")}
                 className={`min-h-9 rounded-md px-3 ${locale === "en" ? "bg-[#071a3d] text-white" : "text-slate-600"}`}
               >
                 English

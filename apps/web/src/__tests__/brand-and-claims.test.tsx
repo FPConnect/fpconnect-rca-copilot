@@ -42,6 +42,8 @@ describe("display name and commercial claims", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "English" }));
     expect(document.documentElement).toHaveAttribute("lang", "en-US");
+    expect(JSON.parse(localStorage.getItem("fpconnect_system_preferences") ?? "{}"))
+      .toEqual(expect.objectContaining({ language: "en-US" }));
     expect(screen.getByText("Metrics pilot reference")).toBeInTheDocument();
     expect(screen.getByText("Up to 300")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Metrics pilot Recommended offer$/ })).toBeInTheDocument();
