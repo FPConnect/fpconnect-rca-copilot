@@ -82,9 +82,6 @@ jobs:
     environment:
       name: Production
       url: ${{ steps.deploy.outputs.url }}
-    defaults:
-      run:
-        working-directory: apps/web
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
