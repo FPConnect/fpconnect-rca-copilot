@@ -17,11 +17,11 @@ describe("display name and commercial claims", () => {
     }
   });
 
-  it("uses OPSPECTA as the default and trims configured display names", () => {
+  it("keeps OPSPECTA fixed even when deployment configuration is stale", () => {
     delete process.env.NEXT_PUBLIC_APP_NAME;
     expect(getAppName()).toBe("OPSPECTA");
 
-    process.env.NEXT_PUBLIC_APP_NAME = "  OPSPECTA  ";
+    process.env.NEXT_PUBLIC_APP_NAME = "Wrong deployment label";
     expect(getAppName()).toBe("OPSPECTA");
   });
 
