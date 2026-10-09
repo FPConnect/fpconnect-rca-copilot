@@ -252,8 +252,13 @@ export default function LandingPage() {
                 <ShieldCheck size={16} aria-hidden="true" />
                 {t.badge}
               </div>
-              <h1 className="mt-7 text-5xl font-black leading-none text-[#071a3d]">{APP_NAME}</h1>
-              <p className="mt-5 max-w-xl text-3xl font-black leading-tight text-[#0a7f86]">{t.headline}</p>
+              <h1
+                className="brand-wordmark mt-7 text-[3.25rem] leading-[0.92] text-[#071a3d] sm:text-[4.25rem]"
+                data-brand-wordmark
+              >
+                {APP_NAME}
+              </h1>
+              <p className="mt-5 max-w-xl text-3xl font-bold leading-tight text-[#0a7f86]">{t.headline}</p>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">{t.subtitle}</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link

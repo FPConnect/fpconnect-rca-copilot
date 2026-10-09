@@ -2,6 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --font-brand: "Manrope Variable", "Avenir Next", "Segoe UI", sans-serif;
+}
+
+@layer components {
+  .brand-wordmark {
+    font-family: var(--font-brand);
+    font-style: normal;
+    font-weight: 800;
+    letter-spacing: 0;
+    font-variation-settings: "wght" 800;
+    font-feature-settings: "kern" 1, "liga" 1;
+    text-rendering: geometricPrecision;
+  }
+
+  .brand-tagline {
+    font-family: var(--font-brand);
+    font-weight: 500;
+    letter-spacing: 0;
+    font-variation-settings: "wght" 500;
+  }
+}
+
 * {
   box-sizing: border-box;
   padding: 0;

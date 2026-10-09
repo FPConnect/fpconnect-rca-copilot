@@ -9,13 +9,13 @@ type BrandLogoProps = {
 export default function BrandLogo({ inverse = false, compact = false, className = "" }: BrandLogoProps) {
   return (
     <span
-      className={`inline-flex items-center gap-3 ${className}`}
+      className={`inline-flex items-center gap-2.5 ${className}`}
       aria-label={`${APP_NAME} - Inteligência operacional para a saúde`}
       data-no-translate
     >
       <span
         aria-hidden="true"
-        className="relative block h-10 w-10 shrink-0 rounded-full"
+        className="relative block h-11 w-11 shrink-0 rounded-full"
         style={{
           background:
             "conic-gradient(#082149 0deg 76deg, transparent 76deg 104deg, #17c9c2 104deg 183deg, transparent 183deg 211deg, #082149 211deg 290deg, transparent 290deg 318deg, #17c9c2 318deg 360deg)",
@@ -27,11 +27,16 @@ export default function BrandLogo({ inverse = false, compact = false, className 
         <span className="absolute right-0 top-0 h-2.5 w-2.5 bg-[#22d7cf] ring-2 ring-white" />
       </span>
       {!compact && (
-        <span className="min-w-0">
-          <span className={`block text-xl font-black leading-none ${inverse ? "text-white" : "text-[#071a3d]"}`}>
+        <span className="min-w-0 pb-px">
+          <span
+            className={`brand-wordmark block text-[22px] leading-[0.9] ${inverse ? "text-white" : "text-[#071a3d]"}`}
+            data-brand-wordmark
+          >
             {APP_NAME}
           </span>
-          <span className={`mt-1 block text-[10px] leading-none ${inverse ? "text-slate-300" : "text-slate-500"}`}>
+          <span
+            className={`brand-tagline mt-1.5 block text-[9px] leading-none ${inverse ? "text-slate-300" : "text-slate-500"}`}
+          >
             Inteligência operacional para a saúde
           </span>
         </span>

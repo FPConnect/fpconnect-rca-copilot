@@ -25,6 +25,17 @@ describe("display name and commercial claims", () => {
     expect(getAppName()).toBe("OPSPECTA");
   });
 
+  it("uses the institutional wordmark treatment for the brand name", () => {
+    render(<LandingPage />);
+
+    const wordmarks = document.querySelectorAll("[data-brand-wordmark]");
+    expect(wordmarks.length).toBeGreaterThanOrEqual(3);
+    wordmarks.forEach((wordmark) => {
+      expect(wordmark).toHaveClass("brand-wordmark");
+      expect(wordmark).toHaveTextContent("OPSPECTA");
+    });
+  });
+
   it("shows the source-aligned offers in Portuguese and English", () => {
     render(<LandingPage />);
 
