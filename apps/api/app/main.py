@@ -1,4 +1,4 @@
-"""FPConnect RCA Copilot — FastAPI application entry point."""
+"""OPSPECTA FastAPI application entry point."""
 
 from datetime import datetime, timezone
 
@@ -40,6 +40,12 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             status=response.status_code,
             duration=duration,
         )
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        if settings.app_env != "development":
+            response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
         return response
 
 
@@ -53,9 +59,12 @@ if settings.seed_test_accounts:
         reset_test_accounts(seed_db, settings.test_account_password)
 
 app = FastAPI(
-    title="FPConnect RCA Copilot API",
-    description="RCA Copilot & Availability Engine for Healthcare/MedTech",
+    title="OPSPECTA API",
+    description="Operational intelligence for healthcare technology teams",
     version="1.0.0",
+    docs_url="/docs" if settings.app_env == "development" else None,
+    redoc_url="/redoc" if settings.app_env == "development" else None,
+    openapi_url="/openapi.json" if settings.app_env == "development" else None,
 )
 app.add_middleware(LoggingMiddleware)
 app.state.limiter = limiter

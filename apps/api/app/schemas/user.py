@@ -2,26 +2,28 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 ROLE_ACCESS_LEVELS = {"visitor": 1, "user": 2, "manager": 3, "admin": 4, "master": 5}
 
 
 class UserCreate(BaseModel):
-    """Schema for creating a new user."""
+    """Public account-registration payload.
+
+    Roles are deliberately absent: public callers can only create regular users.
+    """
 
     email: EmailStr
-    password: str
-    full_name: Optional[str] = None
-    phone_number: Optional[str] = None
-    role: str = "user"
+    password: str = Field(..., min_length=12, max_length=128)
+    full_name: Optional[str] = Field(default=None, max_length=120)
+    phone_number: Optional[str] = Field(default=None, max_length=32)
 
 
 class VerificationCodeRequest(BaseModel):
     """Schema for requesting a registration verification code."""
 
     email: EmailStr
-    phone_number: str
+    phone_number: str = Field(..., min_length=10, max_length=32)
 
 
 class VerificationCodeResponse(BaseModel):
@@ -44,11 +46,13 @@ class UserLogin(BaseModel):
     """Schema for user login."""
 
     email: EmailStr
-    password: str
+    password: str = Field(..., min_length=1, max_length=128)
 
 
 class UserResponse(BaseModel):
     """Schema for user response (no password)."""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     email: str
@@ -56,10 +60,6 @@ class UserResponse(BaseModel):
     phone_number: Optional[str] = None
     role: str
     access_level: int
-
-    class Config:
-        from_attributes = True
-
 
 class UserUpdate(BaseModel):
     """Schema for updating the current user profile."""

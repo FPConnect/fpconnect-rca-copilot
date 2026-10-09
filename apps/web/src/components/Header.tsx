@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { APP_NAME } from "@/lib/brand";
+import BrandLogo from "@/components/BrandLogo";
 
 export default function Header() {
   const [userOpen, setUserOpen] = useState(false);
@@ -24,9 +24,7 @@ export default function Header() {
         >
           <Menu size={20} />
         </button>
-        <h1 className="text-base font-semibold text-gray-700 hidden sm:block">
-          {APP_NAME}
-        </h1>
+        <BrandLogo compact className="hidden sm:inline-flex" />
       </div>
 
       <div className="flex items-center gap-4 ml-auto">
@@ -52,7 +50,7 @@ export default function Header() {
             className="flex items-center gap-2 p-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
             aria-label="Menu do usuário"
           >
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-[#0a7f86] flex items-center justify-center">
               <User size={16} className="text-white" />
             </div>
             <span className="text-sm font-medium hidden sm:block">Conta</span>

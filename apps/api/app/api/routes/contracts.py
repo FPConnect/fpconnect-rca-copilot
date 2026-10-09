@@ -5,7 +5,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user_id
+from app.api.deps import AuthenticatedUser, get_current_user_id, require_access_level
 from app.core.database import get_db
 from app.crud.playbook import (
     contract_alert,
@@ -55,7 +55,7 @@ def list_contract_alerts(
 def create_new_contract(
     payload: SLAContractCreate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: AuthenticatedUser = Depends(require_access_level(3)),
 ):
     return _response(create_contract(db, payload))
 
@@ -65,7 +65,7 @@ def update_existing_contract(
     contract_id: int,
     payload: SLAContractUpdate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: AuthenticatedUser = Depends(require_access_level(3)),
 ):
     contract = update_contract(db, contract_id, payload)
     if not contract:
@@ -77,7 +77,7 @@ def update_existing_contract(
 def remove_contract(
     contract_id: int,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: AuthenticatedUser = Depends(require_access_level(3)),
 ):
     if not delete_contract(db, contract_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contract not found")

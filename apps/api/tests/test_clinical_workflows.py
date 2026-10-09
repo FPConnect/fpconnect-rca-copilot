@@ -11,6 +11,8 @@ from app.api.routes import analyze as analyze_routes
 from app.core.database import Base, get_db
 from app.main import app
 from app.models.machine import Machine
+from app.models.user import User
+from app.core.security import hash_password
 from app.services.clinical_metrics import calculate_equipment_criticality
 
 TEST_DB_URL = "sqlite:///./test_clinical.db"
@@ -56,8 +58,17 @@ def setup_db(monkeypatch):
 
 def auth_headers() -> dict[str, str]:
     credentials = {"email": "clinical@example.com", "password": "SecurePass123!"}
-    credentials = {"email": "clinical@example.com", "password": "SecurePass123"}
-    client.post("/auth/register", json=credentials)
+    db = TestingSessionLocal()
+    db.add(
+        User(
+            email=credentials["email"],
+            hashed_password=hash_password(credentials["password"]),
+            role="manager",
+            access_level=3,
+        )
+    )
+    db.commit()
+    db.close()
     response = client.post("/auth/login", json=credentials)
     return {"Authorization": f"Bearer {response.json()['access_token']}"}
 

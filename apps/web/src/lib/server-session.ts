@@ -1,6 +1,6 @@
 import "server-only";
 
-export const SESSION_COOKIE = "fpconnect_session";
+export const SESSION_COOKIE = "opspecta_session_v1";
 
 // The API validates the token and expiry and looks up the user. Never trust cookie presence.
 export async function isValidSession(token: string | undefined): Promise<boolean> {

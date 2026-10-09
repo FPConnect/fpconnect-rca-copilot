@@ -42,7 +42,7 @@ def setup_db():
 def auth_headers(phone_number: str = "+55 47 99678-9861") -> dict[str, str]:
     credentials = {
         "email": "sms@example.com",
-        "password": "SecurePass123",
+        "password": "SecurePass123!",
         "full_name": "SMS User",
         "phone_number": phone_number,
     }

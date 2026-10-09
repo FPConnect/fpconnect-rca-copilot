@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
@@ -11,7 +12,8 @@ from app.schemas.user import ROLE_ACCESS_LEVELS, UserCreate, UserUpdate
 
 def get_user_by_email(db: Session, email: str) -> Optional[User]:
     """Retrieve a user by email address."""
-    return db.query(User).filter(User.email == email).first()
+    normalized = str(email).strip().lower()
+    return db.query(User).filter(func.lower(User.email) == normalized).first()
 
 
 def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
@@ -22,12 +24,12 @@ def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
 def create_user(db: Session, user_data: UserCreate) -> User:
     """Create a new user with a hashed password."""
     db_user = User(
-        email=user_data.email,
+        email=str(user_data.email).strip().lower(),
         hashed_password=hash_password(user_data.password),
         full_name=user_data.full_name,
         phone_number=user_data.phone_number,
-        role=user_data.role,
-        access_level=ROLE_ACCESS_LEVELS.get(user_data.role, 2),
+        role="user",
+        access_level=ROLE_ACCESS_LEVELS["user"],
     )
     db.add(db_user)
     db.commit()

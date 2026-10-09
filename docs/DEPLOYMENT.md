@@ -41,15 +41,19 @@ Deploy the full stack for free using managed cloud services — no server manage
    REDIS_URL=rediss://default:pass@host:port
    APP_ENV=production
    SEED_TEST_ACCOUNTS=false
+   PUBLIC_REGISTRATION_ENABLED=false
+   CORS_ORIGINS=["https://fpconnect.tec.br","https://www.fpconnect.tec.br"]
    SECRET_KEY=<generate: python -c "import secrets; print(secrets.token_hex(32))">
    REFRESH_SECRET_KEY=<generate a separate secret with at least 32 characters>
    ALGORITHM=HS256
+   JWT_ISSUER=opspecta-api
+   JWT_AUDIENCE=opspecta-app
    ACCESS_TOKEN_EXPIRE_MINUTES=30
    OPENAI_API_KEY=sk-...
-   MINIO_ENDPOINT=<s3-endpoint>
-   MINIO_ACCESS_KEY=<access-key>
-   MINIO_SECRET_KEY=<secret-key>
-   MINIO_BUCKET=fpconnect
+   S3_ENDPOINT_URL=<s3-endpoint>
+   S3_ACCESS_KEY_ID=<access-key>
+   S3_SECRET_ACCESS_KEY=<secret-key>
+   S3_BUCKET_NAME=fpconnect-ticket-attachments
    ```
 
 5. Deploy, then run migrations from the Railway shell:
@@ -70,6 +74,8 @@ Deploy the full stack for free using managed cloud services — no server manage
    NEXT_PUBLIC_APP_NAME=OPSPECTA
    NEXT_PUBLIC_APP_VERSION=1.0.0
    NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
+   NEXT_PUBLIC_REGISTRATION_ENABLED=false
+   NEXT_PUBLIC_PREVIEW_MODE=false
    ```
 
 5. Add the production domain `fpconnect.tec.br` in **Vercel → Project → Settings → Domains**.

@@ -37,9 +37,7 @@ const ONBOARDING_STEPS = [
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value;
-  if (!(await isValidSession(token))) redirect("/login");
+export function DashboardContent() {
   return (
     <div className="mx-auto max-w-6xl space-y-8">
       <p role="note" className="rounded-lg bg-amber-50 p-4 text-amber-950">
@@ -102,4 +100,10 @@ export default async function DashboardPage() {
       </div>
     </div>
   );
+}
+
+export default async function DashboardPage() {
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  if (!(await isValidSession(token))) redirect("/login");
+  return <DashboardContent />;
 }

@@ -5,7 +5,8 @@ import re
 from typing import Optional
 
 import bcrypt
-from jose import JWTError, jwt
+import jwt
+from jwt import InvalidTokenError
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
@@ -33,14 +34,18 @@ def verify_password(plain: str, hashed: str) -> bool:
 def validate_password(password: str) -> tuple[bool, list[str]]:
     """Validate enterprise password complexity requirements."""
     errors: list[str] = []
-    if len(password) < 8:
-        errors.append("min 8 chars")
+    if len(password) < 12:
+        errors.append("min 12 chars")
+    if len(password.encode("utf-8")) > 72:
+        errors.append("max 72 UTF-8 bytes")
     if not re.search(r"[A-Z]", password):
         errors.append("1 uppercase")
     if not re.search(r"[a-z]", password):
         errors.append("1 lowercase")
     if not re.search(r"\d", password):
         errors.append("1 digit")
+    if not re.search(r"[^A-Za-z0-9]", password):
+        errors.append("1 special character")
     return len(errors) == 0, errors
 
 
@@ -53,7 +58,16 @@ def create_access_token(
     to_encode = data.copy()
     now = datetime.now(timezone.utc)
     ttl = expires_delta or expires or timedelta(minutes=ACCESS_TTL_MINUTES)
-    to_encode.update({"exp": now + ttl, "iat": now, "nbf": now, "type": "access"})
+    to_encode.update(
+        {
+            "exp": now + ttl,
+            "iat": now,
+            "nbf": now,
+            "iss": settings.jwt_issuer,
+            "aud": settings.jwt_audience,
+            "type": "access",
+        }
+    )
     return jwt.encode(to_encode, settings.secret_key, algorithm=ALGORITHM)
 
 
@@ -66,6 +80,8 @@ def create_refresh_token(data: dict) -> str:
             "exp": now + timedelta(days=REFRESH_TTL_DAYS),
             "iat": now,
             "nbf": now,
+            "iss": settings.jwt_issuer,
+            "aud": settings.jwt_audience,
             "type": "refresh",
         }
     )
@@ -74,14 +90,20 @@ def create_refresh_token(data: dict) -> str:
 
 def decode_token(token: str, secret: str) -> dict:
     """Decode a JWT token with the supplied secret."""
-    return jwt.decode(token, secret, algorithms=[ALGORITHM])
+    return jwt.decode(
+        token,
+        secret,
+        algorithms=[ALGORITHM],
+        audience=settings.jwt_audience,
+        issuer=settings.jwt_issuer,
+    )
 
 
 def decode_access_token(token: str) -> Optional[dict]:
     """Decode and verify an access token, returning the payload or None."""
     try:
         payload = decode_token(token, settings.secret_key)
-    except JWTError:
+    except InvalidTokenError:
         return None
     if payload.get("type") not in (None, "access"):
         return None

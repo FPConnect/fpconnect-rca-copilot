@@ -7,12 +7,27 @@ import AppShell from "@/components/AppShell";
 import { AuthProvider } from "@/contexts/AuthContext";
 import AuthGuard from "@/components/AuthGuard";
 import LanguageRuntime from "@/components/LanguageRuntime";
+import ThemeBootstrap from "@/components/ThemeBootstrap";
 import { APP_NAME } from "@/lib/brand";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fpconnect.tec.br";
+
 export const metadata: Metadata = {
-  title: `${APP_NAME} | Assistência técnica MedTech`,
+  metadataBase: new URL(siteUrl),
+  title: `${APP_NAME} | Inteligência operacional para a saúde`,
   description:
-    "Organize chamados, histórico técnico e acompanhamento de disponibilidade para apoiar a equipe de assistência técnica MedTech.",
+    "Dados, histórico técnico e contexto operacional para decisões mais rápidas e confiáveis em tecnologia para a saúde.",
+  applicationName: APP_NAME,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: APP_NAME,
+    title: `${APP_NAME} | Performance de tecnologia em saúde`,
+    description: "Inteligência operacional para equipes de engenharia clínica, assistência técnica e TI em saúde.",
+    images: [{ url: "/brand/opspecta-social-card.jpeg", width: 828, height: 459, alt: `${APP_NAME} - Performance de tecnologia em saúde` }],
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
@@ -22,23 +37,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                var raw = localStorage.getItem('fpconnect_system_preferences');
-                var theme = raw ? JSON.parse(raw).theme : 'light';
-                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var useDark = theme === 'dark' || (theme === 'system' && prefersDark);
-                document.documentElement.classList.toggle('dark', useDark);
-                document.documentElement.dataset.theme = theme;
-              } catch (_) {}
-            `,
-          }}
-        />
-      </head>
       <body>
+        <ThemeBootstrap />
         <AuthProvider>
           <AuthGuard>
             <NotificationProvider>

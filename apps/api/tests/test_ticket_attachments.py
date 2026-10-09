@@ -1,7 +1,10 @@
 """Tests for ticket attachment upload endpoints."""
 
+from io import BytesIO
+
 import pytest
 from fastapi.testclient import TestClient
+from PIL import Image
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -14,15 +17,9 @@ TEST_DB_URL = "sqlite:///./test_attachments.db"
 engine = create_engine(TEST_DB_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-PNG_BYTES = (
-    b"\x89PNG\r\n\x1a\n"
-    b"\x00\x00\x00\rIHDR"
-    b"\x00\x00\x00\x01\x00\x00\x00\x01"
-    b"\x08\x02\x00\x00\x00"
-    b"\x90wS\xde"
-    b"\x00\x00\x00\x0cIDAT\x08\xd7c\xf8\xff\xff?\x00\x05\xfe\x02\xfeA\xe2m\x9d"
-    b"\x00\x00\x00\x00IEND\xaeB`\x82"
-)
+PNG_BUFFER = BytesIO()
+Image.new("RGB", (1, 1), color="white").save(PNG_BUFFER, format="PNG")
+PNG_BYTES = PNG_BUFFER.getvalue()
 
 
 def override_get_db():
@@ -55,9 +52,8 @@ def setup_db(monkeypatch):
         app.dependency_overrides[get_db] = previous_override
 
 
-def auth_headers() -> dict[str, str]:
-    credentials = {"email": "upload@example.com", "password": "SecurePass123!"}
-    credentials = {"email": "upload@example.com", "password": "SecurePass123"}
+def auth_headers(email: str = "upload@example.com") -> dict[str, str]:
+    credentials = {"email": email, "password": "SecurePass123!"}
     client.post("/auth/register", json=credentials)
     response = client.post("/auth/login", json=credentials)
     return {"Authorization": f"Bearer {response.json()['access_token']}"}
@@ -132,4 +128,16 @@ def test_upload_ticket_image_rejects_spoofed_image_type():
     )
 
     assert response.status_code == 415
-    assert "Real file type" in response.json()["detail"]
+    assert response.json()["detail"] == "Image data is invalid or unsafe"
+
+
+def test_regular_user_cannot_read_another_users_ticket_or_attachments():
+    owner_headers = auth_headers("owner@example.com")
+    ticket_id = create_ticket(owner_headers)
+    other_headers = auth_headers("other@example.com")
+
+    ticket_response = client.get(f"/tickets/{ticket_id}", headers=other_headers)
+    attachment_response = client.get(f"/tickets/{ticket_id}/attachments", headers=other_headers)
+
+    assert ticket_response.status_code == 404
+    assert attachment_response.status_code == 404

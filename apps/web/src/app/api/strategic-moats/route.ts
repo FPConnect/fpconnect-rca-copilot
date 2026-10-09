@@ -11,7 +11,7 @@ export function GET() {
     generatedAt: new Date().toISOString(),
     strategy: {
       objective:
-        "Adicionar diferenciais defensaveis a FPConnect sem alterar fluxos existentes.",
+        "Adicionar diferenciais defensaveis a OPSPECTA sem alterar fluxos existentes.",
       modules: strategicMoats,
       stakeholderPerspectives,
       experiments,

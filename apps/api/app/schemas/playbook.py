@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PlaybookBase(BaseModel):
@@ -25,13 +25,10 @@ class PlaybookUpdate(BaseModel):
 
 
 class PlaybookResponse(PlaybookBase):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
 
 class SLAContractBase(BaseModel):
     equipment: str
@@ -56,10 +53,9 @@ class SLAContractUpdate(BaseModel):
 
 
 class SLAContractResponse(SLAContractBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     created_at: Optional[datetime] = None
     days_to_expire: Optional[int] = None
     alert: Optional[str] = None
-
-    class Config:
-        from_attributes = True

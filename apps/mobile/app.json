@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1d4ed8"
+      "backgroundColor": "#071a3d"
     },
     "ios": {
       "supportsTablet": true,
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#1d4ed8"
+        "backgroundColor": "#071a3d"
       },
       "package": "com.fpconnect.mobile"
     },
@@ -29,7 +29,9 @@
     "scheme": "fpconnect",
     "plugins": [
       "expo-router",
-      "expo-dev-client"
+      "expo-dev-client",
+      "expo-asset",
+      "expo-font"
     ]
   }
 }

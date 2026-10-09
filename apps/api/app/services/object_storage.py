@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import boto3
 from botocore.client import Config
+from botocore.exceptions import ClientError
 
 from app.core.config import settings
 
@@ -27,7 +28,11 @@ def ensure_bucket_exists() -> None:
     client = get_s3_client()
     try:
         client.head_bucket(Bucket=settings.s3_bucket_name)
-    except Exception:
+    except ClientError as exc:
+        error_code = str(exc.response.get("Error", {}).get("Code", ""))
+        status_code = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+        if error_code not in {"404", "NoSuchBucket", "NotFound"} and status_code != 404:
+            raise
         client.create_bucket(Bucket=settings.s3_bucket_name)
 
 

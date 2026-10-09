@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import LandingPage from "@/app/page";
 import StrategicMoatsPage from "@/app/strategic-moats/page";
-import DashboardPage from "@/app/dashboard/page";
+import { DashboardContent } from "@/app/dashboard/page";
 import MetricsPage from "@/app/metrics/page";
 import { calculateMoatImpact } from "@/lib/strategic-moats";
 import { getAppName } from "@/lib/brand";
@@ -36,13 +36,14 @@ describe("display name and commercial claims", () => {
     expect(screen.queryByText("Basic")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /^Piloto de indicadores Oferta recomendada$/ }));
-    expect(screen.getByText("R$ 4.900")).toBeInTheDocument();
     expect(screen.getByText(/Até 300 OS/)).toBeInTheDocument();
+    expect(screen.queryByText(/R\$/)).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "English" }));
     expect(screen.getByText("Metrics pilot reference")).toBeInTheDocument();
     expect(screen.getByText("Up to 300")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Metrics pilot Recommended offer$/ })).toBeInTheDocument();
+    expect(screen.queryByText(/per month/i)).not.toBeInTheDocument();
   });
 
   it("calculates an illustrative scenario from explicit premises", () => {
@@ -61,9 +62,13 @@ describe("display name and commercial claims", () => {
   });
 
   it("labels dashboard figures and trends as illustrative", () => {
-    render(<DashboardPage />);
+    render(<DashboardContent />);
 
-    expect(screen.getByRole("note")).toHaveTextContent(/Dados demonstrativos/);
+    expect(screen.getAllByRole("note")).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ textContent: expect.stringMatching(/Dados demonstrativos/) }),
+      ]),
+    );
     expect(screen.getAllByText("Variação demonstrativa")).toHaveLength(3);
   });
 

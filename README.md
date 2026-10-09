@@ -5,7 +5,7 @@ OPSPECTA is the working display name under validation. FPConnect remains the
 historical project and technical compatibility identifier; no trademark
 registration or legal clearance is claimed.
 
-> **Web preview:** the frontend can run with local preview data for quick evaluation. API-backed workflows require authentication tokens from `/auth/login`.
+> **Web preview:** local demonstration data is available only when `NEXT_PUBLIC_PREVIEW_MODE=true`. Keep it disabled in production. API-backed workflows require authentication tokens from `/auth/login`.
 
 ## Quick Start
 
@@ -109,11 +109,15 @@ Public offer descriptions are planning references, not guarantees. Confirm data
 availability, access, deliverables, acceptance criteria, and schedule with the
 customer before contracting. The current reference scopes are:
 
-| Offer | Reference price | Reference scope | Target timeline |
-|---|---:|---|---|
-| Support diagnosis | R$ 2,500 | Up to 100 service orders, one source, interview, bottlenecks, and action plan | 5 business days |
-| Metrics pilot | R$ 4,900 | Up to 300 service orders, one source/team/service line, dashboard, and triage | 10 business days |
-| Metrics pilot + assisted automation | R$ 9,500 | Metrics pilot scope, one workflow, and one integration after technical validation | 15 business days |
+| Offer | Reference scope | Target timeline |
+|---|---|---|
+| Support diagnosis | Up to 100 service orders, one source, interview, bottlenecks, and action plan | 5 business days |
+| Metrics pilot | Up to 300 service orders, one source/team/service line, dashboard, and triage | 10 business days |
+| Metrics pilot + assisted automation | Metrics pilot scope, one workflow, and one integration after technical validation | 15 business days |
+
+Public pages and documentation do not publish prices. Commercial proposals are
+sized after the technical scope, integrations, security requirements, support
+level, and acceptance criteria are confirmed.
 
 Recurring service is a hypothesis to validate after paid pilots, not an
 established offer. Describe product capabilities as assistive unless verified
@@ -162,6 +166,8 @@ customer evidence or performance claims.
 
    ```
    APP_ENV=production
+   PUBLIC_REGISTRATION_ENABLED=false
+   CORS_ORIGINS=["https://fpconnect.tec.br","https://www.fpconnect.tec.br"]
    DATABASE_URL=<your Neon connection string>
    REDIS_URL=<your Upstash Redis URL>
    SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32))">
@@ -169,10 +175,10 @@ customer evidence or performance claims.
    ACCESS_TOKEN_EXPIRE_MINUTES=15
    REFRESH_TOKEN_EXPIRE_DAYS=7
    OPENAI_API_KEY=<your OpenAI key>
-   MINIO_ENDPOINT=<your S3/R2 endpoint>
-   MINIO_ACCESS_KEY=<your access key>
-   MINIO_SECRET_KEY=<your secret key>
-   MINIO_BUCKET=fpconnect
+   S3_ENDPOINT_URL=<your S3/R2 endpoint>
+   S3_ACCESS_KEY_ID=<your access key>
+   S3_SECRET_ACCESS_KEY=<your secret key>
+   S3_BUCKET_NAME=fpconnect-ticket-attachments
    ```
 
 5. After deploying, run the database migrations from the Railway shell:

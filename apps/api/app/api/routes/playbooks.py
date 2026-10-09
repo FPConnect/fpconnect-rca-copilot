@@ -5,7 +5,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user_id
+from app.api.deps import AuthenticatedUser, get_current_user_id, require_access_level
 from app.core.database import get_db
 from app.crud.playbook import (
     create_playbook,
@@ -31,7 +31,7 @@ def list_playbooks(
 def create_new_playbook(
     payload: PlaybookCreate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: AuthenticatedUser = Depends(require_access_level(3)),
 ):
     return create_playbook(db, payload)
 
@@ -41,7 +41,7 @@ def update_existing_playbook(
     playbook_id: int,
     payload: PlaybookUpdate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: AuthenticatedUser = Depends(require_access_level(3)),
 ):
     playbook = update_playbook(db, playbook_id, payload)
     if not playbook:
@@ -53,7 +53,7 @@ def update_existing_playbook(
 def remove_playbook(
     playbook_id: int,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: AuthenticatedUser = Depends(require_access_level(3)),
 ):
     if not delete_playbook(db, playbook_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Playbook not found")

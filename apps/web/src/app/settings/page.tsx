@@ -326,8 +326,8 @@ export default function SettingsPage() {
       addNotification("error", "Campos obrigatórios", "Preencha todos os campos de senha.");
       return;
     }
-    if (passwordForm.newPassword.length < 8) {
-      addNotification("error", "Senha muito curta", "A nova senha deve ter pelo menos 8 caracteres.");
+    if (passwordForm.newPassword.length < 12) {
+      addNotification("error", "Senha muito curta", "A nova senha deve ter pelo menos 12 caracteres.");
       return;
     }
     if (passwordForm.newPassword !== passwordForm.confirm) {
@@ -631,7 +631,7 @@ export default function SettingsPage() {
                 setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))
               }
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Mínimo 8 caracteres"
+              placeholder="Mínimo 12 caracteres"
             />
           </div>
           <div>

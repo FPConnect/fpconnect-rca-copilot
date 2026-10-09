@@ -2,10 +2,11 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class MachineResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     code: str
     name: str
@@ -17,6 +18,3 @@ class MachineResponse(BaseModel):
     recurrent_failures: int = 0
     status: str
     last_check: datetime
-
-    class Config:
-        from_attributes = True

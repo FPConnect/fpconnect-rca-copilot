@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TicketCreate(BaseModel):
@@ -32,6 +32,8 @@ class TicketUpdate(BaseModel):
 class TicketResponse(BaseModel):
     """Schema for ticket response."""
 
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     title: str
     description: Optional[str] = None
@@ -45,12 +47,10 @@ class TicketResponse(BaseModel):
     recommendation: Optional[str] = None
     analysis_completed: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
-
-
 class TicketAttachmentResponse(BaseModel):
     """Schema for an uploaded ticket attachment."""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     ticket_id: int
@@ -58,10 +58,6 @@ class TicketAttachmentResponse(BaseModel):
     content_type: str
     size_bytes: int
     download_url: str
-
-    class Config:
-        from_attributes = True
-
 
 class AnalyzeIncidentRequest(BaseModel):
     """Request body for the clinical diagnosis endpoint."""
@@ -91,7 +87,7 @@ class RCASuggestionResponse(BaseModel):
     cause: str
     confidence: float
     resolution: Optional[str] = None
-    similar_incidents: List[str] = []
+    similar_incidents: List[str] = Field(default_factory=list)
 
 
 class AnalyzeTicketResponse(BaseModel):

@@ -26,6 +26,7 @@ describe("authentication API", () => {
     await expect(api.login({ email: "user@example.com", password: "password" }))
       .rejects.toThrow("Failed to fetch");
     expect(localStorage.getItem("auth_token")).toBeNull();
+    expect(sessionStorage.getItem("auth_token")).toBeNull();
   });
 
   it("propagates verification-code connection failures instead of reporting success", async () => {

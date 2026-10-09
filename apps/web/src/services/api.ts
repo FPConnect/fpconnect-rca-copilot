@@ -1,4 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const PREVIEW_MODE = process.env.NEXT_PUBLIC_PREVIEW_MODE === "true";
 
 export class ApiError extends Error {
   constructor(
@@ -12,7 +13,7 @@ export class ApiError extends Error {
 
 function getAuthToken() {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("auth_token");
+  return sessionStorage.getItem("auth_token");
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -222,6 +223,7 @@ function writePreviewTickets(tickets: Ticket[]) {
 function clearLegacyPreviewCredentials() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(LEGACY_PREVIEW_USERS_KEY);
+  localStorage.removeItem("auth_token");
 }
 
 async function login(data: LoginPayload): Promise<LoginResponse> {
@@ -268,7 +270,8 @@ async function sendSmsNotification(message: string): Promise<SmsResponse> {
 async function withFallback<T>(requestFn: () => Promise<T>, fallbackFn: () => T): Promise<T> {
   try {
     return await requestFn();
-  } catch {
+  } catch (error) {
+    if (!PREVIEW_MODE) throw error;
     return fallbackFn();
   }
 }

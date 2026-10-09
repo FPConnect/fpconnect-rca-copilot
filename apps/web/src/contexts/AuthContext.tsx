@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/services/api";
 
 type AuthContextValue = {
@@ -30,17 +31,18 @@ async function establishServerSession(token: string | null) {
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     api.clearLegacyPreviewCredentials();
-    const stored = localStorage.getItem("auth_token");
+    const stored = sessionStorage.getItem("auth_token");
     establishServerSession(stored).then((valid) => {
       if (valid && stored) setToken(stored);
-      else localStorage.removeItem("auth_token");
+      else sessionStorage.removeItem("auth_token");
     }).catch(() => {
-      localStorage.removeItem("auth_token");
+      sessionStorage.removeItem("auth_token");
     }).finally(() => setIsLoading(false));
   }, []);
 
@@ -49,11 +51,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!(await establishServerSession(result.access_token))) {
       throw new Error("Não foi possível validar a sessão no servidor.");
     }
-    localStorage.setItem("auth_token", result.access_token);
+    sessionStorage.setItem("auth_token", result.access_token);
     setToken(result.access_token);
-    // A full navigation discards any prefetched unauthenticated RSC response.
-    window.location.assign("/dashboard");
-  }, []);
+    router.push("/dashboard");
+    router.refresh();
+  }, [router]);
 
   const register = useCallback(async (data: {
     email: string;
@@ -67,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [login]);
 
   const logout = useCallback(() => {
-    localStorage.removeItem("auth_token");
+    sessionStorage.removeItem("auth_token");
     setToken(null);
     void establishServerSession(null).catch(() => {
       // The server independently revalidates the short-lived cookie on every request.

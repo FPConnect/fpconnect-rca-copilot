@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
-import { APP_NAME } from "@/lib/brand";
+import BrandLogo from "@/components/BrandLogo";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
@@ -38,13 +38,8 @@ export default function Sidebar() {
 
   const navContent = (
     <aside className="w-64 min-h-screen bg-gray-900 text-white flex flex-col">
-      <div className="px-6 py-5 border-b border-gray-700 flex items-center justify-between">
-        <div>
-          <span className="text-xl font-bold tracking-tight text-blue-400">
-            {APP_NAME}
-          </span>
-          <span className="block text-xs text-gray-400 mt-0.5">Assistência técnica MedTech</span>
-        </div>
+      <div className="px-5 py-5 border-b border-gray-700 flex items-center justify-between">
+        <BrandLogo inverse />
         <button
           onClick={close}
           className="md:hidden p-1 rounded text-gray-400 hover:text-white"
@@ -63,7 +58,7 @@ export default function Sidebar() {
               onClick={close}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 active
-                  ? "bg-blue-600 text-white"
+                  ? "bg-[#0a7f86] text-white"
                   : "text-gray-300 hover:bg-gray-800 hover:text-white"
               }`}
             >
@@ -77,7 +72,7 @@ export default function Sidebar() {
           onClick={close}
           className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             pathname === "/notifications"
-              ? "bg-blue-600 text-white"
+              ? "bg-[#0a7f86] text-white"
               : "text-gray-300 hover:bg-gray-800 hover:text-white"
           }`}
         >
@@ -96,7 +91,7 @@ export default function Sidebar() {
           onClick={close}
           className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             pathname === "/settings"
-              ? "bg-blue-600 text-white"
+              ? "bg-[#0a7f86] text-white"
               : "text-gray-300 hover:bg-gray-800 hover:text-white"
           }`}
         >

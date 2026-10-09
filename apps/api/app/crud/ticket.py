@@ -8,9 +8,17 @@ from app.models.ticket import Ticket, TicketAttachment
 from app.schemas.ticket import TicketCreate, TicketUpdate
 
 
-def get_tickets(db: Session, skip: int = 0, limit: int = 100) -> List[Ticket]:
-    """Retrieve a paginated list of tickets."""
-    return db.query(Ticket).offset(skip).limit(limit).all()
+def get_tickets(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    creator_id: int | None = None,
+) -> List[Ticket]:
+    """Retrieve a paginated list, optionally scoped to one creator."""
+    query = db.query(Ticket)
+    if creator_id is not None:
+        query = query.filter(Ticket.creator_id == creator_id)
+    return query.offset(skip).limit(limit).all()
 
 
 def get_ticket_by_id(db: Session, ticket_id: int) -> Optional[Ticket]:

@@ -50,6 +50,8 @@ def test_register_success():
     assert response.status_code == 201
     data = response.json()
     assert data["email"] == "tech@example.com"
+    assert data["role"] == "user"
+    assert data["access_level"] == 2
     assert "id" in data
 
 
@@ -61,6 +63,15 @@ def test_register_duplicate_email():
     client.post("/auth/register", json=payload)
     response = client.post("/auth/register", json=payload)
     assert response.status_code == 400
+
+
+def test_register_is_blocked_when_public_registration_is_disabled(monkeypatch):
+    monkeypatch.setattr(settings, "public_registration_enabled", False)
+    response = client.post(
+        "/auth/register",
+        json={"email": "blocked@example.com", "password": "SecurePass123!"},
+    )
+    assert response.status_code == 403
 
 
 def test_login_success():
@@ -82,6 +93,15 @@ def test_login_invalid_credentials():
         json={"email": "nobody@example.com", "password": "wrong"},
     )
     assert response.status_code == 401
+
+
+def test_register_normalizes_email_case():
+    response = client.post(
+        "/auth/register",
+        json={"email": "Case.User@Example.com", "password": "SecurePass123!"},
+    )
+    assert response.status_code == 201
+    assert response.json()["email"] == "case.user@example.com"
 
 
 def test_health():
@@ -145,7 +165,7 @@ def test_register_with_verification_code_success():
         "/auth/register/verify",
         json={
             "email": "verified@example.com",
-            "password": "SecurePass123",
+            "password": "SecurePass123!",
             "full_name": "Verified User",
             "phone_number": "+55 51 98510-2172",
             "verification_code": code,
@@ -167,7 +187,7 @@ def test_register_with_invalid_verification_code_fails():
         "/auth/register/verify",
         json={
             "email": "invalid-code@example.com",
-            "password": "SecurePass123",
+            "password": "SecurePass123!",
             "full_name": "Invalid Code",
             "phone_number": "+55 51 98510-2172",
             "verification_code": "000000",

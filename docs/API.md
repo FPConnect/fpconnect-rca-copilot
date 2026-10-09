@@ -13,9 +13,7 @@ Content-Type: application/json
   "email": "user@example.com",
   "password": "StrongPass123!",
   "full_name": "John Doe",
-  "phone_number": "+55 47 99678-9861",
-  "role": "user",
-  "access_level": 2
+  "phone_number": "+55 47 99678-9861"
 }
 
 Response 201:
@@ -62,7 +60,6 @@ Content-Type: application/json
   "password": "StrongPass123!",
   "full_name": "John Doe",
   "phone_number": "+55 47 99678-9861",
-  "role": "user",
   "verification_code": "123456"
 }
 

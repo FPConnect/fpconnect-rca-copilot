@@ -3,8 +3,8 @@
 from datetime import datetime, timedelta, timezone
 import secrets
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from jose import JWTError
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from jwt import InvalidTokenError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -14,12 +14,12 @@ from app.core.security import (
     create_access_token,
     create_refresh_token,
     decode_token,
+    limiter,
     validate_password,
     verify_password,
 )
 from app.crud.user import create_user, get_user_by_email, get_user_by_id, update_user
 from app.schemas.user import (
-    ROLE_ACCESS_LEVELS,
     RefreshTokenRequest,
     TokenResponse,
     UserCreate,
@@ -35,6 +35,9 @@ router = APIRouter()
 
 VERIFICATION_TTL_SECONDS = 10 * 60
 _verification_codes: dict[str, tuple[str, datetime]] = {}
+LOGIN_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "5/minute"
+REGISTRATION_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "3/minute"
+REFRESH_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "20/minute"
 
 
 def _verification_key(email: str) -> str:
@@ -56,15 +59,7 @@ def _generate_verification_code() -> str:
 
 
 def _validate_user_create(user_data: UserCreate, db: Session) -> None:
-    """Validate role, password policy, and email uniqueness for account creation."""
-    if user_data.role == "technician":
-        user_data.role = "user"
-    if user_data.role not in ROLE_ACCESS_LEVELS:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"role": ["invalid role"]},
-        )
-
+    """Validate password policy and email uniqueness for a regular account."""
     is_valid, password_errors = validate_password(user_data.password)
     if not is_valid:
         raise HTTPException(
@@ -81,15 +76,21 @@ def _validate_user_create(user_data: UserCreate, db: Session) -> None:
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    """Register a new user account."""
+@limiter.limit(REGISTRATION_RATE_LIMIT)
+def register(request: Request, user_data: UserCreate, db: Session = Depends(get_db)):
+    """Register a regular user only when public registration is explicitly enabled."""
+    if not settings.public_registration_enabled:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Public registration is disabled")
     _validate_user_create(user_data, db)
     return create_user(db, user_data)
 
 
 @router.post("/verification-code", response_model=VerificationCodeResponse)
-def send_verification_code(payload: VerificationCodeRequest, db: Session = Depends(get_db)):
+@limiter.limit(REGISTRATION_RATE_LIMIT)
+def send_verification_code(request: Request, payload: VerificationCodeRequest, db: Session = Depends(get_db)):
     """Generate a development verification code; no SMS is sent."""
+    if not settings.public_registration_enabled:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Public registration is disabled")
     if settings.app_env != "development":
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -110,7 +111,14 @@ def send_verification_code(payload: VerificationCodeRequest, db: Session = Depen
         )
 
     code = _generate_verification_code()
-    expires_at = datetime.now(timezone.utc) + timedelta(seconds=VERIFICATION_TTL_SECONDS)
+    now = datetime.now(timezone.utc)
+    for key, (_, expires_at) in list(_verification_codes.items()):
+        if expires_at <= now:
+            _verification_codes.pop(key, None)
+    if len(_verification_codes) >= 1000:
+        oldest_key = min(_verification_codes, key=lambda key: _verification_codes[key][1])
+        _verification_codes.pop(oldest_key, None)
+    expires_at = now + timedelta(seconds=VERIFICATION_TTL_SECONDS)
     _verification_codes[_verification_key(str(payload.email))] = (code, expires_at)
     return VerificationCodeResponse(
         status="generated",
@@ -122,8 +130,11 @@ def send_verification_code(payload: VerificationCodeRequest, db: Session = Depen
 
 
 @router.post("/register/verify", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register_verified(user_data: UserCreateVerified, db: Session = Depends(get_db)):
+@limiter.limit(REGISTRATION_RATE_LIMIT)
+def register_verified(request: Request, user_data: UserCreateVerified, db: Session = Depends(get_db)):
     """Register a new user only after validating the phone verification code."""
+    if not settings.public_registration_enabled:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Public registration is disabled")
     key = _verification_key(str(user_data.email))
     stored = _verification_codes.get(key)
     if not stored:
@@ -143,7 +154,8 @@ def register_verified(user_data: UserCreateVerified, db: Session = Depends(get_d
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(credentials: UserLogin, db: Session = Depends(get_db)):
+@limiter.limit(LOGIN_RATE_LIMIT)
+def login(request: Request, credentials: UserLogin, db: Session = Depends(get_db)):
     """Authenticate a user and return a JWT token."""
     user = get_user_by_email(db, credentials.email)
     if not user or not verify_password(credentials.password, user.hashed_password):
@@ -158,12 +170,13 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
 
 
 @router.post("/refresh", response_model=TokenResponse)
-def refresh_token(payload: RefreshTokenRequest):
+@limiter.limit(REFRESH_RATE_LIMIT)
+def refresh_token(request: Request, payload: RefreshTokenRequest):
     """Exchange a valid refresh token for a new access token."""
     token = payload.refresh_token
     try:
         decoded = decode_token(token, settings.refresh_secret_key)
-    except JWTError as exc:
+    except InvalidTokenError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired refresh token",

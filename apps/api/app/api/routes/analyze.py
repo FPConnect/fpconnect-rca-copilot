@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user_id
+from app.api.deps import AuthenticatedUser, get_current_user
 from app.core.database import get_db
 from app.crud.ticket import complete_ticket_analysis, get_ticket_by_id
 from app.schemas.ticket import AnalyzeIncidentRequest, AnalyzeIncidentResponse, AnalyzeTicketRequest
@@ -16,11 +16,11 @@ router = APIRouter()
 def analyze_incident(
     request: AnalyzeIncidentRequest,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    current_user: AuthenticatedUser = Depends(get_current_user),
 ):
     """Run clinical failure diagnosis for an incident and persist the result."""
     ticket = get_ticket_by_id(db, request.ticket_id)
-    if not ticket:
+    if not ticket or (current_user.access_level < 3 and ticket.creator_id != current_user.id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Incident not found")
 
     suggestions = analyze_ticket(db, ticket, AnalyzeTicketRequest(context=request.context))

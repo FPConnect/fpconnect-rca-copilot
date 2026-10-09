@@ -65,8 +65,8 @@ function ToggleRow({
 }
 
 export default function SettingsScreen() {
-  const [name, setName] = useState("Admin");
-  const [email, setEmail] = useState("admin@hospital.com");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>(INITIAL_NOTIF);
   const [theme, setTheme] = useState<"light" | "dark" | "system">("light");
 
