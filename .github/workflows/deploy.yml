@@ -122,10 +122,17 @@ jobs:
 
   deploy-api:
     name: Deploy API to Railway
+    if: ${{ vars.RAILWAY_PROJECT_ID != '' && vars.RAILWAY_SERVICE_ID != '' }}
     runs-on: ubuntu-latest
     needs: [test-api]
     permissions:
       contents: read
+    environment:
+      name: Production
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_SERVICE_ID: ${{ vars.RAILWAY_SERVICE_ID }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -134,8 +141,17 @@ jobs:
       - name: Install Railway CLI
         run: npm install --global @railway/cli@5.63.4
 
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          test -n "$RAILWAY_TOKEN"
+          test -n "$RAILWAY_PROJECT_ID"
+          test -n "$RAILWAY_SERVICE_ID"
+
+      - name: Link Railway project
+        run: railway link --project "$RAILWAY_PROJECT_ID" --environment production --service "$RAILWAY_SERVICE_ID"
+        working-directory: apps/api
+
       - name: Deploy to Railway
         run: railway up --detach
         working-directory: apps/api
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
