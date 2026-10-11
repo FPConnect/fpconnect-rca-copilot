@@ -207,7 +207,7 @@ export default function LandingPage() {
   }, [locale]);
 
   return (
-    <main className="min-h-screen bg-white text-[#071a3d]" data-no-translate>
+    <main className="brand-surface min-h-screen bg-white text-[#071a3d]" data-no-translate>
       <section className="relative min-h-[680px] overflow-hidden border-b border-slate-200 bg-white">
         <Image
           src="/brand/opspecta-hero.png"
@@ -253,10 +253,15 @@ export default function LandingPage() {
                 {t.badge}
               </div>
               <h1
-                className="brand-wordmark mt-7 text-[3.25rem] leading-[0.92] text-[#071a3d] sm:text-[4.25rem]"
+                className="brand-wordmark mt-7 inline-flex items-start gap-3 text-[3.25rem] leading-[0.92] text-[#071a3d] sm:text-[4.25rem]"
                 data-brand-wordmark
               >
                 {APP_NAME}
+                <span
+                  aria-hidden="true"
+                  className="mt-1.5 block h-3.5 w-3.5 shrink-0 bg-[#22d7cf] sm:mt-2 sm:h-4 sm:w-4"
+                  data-brand-accent
+                />
               </h1>
               <p className="mt-5 max-w-xl text-3xl font-bold leading-tight text-[#0a7f86]">{t.headline}</p>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">{t.subtitle}</p>

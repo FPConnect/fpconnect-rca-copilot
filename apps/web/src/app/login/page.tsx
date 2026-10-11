@@ -98,7 +98,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[80vh] grid place-items-center px-4">
+    <div className="brand-surface min-h-[80vh] grid place-items-center px-4">
       <form onSubmit={onSubmit} className="bg-white w-full max-w-md rounded-lg border border-slate-200 shadow-lg p-7 space-y-4">
         <BrandLogo />
         <div>

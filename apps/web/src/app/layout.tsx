@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@fontsource-variable/manrope/wght.css";
+import "@fontsource-variable/sora/wght.css";
 import "./globals.css";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";

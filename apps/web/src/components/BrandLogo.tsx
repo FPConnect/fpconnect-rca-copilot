@@ -29,13 +29,13 @@ export default function BrandLogo({ inverse = false, compact = false, className 
       {!compact && (
         <span className="min-w-0 pb-px">
           <span
-            className={`brand-wordmark block text-[22px] leading-[0.9] ${inverse ? "text-white" : "text-[#071a3d]"}`}
+            className={`brand-wordmark block text-[23px] leading-[0.9] ${inverse ? "text-white" : "text-[#071a3d]"}`}
             data-brand-wordmark
           >
             {APP_NAME}
           </span>
           <span
-            className={`brand-tagline mt-1.5 block text-[9px] leading-none ${inverse ? "text-slate-300" : "text-slate-500"}`}
+            className={`brand-tagline mt-1.5 block text-[10px] leading-none ${inverse ? "text-slate-300" : "text-slate-600"}`}
           >
             Inteligência operacional para a saúde
           </span>

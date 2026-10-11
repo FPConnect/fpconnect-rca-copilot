@@ -28,12 +28,14 @@ describe("display name and commercial claims", () => {
   it("uses the institutional wordmark treatment for the brand name", () => {
     render(<LandingPage />);
 
+    expect(document.querySelector("main")).toHaveClass("brand-surface");
     const wordmarks = document.querySelectorAll("[data-brand-wordmark]");
     expect(wordmarks.length).toBeGreaterThanOrEqual(3);
     wordmarks.forEach((wordmark) => {
       expect(wordmark).toHaveClass("brand-wordmark");
       expect(wordmark).toHaveTextContent("OPSPECTA");
     });
+    expect(document.querySelector("[data-brand-accent]")).toBeInTheDocument();
   });
 
   it("shows the source-aligned offers in Portuguese and English", () => {
