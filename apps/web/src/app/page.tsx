@@ -252,17 +252,20 @@ export default function LandingPage() {
                 <ShieldCheck size={16} aria-hidden="true" />
                 {t.badge}
               </div>
-              <h1
-                className="brand-wordmark mt-7 inline-flex items-start gap-3 text-[3.25rem] leading-[0.92] text-[#071a3d] sm:text-[4.25rem]"
-                data-brand-wordmark
+              <h1 className="sr-only">{APP_NAME}</h1>
+              <div
+                className="relative mt-7 aspect-[22/5] w-full max-w-2xl overflow-hidden bg-white"
+                data-brand-banner
               >
-                {APP_NAME}
-                <span
-                  aria-hidden="true"
-                  className="mt-1.5 block h-3.5 w-3.5 shrink-0 bg-[#22d7cf] sm:mt-2 sm:h-4 sm:w-4"
-                  data-brand-accent
+                <Image
+                  src="/brand/opspecta-brand-banner.jpg"
+                  alt={`${APP_NAME} - Inteligência operacional para a saúde`}
+                  fill
+                  priority
+                  sizes="(max-width: 768px) calc(100vw - 40px), 672px"
+                  className="object-cover object-center"
                 />
-              </h1>
+              </div>
               <p className="mt-5 max-w-xl text-3xl font-bold leading-tight text-[#0a7f86]">{t.headline}</p>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">{t.subtitle}</p>
               <div className="mt-8 flex flex-wrap gap-3">

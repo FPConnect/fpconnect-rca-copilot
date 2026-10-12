@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { APP_NAME } from "@/lib/brand";
 
 type BrandLogoProps = {
@@ -13,19 +14,14 @@ export default function BrandLogo({ inverse = false, compact = false, className 
       aria-label={`${APP_NAME} - Inteligência operacional para a saúde`}
       data-no-translate
     >
-      <span
+      <Image
         aria-hidden="true"
-        className="relative block h-11 w-11 shrink-0 rounded-full"
-        style={{
-          background:
-            "conic-gradient(#082149 0deg 76deg, transparent 76deg 104deg, #17c9c2 104deg 183deg, transparent 183deg 211deg, #082149 211deg 290deg, transparent 290deg 318deg, #17c9c2 318deg 360deg)",
-        }}
-      >
-        <span
-          className={`absolute inset-[9px] rounded-full ${inverse ? "bg-[#071a33]" : "bg-white"}`}
-        />
-        <span className="absolute right-0 top-0 h-2.5 w-2.5 bg-[#22d7cf] ring-2 ring-white" />
-      </span>
+        src="/brand/opspecta-logo.png"
+        alt=""
+        width={44}
+        height={44}
+        className="block h-11 w-11 shrink-0 object-contain"
+      />
       {!compact && (
         <span className="min-w-0 pb-px">
           <span

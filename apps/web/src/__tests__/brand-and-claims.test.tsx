@@ -30,12 +30,13 @@ describe("display name and commercial claims", () => {
 
     expect(document.querySelector("main")).toHaveClass("brand-surface");
     const wordmarks = document.querySelectorAll("[data-brand-wordmark]");
-    expect(wordmarks.length).toBeGreaterThanOrEqual(3);
+    expect(wordmarks.length).toBeGreaterThanOrEqual(2);
     wordmarks.forEach((wordmark) => {
       expect(wordmark).toHaveClass("brand-wordmark");
       expect(wordmark).toHaveTextContent("OPSPECTA");
     });
-    expect(document.querySelector("[data-brand-accent]")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "OPSPECTA" })).toBeInTheDocument();
+    expect(document.querySelector("[data-brand-banner]")).toBeInTheDocument();
   });
 
   it("shows the source-aligned offers in Portuguese and English", () => {
