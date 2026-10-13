@@ -66,7 +66,7 @@ Deploy the full stack for free using managed cloud services — no server manage
 
 1. Sign up at [vercel.com](https://vercel.com).
 2. **Add New → Project**, import this GitHub repository.
-3. Vercel automatically detects `apps/web` as the root directory via `vercel.json`.
+3. Set **Root Directory** to `apps/web` in the Vercel project settings.
 4. Set environment variables:
 
    ```env

@@ -200,7 +200,7 @@ customer evidence or performance claims.
 
 1. Create an account at [vercel.com](https://vercel.com)
 2. Click **Add New → Project** and import this GitHub repository
-3. The **Root Directory** is pre-configured via `vercel.json` — Vercel will detect `apps/web` automatically
+3. Set **Root Directory** to `apps/web` in the Vercel project settings.
 4. Add the following environment variables:
 
    ```
