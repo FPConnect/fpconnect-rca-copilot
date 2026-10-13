@@ -15,9 +15,17 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("users", sa.Column("phone_number", sa.String(), nullable=True))
-    op.add_column("users", sa.Column("access_level", sa.Integer(), nullable=False, server_default="2"))
     bind = op.get_bind()
+    existing_columns = {
+        column["name"] for column in sa.inspect(bind).get_columns("users")
+    }
+    if "phone_number" not in existing_columns:
+        op.add_column("users", sa.Column("phone_number", sa.String(), nullable=True))
+    if "access_level" not in existing_columns:
+        op.add_column(
+            "users",
+            sa.Column("access_level", sa.Integer(), nullable=False, server_default="2"),
+        )
     if bind.dialect.name == "postgresql":
         op.execute("ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'master'")
         op.execute("ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'user'")
