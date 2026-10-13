@@ -54,7 +54,7 @@ describe("LanguageRuntime", () => {
     render(<LoginModeToggle />);
 
     expect(screen.getByRole("textbox", { name: "Password" })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Criar novo usuário" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create new user" }));
 
     await waitFor(() => {
       expect(screen.getAllByRole("textbox", { name: "Name" })).toHaveLength(2);

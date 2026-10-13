@@ -58,6 +58,21 @@ def _generate_verification_code() -> str:
     return f"{secrets.randbelow(1_000_000):06d}"
 
 
+def _ensure_registration_allowed(email: str) -> None:
+    """Allow self-registration only for explicitly approved production emails."""
+    if not settings.public_registration_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Public registration is disabled",
+        )
+    allowed = set(settings.registration_allowed_emails)
+    if allowed and str(email).strip().lower() not in allowed:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Registration is not available for this email",
+        )
+
+
 def _validate_user_create(user_data: UserCreate, db: Session) -> None:
     """Validate password policy and email uniqueness for a regular account."""
     is_valid, password_errors = validate_password(user_data.password)
@@ -78,9 +93,8 @@ def _validate_user_create(user_data: UserCreate, db: Session) -> None:
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit(REGISTRATION_RATE_LIMIT)
 def register(request: Request, user_data: UserCreate, db: Session = Depends(get_db)):
-    """Register a regular user only when public registration is explicitly enabled."""
-    if not settings.public_registration_enabled:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Public registration is disabled")
+    """Register a regular user only when self-registration is explicitly allowed."""
+    _ensure_registration_allowed(str(user_data.email))
     _validate_user_create(user_data, db)
     return create_user(db, user_data)
 
@@ -89,8 +103,7 @@ def register(request: Request, user_data: UserCreate, db: Session = Depends(get_
 @limiter.limit(REGISTRATION_RATE_LIMIT)
 def send_verification_code(request: Request, payload: VerificationCodeRequest, db: Session = Depends(get_db)):
     """Generate a development verification code; no SMS is sent."""
-    if not settings.public_registration_enabled:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Public registration is disabled")
+    _ensure_registration_allowed(str(payload.email))
     if settings.app_env != "development":
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -133,8 +146,7 @@ def send_verification_code(request: Request, payload: VerificationCodeRequest, d
 @limiter.limit(REGISTRATION_RATE_LIMIT)
 def register_verified(request: Request, user_data: UserCreateVerified, db: Session = Depends(get_db)):
     """Register a new user only after validating the phone verification code."""
-    if not settings.public_registration_enabled:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Public registration is disabled")
+    _ensure_registration_allowed(str(user_data.email))
     key = _verification_key(str(user_data.email))
     stored = _verification_codes.get(key)
     if not stored:

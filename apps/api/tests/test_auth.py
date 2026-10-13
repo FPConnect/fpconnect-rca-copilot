@@ -74,6 +74,23 @@ def test_register_is_blocked_when_public_registration_is_disabled(monkeypatch):
     assert response.status_code == 403
 
 
+def test_register_respects_email_allowlist(monkeypatch):
+    monkeypatch.setattr(settings, "registration_allowed_emails", ["owner@example.com"])
+
+    blocked = client.post(
+        "/auth/register",
+        json={"email": "other@example.com", "password": "SecurePass123!"},
+    )
+    allowed = client.post(
+        "/auth/register",
+        json={"email": "Owner@Example.com", "password": "SecurePass123!"},
+    )
+
+    assert blocked.status_code == 403
+    assert allowed.status_code == 201
+    assert allowed.json()["email"] == "owner@example.com"
+
+
 def test_login_success():
     client.post(
         "/auth/register",

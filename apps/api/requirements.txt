@@ -11,10 +11,6 @@ httpx==0.27.0
 pytest==9.1.1
 pytest-asyncio==1.4.0
 ruff==0.4.5
-sentence-transformers==6.1.0
-pgvector==0.2.4
-numpy==1.26.4
-
 boto3==1.34.113
 email-validator==2.2.0
 python-magic==0.4.27

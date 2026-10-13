@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     seed_test_accounts: bool = False
     test_account_password: str | None = None
     public_registration_enabled: bool = False
+    registration_allowed_emails: list[str] = Field(default_factory=list)
 
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
@@ -51,6 +52,13 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_security(self):
         """Prevent insecure key defaults outside development and enforce minimum key size."""
+        self.registration_allowed_emails = sorted(
+            {
+                email.strip().lower()
+                for email in self.registration_allowed_emails
+                if email.strip()
+            }
+        )
         if self.seed_test_accounts:
             if self.app_env != "development":
                 raise ValueError("SEED_TEST_ACCOUNTS can only be enabled in development")
@@ -72,6 +80,14 @@ class Settings(BaseSettings):
             raise ValueError("CORS_ORIGINS must not contain a wildcard")
         if self.app_env != "development" and any(not origin.startswith("https://") for origin in self.cors_origins):
             raise ValueError("Production CORS origins must use HTTPS")
+        if (
+            self.app_env != "development"
+            and self.public_registration_enabled
+            and not self.registration_allowed_emails
+        ):
+            raise ValueError(
+                "REGISTRATION_ALLOWED_EMAILS is required when production registration is enabled"
+            )
         return self
 
 settings = Settings()

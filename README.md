@@ -21,6 +21,10 @@ Open [http://localhost:3000](http://localhost:3000) to view the landing page.
 The authenticated workspace requires a working API and a valid account; local
 preview data is not an authentication mechanism.
 
+Production self-registration is limited to email addresses explicitly listed
+in `REGISTRATION_ALLOWED_EMAILS`. New accounts always receive the regular
+`user` role and cannot select their own access level.
+
 ### Run the API locally
 
 ```bash
@@ -29,6 +33,11 @@ cp .env.example .env
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
+
+Install `requirements-ml.txt` instead when local semantic-search embeddings are
+required. The Vercel runtime uses the smaller production dependency set and
+falls back to the documented non-semantic RCA response when that optional model
+is unavailable.
 
 To seed demo data and development test users, explicitly set
 `SEED_TEST_ACCOUNTS=true` and a unique `TEST_ACCOUNT_PASSWORD` of at least 12

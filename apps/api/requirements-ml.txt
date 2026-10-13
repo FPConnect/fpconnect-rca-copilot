@@ -1,0 +1,7 @@
+-r requirements.txt
+
+# Optional local semantic-search stack. The production API fails closed to the
+# existing non-semantic fallback when this model package is not installed.
+sentence-transformers==6.1.0
+pgvector==0.2.4
+numpy==1.26.4
