@@ -14,7 +14,9 @@ from app.core.security import (
     create_access_token,
     create_refresh_token,
     decode_token,
+    hash_password,
     limiter,
+    password_needs_rehash,
     validate_password,
     verify_password,
 )
@@ -175,6 +177,10 @@ def login(request: Request, credentials: UserLogin, db: Session = Depends(get_db
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
+    if password_needs_rehash(user.hashed_password):
+        user.hashed_password = hash_password(credentials.password)
+        db.add(user)
+        db.commit()
     payload = {"sub": str(user.id), "role": user.role, "access_level": user.access_level}
     token = create_access_token(payload)
     refresh_token = create_refresh_token(payload)

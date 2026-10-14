@@ -56,6 +56,7 @@ const PT_TO_EN: Record<string, string> = {
   "Crie sua conta autorizada para acessar a plataforma.": "Create your authorized account to access the platform.",
   "Confirmar senha": "Confirm password",
   "A senha deve ter pelo menos 12 caracteres.": "The password must contain at least 12 characters.",
+  "Use ao menos 12 caracteres, com maiúscula, minúscula, número e símbolo.": "Use at least 12 characters with uppercase, lowercase, a number, and a symbol.",
   "As senhas não coincidem.": "The passwords do not match.",
   "O cadastro não está liberado para este e-mail.": "Registration is not available for this email address.",
   "Já existe uma conta para este e-mail.": "An account already exists for this email address.",
