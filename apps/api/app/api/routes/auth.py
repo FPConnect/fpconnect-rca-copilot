@@ -177,7 +177,7 @@ def login(request: Request, credentials: UserLogin, db: Session = Depends(get_db
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
-    if password_needs_rehash(user.hashed_password):
+    if password_needs_rehash(user.hashed_password) and len(credentials.password.encode("utf-8")) <= 72:
         user.hashed_password = hash_password(credentials.password)
         db.add(user)
         db.commit()

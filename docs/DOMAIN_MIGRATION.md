@@ -21,7 +21,7 @@ Para fazer a transferência real, é necessário acesso a:
 
 1. Conta do registrador/DNS do domínio `fpconnect.tec.br` — normalmente Registro.br ou o provedor DNS configurado nele.
 2. Projeto Vercel que publica `apps/web`.
-3. Projeto Railway/API pública usada em `NEXT_PUBLIC_API_URL`.
+3. Projeto Vercel da API pública usada em `NEXT_PUBLIC_API_URL`.
 4. GitHub Actions secrets, se o deploy for automático.
 
 ## Configuração na Vercel
@@ -40,7 +40,7 @@ No projeto Vercel da Web:
 4. Configure as variáveis de produção:
    ```env
    NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
-   NEXT_PUBLIC_API_URL=https://<api-publica-de-producao>
+   NEXT_PUBLIC_API_URL=https://api.fpconnect.tec.br
    NEXT_PUBLIC_APP_NAME=OPSPECTA
    NEXT_PUBLIC_APP_VERSION=1.0.0
    ```

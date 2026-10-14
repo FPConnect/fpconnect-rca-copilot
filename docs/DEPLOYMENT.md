@@ -9,7 +9,7 @@ Deploy the full stack for free using managed cloud services — no server manage
 | Component | Service | URL |
 |---|---|---|
 | Web (Next.js) | Vercel | https://vercel.com |
-| API (FastAPI) | Railway | https://railway.app |
+| API (FastAPI) | Vercel | https://vercel.com |
 | Database | Neon (PostgreSQL + pgvector) | https://neon.tech |
 | Redis | Upstash | https://upstash.com |
 | Object Storage | Cloudflare R2 or AWS S3 | |
@@ -29,12 +29,11 @@ Deploy the full stack for free using managed cloud services — no server manage
 2. Create a **Redis** database.
 3. Copy the **Redis URL** (e.g. `rediss://default:password@host:port`).
 
-### 3. API — Railway
+### 3. API — Vercel
 
-1. Sign up at [railway.app](https://railway.app).
-2. **New Project → Deploy from GitHub repo**, select this repository.
-3. Set **Root Directory** to `apps/api`.
-4. Set environment variables:
+1. Import this repository into a dedicated Vercel project for the API.
+2. Set **Root Directory** to `apps/api` and **Framework Preset** to FastAPI.
+3. Set production environment variables:
 
    ```env
    DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
@@ -42,6 +41,7 @@ Deploy the full stack for free using managed cloud services — no server manage
    APP_ENV=production
    SEED_TEST_ACCOUNTS=false
    PUBLIC_REGISTRATION_ENABLED=false
+   REGISTRATION_ALLOWED_EMAILS=[]
    CORS_ORIGINS=["https://fpconnect.tec.br","https://www.fpconnect.tec.br"]
    SECRET_KEY=<generate: python -c "import secrets; print(secrets.token_hex(32))">
    REFRESH_SECRET_KEY=<generate a separate secret with at least 32 characters>
@@ -56,11 +56,14 @@ Deploy the full stack for free using managed cloud services — no server manage
    S3_BUCKET_NAME=fpconnect-ticket-attachments
    ```
 
-5. Deploy, then run migrations from the Railway shell:
+4. Apply the authentication schema repair before promotion:
    ```bash
-   alembic upgrade head
+   vercel env run --environment=production -- python apps/api/scripts/migrate_auth_schema.py
    ```
-6. Note your Railway public URL (e.g. `https://fpconnect-api.up.railway.app`).
+5. Add `api.fpconnect.tec.br` to the API project. Verify `/health` and that an unknown `/auth/login` request returns `401` before updating the public alias.
+
+When self-registration is needed, set `PUBLIC_REGISTRATION_ENABLED=true` and
+populate `REGISTRATION_ALLOWED_EMAILS` with the authorized addresses.
 
 ### 4. Web — Vercel
 
@@ -70,7 +73,7 @@ Deploy the full stack for free using managed cloud services — no server manage
 4. Set environment variables:
 
    ```env
-   NEXT_PUBLIC_API_URL=https://fpconnect-api.up.railway.app
+   NEXT_PUBLIC_API_URL=https://api.fpconnect.tec.br
    NEXT_PUBLIC_APP_NAME=OPSPECTA
    NEXT_PUBLIC_APP_VERSION=1.0.0
    NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
@@ -84,12 +87,19 @@ Deploy the full stack for free using managed cloud services — no server manage
 
 ### 5. CI/CD — GitHub Actions
 
-Add these secrets to your GitHub repo (**Settings → Secrets and variables → Actions**):
+Add this secret to your GitHub repo (**Settings → Secrets and variables → Actions**):
 
 | Secret | Where to find it |
 |---|---|
 | `VERCEL_TOKEN` | Vercel → Settings → Tokens |
-| `RAILWAY_TOKEN` | Railway → Account → Tokens |
+
+Add these repository variables:
+
+| Variable | Value |
+|---|---|
+| `VERCEL_ORG_ID` | Vercel team ID |
+| `VERCEL_PROJECT_ID` | Web project ID |
+| `VERCEL_API_PROJECT_ID` | API project ID |
 
 The `.github/workflows/deploy.yml` workflow will automatically test and redeploy both services on every push to `main`.
 

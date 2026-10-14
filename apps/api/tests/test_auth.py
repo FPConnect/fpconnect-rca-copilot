@@ -176,6 +176,33 @@ def test_login_migrates_legacy_pbkdf2_hash_to_bcrypt():
     db.close()
 
 
+def test_login_preserves_long_legacy_pbkdf2_password():
+    password = "LongLegacy1!" + ("x" * 80)
+    db = TestingSessionLocal()
+    db.add(
+        User(
+            email="long-legacy-admin@example.com",
+            hashed_password=legacy_pbkdf2_sha256(password),
+            role="admin",
+            access_level=4,
+        )
+    )
+    db.commit()
+    db.close()
+
+    response = client.post(
+        "/auth/login",
+        json={"email": "long-legacy-admin@example.com", "password": password},
+    )
+
+    assert response.status_code == 200
+    db = TestingSessionLocal()
+    preserved = db.query(User).filter(User.email == "long-legacy-admin@example.com").one()
+    assert preserved.hashed_password.startswith("$pbkdf2-sha256$")
+    assert verify_password(password, preserved.hashed_password)
+    db.close()
+
+
 def test_register_normalizes_email_case():
     response = client.post(
         "/auth/register",
