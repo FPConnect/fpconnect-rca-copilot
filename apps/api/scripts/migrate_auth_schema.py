@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import os
 
 from sqlalchemy import create_engine, inspect, text
@@ -49,6 +50,47 @@ def migrate() -> None:
     engine.dispose()
 
 
+def remove_empty_regular_account(email: str) -> bool:
+    """Remove a stale regular account only when it has no operational records."""
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is required")
+
+    engine = create_engine(database_url, pool_pre_ping=True)
+    statement = text(
+        """
+        DELETE FROM users AS u
+        WHERE lower(u.email) = :email
+          AND u.role::text = 'user'
+          AND u.access_level = 2
+          AND NOT EXISTS (
+            SELECT 1 FROM tickets AS t
+            WHERE t.creator_id = u.id OR t.assignee_id = u.id
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM ticket_attachments AS a WHERE a.uploader_id = u.id
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM ticket_logs AS l WHERE l.user_id = u.id
+          )
+        RETURNING u.id
+        """
+    )
+    with engine.begin() as connection:
+        removed = connection.execute(
+            statement,
+            {"email": email.strip().lower()},
+        ).scalar()
+    engine.dispose()
+    return removed is not None
+
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--remove-empty-account")
+    args = parser.parse_args()
     migrate()
     print("authentication schema migration: ok")
+    if args.remove_empty_account:
+        removed = remove_empty_regular_account(args.remove_empty_account)
+        print("stale account removed:", removed)
