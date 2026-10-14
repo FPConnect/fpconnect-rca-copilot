@@ -24,6 +24,7 @@ const PT_TO_EN: Record<string, string> = {
   "Sair": "Sign out",
   "Conta": "Account",
   "Dashboard Operacional": "Operational Dashboard",
+  "Demonstração — dados fictícios. Estes indicadores não representam resultados de clientes nem uma operação em produção.": "Demo — fictional data. These indicators do not represent customer results or a production operation.",
   "Acompanhe disponibilidade, risco e performance dos equipamentos em um painel unificado para resposta rápida.": "Track availability, risk, and equipment performance in one unified panel for faster response.",
   "Tickets Abertos": "Open Tickets",
   "Em Progresso": "In Progress",

@@ -18,6 +18,17 @@ function LoginModeToggle() {
   );
 }
 
+function DashboardDisclosure() {
+  return (
+    <>
+      <LanguageRuntime />
+      <p role="note">
+        Demonstração — dados fictícios. Estes indicadores não representam resultados de clientes nem uma operação em produção.
+      </p>
+    </>
+  );
+}
+
 describe("LanguageRuntime", () => {
   beforeEach(() => {
     localStorage.setItem(
@@ -58,6 +69,21 @@ describe("LanguageRuntime", () => {
 
     await waitFor(() => {
       expect(screen.getAllByRole("textbox", { name: "Name" })).toHaveLength(2);
+    });
+  });
+
+  it("translates the dashboard disclosure when English is selected", async () => {
+    localStorage.setItem(
+      "fpconnect_system_preferences",
+      JSON.stringify({ language: "en-US" }),
+    );
+
+    render(<DashboardDisclosure />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("note")).toHaveTextContent(
+        "Demo — fictional data. These indicators do not represent customer results or a production operation.",
+      );
     });
   });
 });
