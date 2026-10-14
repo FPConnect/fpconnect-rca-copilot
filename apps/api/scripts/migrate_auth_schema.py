@@ -31,6 +31,12 @@ def migrate() -> None:
         connection.execute(
             text(
                 "ALTER TABLE users "
+                "ADD COLUMN IF NOT EXISTS phone_number VARCHAR"
+            )
+        )
+        connection.execute(
+            text(
+                "ALTER TABLE users "
                 "ADD COLUMN IF NOT EXISTS access_level INTEGER DEFAULT 2"
             )
         )

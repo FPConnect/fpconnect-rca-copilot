@@ -194,7 +194,15 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Verify staged API
-        run: curl --fail --silent --show-error --retry 5 "${{ steps.deploy.outputs.url }}/health" > /dev/null
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --retry 5 "${{ steps.deploy.outputs.url }}/health" > /dev/null
+          auth_status=$(curl --silent --show-error --retry 5 \
+            --output /dev/null --write-out "%{http_code}" \
+            --header "Content-Type: application/json" \
+            --data '{"email":"deployment-probe@invalid.example","password":"invalid"}' \
+            "${{ steps.deploy.outputs.url }}/auth/login")
+          test "$auth_status" = "401"
 
       - name: Update API alias
         run: vercel alias set "${{ steps.deploy.outputs.url }}" api.fpconnect.tec.br --scope=fpconnects-projects
