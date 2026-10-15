@@ -236,6 +236,40 @@ def test_refresh_token_success():
     assert response.json()["refresh_token"] == refresh
 
 
+def test_change_password_replaces_credentials():
+    email = "password-change@example.com"
+    current_password = "SecurePass123!"
+    new_password = "NewSecurePass456!"
+    client.post("/auth/register", json={"email": email, "password": current_password})
+    login_response = client.post("/auth/login", json={"email": email, "password": current_password})
+    token = login_response.json()["access_token"]
+
+    response = client.post(
+        "/auth/password",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"current_password": current_password, "new_password": new_password},
+    )
+
+    assert response.status_code == 200
+    assert client.post("/auth/login", json={"email": email, "password": current_password}).status_code == 401
+    assert client.post("/auth/login", json={"email": email, "password": new_password}).status_code == 200
+
+
+def test_change_password_rejects_wrong_current_password():
+    email = "wrong-current@example.com"
+    password = "SecurePass123!"
+    client.post("/auth/register", json={"email": email, "password": password})
+    token = client.post("/auth/login", json={"email": email, "password": password}).json()["access_token"]
+
+    response = client.post(
+        "/auth/password",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"current_password": "WrongPassword123!", "new_password": "NewSecurePass456!"},
+    )
+
+    assert response.status_code == 400
+
+
 def test_send_verification_code_success():
     response = client.post(
         "/auth/verification-code",

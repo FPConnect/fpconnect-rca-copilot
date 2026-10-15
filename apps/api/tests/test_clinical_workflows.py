@@ -14,6 +14,8 @@ from app.models.machine import Machine
 from app.models.user import User
 from app.core.security import hash_password
 from app.services.clinical_metrics import calculate_equipment_criticality
+from app.services import analyze_service
+from app.schemas.ticket import AnalyzeTicketRequest
 
 TEST_DB_URL = "sqlite:///./test_clinical.db"
 
@@ -103,6 +105,20 @@ def test_analyze_endpoint_persists_root_cause():
     ticket_response = client.get(f"/tickets/{ticket_id}", headers=headers)
     assert ticket_response.json()["root_cause"] == "Sensor SpO2 com cabo intermitente"
     assert ticket_response.json()["analysis_completed"] is not None
+
+
+def test_analyze_fallback_honors_english_language(monkeypatch):
+    monkeypatch.setattr(analyze_service, "get_root_cause_analysis", lambda db, description: [])
+    ticket = SimpleNamespace(title="Synthetic monitor fault", description=None)
+
+    suggestions = analyze_service.analyze_ticket(
+        None,
+        ticket,
+        AnalyzeTicketRequest(context="Synthetic QA context", language="en-US"),
+    )
+
+    assert suggestions[0].cause == "No similar cause was found in the knowledge base"
+    assert suggestions[0].resolution.startswith("Escalate to level 2 support")
 
 
 def test_playbook_crud():

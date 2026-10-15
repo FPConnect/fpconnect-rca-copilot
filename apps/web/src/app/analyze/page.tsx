@@ -8,6 +8,7 @@ export default function AnalyzePage() {
   const [description, setDescription] = useState("Monitor multiparamétrico apresenta perda intermitente de SpO2 na UTI Adulto.");
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -17,9 +18,12 @@ export default function AnalyzePage() {
   const handleAnalyze = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
+    setError("");
     try {
-      const response = await api.analyzeIncident(Number(ticketId));
+      const response = await api.analyzeIncident(Number(ticketId), description);
       setResult(response);
+    } catch {
+      setError("Não foi possível concluir a análise. Verifique o chamado e tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -42,6 +46,7 @@ export default function AnalyzePage() {
           <button type="submit" disabled={loading} className="mt-5 w-full rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
             {loading ? "Analisando..." : "Analisar falha"}
           </button>
+          {error && <p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}
         </form>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

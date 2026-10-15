@@ -1,8 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Trash2, CheckCheck } from "lucide-react";
 import { useNotifications } from "@/contexts/NotificationContext";
 import type { NotificationType } from "@/contexts/NotificationContext";
+import {
+  getLanguagePreference,
+  LANGUAGE_CHANGE_EVENT,
+  type Language,
+} from "@/components/LanguageRuntime";
 
 const TYPE_LABELS: Record<NotificationType, string> = {
   success: "Sucesso",
@@ -37,9 +43,9 @@ const TYPE_STYLES: Record<
   },
 };
 
-function formatDate(iso: string): string {
+function formatDate(iso: string, language: Language): string {
   try {
-    return new Intl.DateTimeFormat("pt-BR", {
+    return new Intl.DateTimeFormat(language, {
       dateStyle: "short",
       timeStyle: "short",
     }).format(new Date(iso));
@@ -51,6 +57,17 @@ function formatDate(iso: string): string {
 export default function NotificationsPage() {
   const { notifications, unreadCount, markAllRead, remove, clearAll } =
     useNotifications();
+  const [language, setLanguage] = useState<Language>(getLanguagePreference);
+
+  useEffect(() => {
+    const updateLanguage = () => setLanguage(getLanguagePreference());
+    window.addEventListener(LANGUAGE_CHANGE_EVENT, updateLanguage);
+    window.addEventListener("storage", updateLanguage);
+    return () => {
+      window.removeEventListener(LANGUAGE_CHANGE_EVENT, updateLanguage);
+      window.removeEventListener("storage", updateLanguage);
+    };
+  }, []);
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -128,7 +145,7 @@ export default function NotificationsPage() {
                     <p className="text-xs text-gray-500 mt-0.5">{n.message}</p>
                   )}
                   <p className="text-xs text-gray-400 mt-1">
-                    {formatDate(n.createdAt)}
+                    {formatDate(n.createdAt, language)}
                   </p>
                 </div>
                 <button

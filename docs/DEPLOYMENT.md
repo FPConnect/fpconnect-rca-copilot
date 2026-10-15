@@ -56,14 +56,16 @@ Deploy the full stack for free using managed cloud services — no server manage
    S3_BUCKET_NAME=fpconnect-ticket-attachments
    ```
 
-4. Apply the authentication schema repair before promotion:
+4. Apply the idempotent production schema migration before promotion:
    ```bash
    vercel env run --environment=production -- python apps/api/scripts/migrate_auth_schema.py
    ```
 5. Add `api.fpconnect.tec.br` to the API project. Verify `/health` and that an unknown `/auth/login` request returns `401` before updating the public alias.
 
-When self-registration is needed, set `PUBLIC_REGISTRATION_ENABLED=true` and
-populate `REGISTRATION_ALLOWED_EMAILS` with the authorized addresses.
+When self-registration is needed, set `PUBLIC_REGISTRATION_ENABLED=true`,
+populate `REGISTRATION_ALLOWED_EMAILS` with the authorized addresses, set
+`NEXT_PUBLIC_REGISTRATION_ENABLED=true` in the web project and rebuild both
+deployments. Keep the API allowlist restricted even when the web form is visible.
 
 ### 4. Web — Vercel
 

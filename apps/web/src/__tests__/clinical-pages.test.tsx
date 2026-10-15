@@ -59,7 +59,7 @@ describe("clinical engineering web pages", () => {
 
     expect(await screen.findByText("Máquinas")).toBeInTheDocument();
     expect(await screen.findByText("Monitor Multiparamétrico")).toBeInTheDocument();
-    expect(screen.getByText("warning")).toBeInTheDocument();
+    expect(screen.getByText("Atenção")).toBeInTheDocument();
   });
 
   it("creates a ticket from the current ticket form", async () => {

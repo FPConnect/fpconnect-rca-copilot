@@ -1,4 +1,4 @@
-"""Apply the idempotent production schema repair required by authentication."""
+"""Apply idempotent production schema repairs required by the runtime models."""
 
 from __future__ import annotations
 
@@ -9,6 +9,20 @@ from sqlalchemy import create_engine, inspect, text
 
 
 EXPECTED_ROLES = ("master", "user", "visitor")
+
+RUNTIME_COLUMNS = {
+    "machines": (
+        "ADD COLUMN IF NOT EXISTS model VARCHAR",
+        "ADD COLUMN IF NOT EXISTS criticality VARCHAR DEFAULT 'Média' NOT NULL",
+        "ADD COLUMN IF NOT EXISTS last_failure VARCHAR",
+        "ADD COLUMN IF NOT EXISTS recurrent_failures INTEGER DEFAULT 0 NOT NULL",
+    ),
+    "tickets": (
+        "ADD COLUMN IF NOT EXISTS root_cause TEXT",
+        "ADD COLUMN IF NOT EXISTS recommendation TEXT",
+        "ADD COLUMN IF NOT EXISTS analysis_completed TIMESTAMPTZ",
+    ),
+}
 
 
 def migrate() -> None:
@@ -24,6 +38,11 @@ def migrate() -> None:
         tables = set(inspect(connection).get_table_names())
         if "users" not in tables:
             raise RuntimeError("The users table does not exist")
+
+        missing_runtime_tables = set(RUNTIME_COLUMNS) - tables
+        if missing_runtime_tables:
+            names = ", ".join(sorted(missing_runtime_tables))
+            raise RuntimeError(f"Required runtime tables do not exist: {names}")
 
         for role in EXPECTED_ROLES:
             connection.execute(text(f"ALTER TYPE user_role ADD VALUE IF NOT EXISTS '{role}'"))
@@ -52,6 +71,10 @@ def migrate() -> None:
         )
         connection.execute(text("ALTER TABLE users ALTER COLUMN access_level SET DEFAULT 2"))
         connection.execute(text("ALTER TABLE users ALTER COLUMN access_level SET NOT NULL"))
+
+        for table, column_definitions in RUNTIME_COLUMNS.items():
+            for definition in column_definitions:
+                connection.execute(text(f"ALTER TABLE {table} {definition}"))
 
     engine.dispose()
 
@@ -96,7 +119,7 @@ if __name__ == "__main__":
     parser.add_argument("--remove-empty-account")
     args = parser.parse_args()
     migrate()
-    print("authentication schema migration: ok")
+    print("production schema migration: ok")
     if args.remove_empty_account:
         removed = remove_empty_regular_account(args.remove_empty_account)
         print("stale account removed:", removed)

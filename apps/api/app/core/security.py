@@ -16,7 +16,8 @@ from slowapi.util import get_remote_address
 
 from app.core.config import settings
 
-limiter = Limiter(key_func=get_remote_address)
+RATE_LIMIT_STORAGE_URI = "memory://" if settings.app_env == "development" else settings.redis_url
+limiter = Limiter(key_func=get_remote_address, storage_uri=RATE_LIMIT_STORAGE_URI)
 
 ALGORITHM = settings.algorithm
 ACCESS_TTL_MINUTES = settings.access_token_expire_minutes

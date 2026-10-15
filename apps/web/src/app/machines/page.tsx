@@ -12,6 +12,12 @@ const STATUS_COLORS: Record<string, string> = {
   offline: "bg-red-100 text-red-700",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  online: "Online",
+  warning: "Atenção",
+  offline: "Offline",
+};
+
 const FILTERS = [
   {
     key: "status",
@@ -75,7 +81,7 @@ export default function MachinesPage() {
                 <td className="px-4 py-3 font-mono text-gray-500">{m.code}</td>
                 <td className="px-4 py-3 font-medium text-gray-900">{m.name}</td>
                 <td className="px-4 py-3 text-gray-600">{m.location}</td>
-                <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[m.status]}`}>{m.status}</span></td>
+                <td className="px-4 py-3"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[m.status]}`}>{STATUS_LABELS[m.status] ?? m.status}</span></td>
                 <td className="px-4 py-3 text-gray-500">{new Date(m.last_check).toLocaleString("pt-BR")}</td>
               </tr>
             ))}

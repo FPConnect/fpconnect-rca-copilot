@@ -1,5 +1,7 @@
 "use client";
 
+import AccessGuard from "@/components/AccessGuard";
+
 import { useMemo, useState } from "react";
 import {
   Activity,
@@ -40,7 +42,7 @@ const currency = new Intl.NumberFormat("pt-BR", {
 
 const number = new Intl.NumberFormat("pt-BR");
 
-export default function StrategicMoatsPage() {
+export function StrategicMoatsContent() {
   const [selectedId, setSelectedId] = useState<MoatId>("capacity-twin");
   const [downtimeHours, setDowntimeHours] = useState(0);
   const [assetsAtRisk, setAssetsAtRisk] = useState(0);
@@ -402,6 +404,14 @@ export default function StrategicMoatsPage() {
         />
       </section>
     </div>
+  );
+}
+
+export default function StrategicMoatsPage() {
+  return (
+    <AccessGuard minimum={4}>
+      <StrategicMoatsContent />
+    </AccessGuard>
   );
 }
 

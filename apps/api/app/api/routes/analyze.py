@@ -23,15 +23,35 @@ def analyze_incident(
     if not ticket or (current_user.access_level < 3 and ticket.creator_id != current_user.id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Incident not found")
 
-    suggestions = analyze_ticket(db, ticket, AnalyzeTicketRequest(context=request.context))
-    primary = suggestions[0] if suggestions else None
-    root_cause = primary.cause if primary else "Causa raiz não determinada"
-    recommendation = primary.resolution if primary and primary.resolution else "Acionar engenharia clínica N2."
-    explanation = (
-        f"Diagnóstico gerado a partir da ocorrência #{ticket.id}, descrição informada e histórico técnico. "
-        f"Confiança estimada: {primary.confidence:.0%}." if primary else
-        "Não havia dados suficientes para estimar confiança do diagnóstico."
+    suggestions = analyze_ticket(
+        db,
+        ticket,
+        AnalyzeTicketRequest(context=request.context, language=request.language),
     )
+    primary = suggestions[0] if suggestions else None
+    english = request.language == "en-US"
+    root_cause = primary.cause if primary else (
+        "Root cause not determined" if english else "Causa raiz não determinada"
+    )
+    recommendation = primary.resolution if primary and primary.resolution else (
+        "Escalate to level 2 clinical engineering support."
+        if english
+        else "Acionar engenharia clínica N2."
+    )
+    if primary:
+        explanation = (
+            f"Diagnosis generated from incident #{ticket.id}, the provided description, and technical history. "
+            f"Estimated confidence: {primary.confidence:.0%}."
+            if english
+            else f"Diagnóstico gerado a partir da ocorrência #{ticket.id}, descrição informada e histórico técnico. "
+            f"Confiança estimada: {primary.confidence:.0%}."
+        )
+    else:
+        explanation = (
+            "There was not enough data to estimate diagnostic confidence."
+            if english
+            else "Não havia dados suficientes para estimar confiança do diagnóstico."
+        )
 
     complete_ticket_analysis(
         db,

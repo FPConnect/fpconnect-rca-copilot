@@ -16,6 +16,16 @@ function getAuthToken() {
   return sessionStorage.getItem("auth_token");
 }
 
+function getLanguagePreference(): "pt-BR" | "en-US" {
+  if (typeof window === "undefined") return "pt-BR";
+  try {
+    const raw = localStorage.getItem("fpconnect_system_preferences");
+    return raw && JSON.parse(raw).language === "en-US" ? "en-US" : "pt-BR";
+  } catch {
+    return "pt-BR";
+  }
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = getAuthToken();
   const res = await fetch(`${API_URL}${path}`, {
@@ -105,6 +115,11 @@ export interface UpdateProfilePayload {
   email?: string;
   full_name?: string;
   phone_number?: string;
+}
+
+export interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
 }
 
 export interface Playbook {
@@ -260,6 +275,13 @@ async function updateMe(data: UpdateProfilePayload): Promise<UserProfile> {
   });
 }
 
+async function changePassword(data: ChangePasswordPayload): Promise<{ status: string }> {
+  return request<{ status: string }>("/auth/password", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
 async function sendSmsNotification(message: string): Promise<SmsResponse> {
   return request<SmsResponse>("/notifications/sms", {
     method: "POST",
@@ -283,12 +305,16 @@ async function createPlaybook(data: CreatePlaybookPayload): Promise<Playbook> {
   );
 }
 
-async function analyzeIncident(ticketId: number): Promise<AnalyzeResponse> {
+async function analyzeIncident(ticketId: number, context?: string): Promise<AnalyzeResponse> {
   return withFallback(
     () =>
       request<AnalyzeResponse>("/analyze", {
         method: "POST",
-        body: JSON.stringify({ ticket_id: ticketId }),
+        body: JSON.stringify({
+          ticket_id: ticketId,
+          context: context?.trim() || null,
+          language: getLanguagePreference(),
+        }),
       }),
     () => ({
       ticket_id: ticketId,
@@ -323,6 +349,7 @@ export const api = {
   sendVerificationCode,
   getMe,
   updateMe,
+  changePassword,
   clearLegacyPreviewCredentials,
   sendSmsNotification,
   analyzeIncident,

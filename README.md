@@ -190,14 +190,16 @@ customer evidence or performance claims.
    S3_BUCKET_NAME=fpconnect-ticket-attachments
    ```
 
-4. Apply the authentication schema repair before promoting a deployment:
+4. Apply the idempotent production schema migration before promoting a deployment:
    ```bash
    vercel env run --environment=production -- python apps/api/scripts/migrate_auth_schema.py
    ```
 5. Add `api.fpconnect.tec.br` to this API project and verify `/health` and `/auth/login` before updating the alias.
 
-To enable allowlisted self-registration, set `PUBLIC_REGISTRATION_ENABLED=true`
-and list the authorized addresses in `REGISTRATION_ALLOWED_EMAILS`.
+To enable allowlisted self-registration, set `PUBLIC_REGISTRATION_ENABLED=true`,
+list the authorized addresses in `REGISTRATION_ALLOWED_EMAILS`, set
+`NEXT_PUBLIC_REGISTRATION_ENABLED=true` in the web project, and rebuild both
+deployments. The API allowlist remains the enforcement boundary.
 
 ### Step 4 — Web (Vercel)
 

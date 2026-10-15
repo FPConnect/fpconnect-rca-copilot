@@ -22,6 +22,7 @@ from app.core.security import (
 )
 from app.crud.user import create_user, get_user_by_email, get_user_by_id, update_user
 from app.schemas.user import (
+    PasswordChange,
     RefreshTokenRequest,
     TokenResponse,
     UserCreate,
@@ -40,6 +41,7 @@ _verification_codes: dict[str, tuple[str, datetime]] = {}
 LOGIN_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "5/minute"
 REGISTRATION_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "3/minute"
 REFRESH_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "20/minute"
+PASSWORD_CHANGE_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "5/minute"
 
 
 def _verification_key(email: str) -> str:
@@ -236,3 +238,38 @@ def update_me(
         if existing:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
     return update_user(db, user, user_data)
+
+
+@router.post("/password")
+@limiter.limit(PASSWORD_CHANGE_RATE_LIMIT)
+def change_password(
+    request: Request,
+    payload: PasswordChange,
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    """Replace the authenticated user's password after checking the current one."""
+    user = get_user_by_id(db, user_id)
+    if not user or not verify_password(payload.current_password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    if payload.current_password == payload.new_password:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="New password must be different from the current password",
+        )
+
+    is_valid, password_errors = validate_password(payload.new_password)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"password": password_errors},
+        )
+
+    user.hashed_password = hash_password(payload.new_password)
+    db.add(user)
+    db.commit()
+    return {"status": "updated"}

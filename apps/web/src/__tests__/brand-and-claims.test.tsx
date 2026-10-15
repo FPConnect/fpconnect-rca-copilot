@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import LandingPage from "@/app/page";
-import StrategicMoatsPage from "@/app/strategic-moats/page";
+import { StrategicMoatsContent } from "@/app/strategic-moats/page";
 import { DashboardContent } from "@/app/dashboard/page";
 import MetricsPage from "@/app/metrics/page";
 import { calculateMoatImpact } from "@/lib/strategic-moats";
@@ -98,7 +98,7 @@ describe("display name and commercial claims", () => {
   });
 
   it("keeps the strategic scenario at zero until assumptions are entered", () => {
-    render(<StrategicMoatsPage />);
+    render(<StrategicMoatsContent />);
 
     expect(screen.getByText("Valor hipotético do cenário")).toBeInTheDocument();
     expect(screen.getByText(/Cenário aritmético baseado somente nas premissas informadas/)).toBeInTheDocument();

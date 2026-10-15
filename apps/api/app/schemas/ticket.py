@@ -1,7 +1,7 @@
 """Pydantic schemas for ticket-related endpoints."""
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -64,6 +64,7 @@ class AnalyzeIncidentRequest(BaseModel):
 
     ticket_id: int
     context: Optional[str] = None
+    language: Literal["pt-BR", "en-US"] = "pt-BR"
 
 
 class AnalyzeIncidentResponse(BaseModel):
@@ -79,6 +80,7 @@ class AnalyzeTicketRequest(BaseModel):
     """Schema for RCA analysis request."""
 
     context: Optional[str] = None
+    language: Literal["pt-BR", "en-US"] = "pt-BR"
 
 
 class RCASuggestionResponse(BaseModel):

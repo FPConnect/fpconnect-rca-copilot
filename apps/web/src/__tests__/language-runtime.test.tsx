@@ -29,6 +29,17 @@ function DashboardDisclosure() {
   );
 }
 
+function CustomerEnglishSurface() {
+  return (
+    <>
+      <LanguageRuntime />
+      <p>Configure os dados e preferências necessários para acompanhar os equipamentos da sua operação.</p>
+      <button aria-label="Remover notificação">Remover notificação</button>
+      <p>{"  Página 1 de 2  "}</p>
+    </>
+  );
+}
+
 describe("LanguageRuntime", () => {
   beforeEach(() => {
     localStorage.setItem(
@@ -84,6 +95,23 @@ describe("LanguageRuntime", () => {
       expect(screen.getByRole("note")).toHaveTextContent(
         "Demo — fictional data. These indicators do not represent customer results or a production operation.",
       );
+    });
+  });
+
+  it("translates customer controls and dynamic pagination with surrounding whitespace", async () => {
+    localStorage.setItem(
+      "fpconnect_system_preferences",
+      JSON.stringify({ language: "en-US" }),
+    );
+
+    render(<CustomerEnglishSurface />);
+
+    await waitFor(() => {
+      expect(screen.getByText(
+        "Configure the data and preferences required to monitor your operation's equipment.",
+      )).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Remove notification" })).toBeInTheDocument();
+      expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
     });
   });
 });

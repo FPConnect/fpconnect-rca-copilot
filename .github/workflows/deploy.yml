@@ -174,7 +174,7 @@ jobs:
       - name: Install migration dependencies
         run: python -m pip install sqlalchemy==2.0.30 psycopg2-binary==2.9.9
 
-      - name: Migrate authentication schema
+      - name: Migrate production schema
         run: vercel env run --environment=production --scope=fpconnects-projects -- python apps/api/scripts/migrate_auth_schema.py
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

@@ -229,21 +229,16 @@ export default function SettingsPage() {
       return;
     }
     profileSave.save(async () => {
-      let savedProfile = profileDraft;
-      try {
-        const user = await api.updateMe({
-          email: profileDraft.email.trim(),
-          full_name: profileDraft.name.trim(),
-          phone_number: profileDraft.phone.trim(),
-        });
-        savedProfile = {
-          name: user.full_name || user.email.split("@")[0],
-          email: user.email,
-          phone: user.phone_number || "",
-        };
-      } catch {
-        // Preview mode persists locally when the API is offline.
-      }
+      const user = await api.updateMe({
+        email: profileDraft.email.trim(),
+        full_name: profileDraft.name.trim(),
+        phone_number: profileDraft.phone.trim(),
+      });
+      const savedProfile = {
+        name: user.full_name || user.email.split("@")[0],
+        email: user.email,
+        phone: user.phone_number || "",
+      };
       setProfile(savedProfile);
       setProfileDraft(savedProfile);
       writeStorage(PROFILE_STORAGE_KEY, savedProfile);
@@ -334,7 +329,11 @@ export default function SettingsPage() {
       addNotification("error", "Senhas não coincidem", "A confirmação da senha não corresponde.");
       return;
     }
-    passwordSave.save(() => {
+    passwordSave.save(async () => {
+      await api.changePassword({
+        current_password: passwordForm.current,
+        new_password: passwordForm.newPassword,
+      });
       setPasswordForm({ current: "", newPassword: "", confirm: "" });
       addNotification("success", "Senha alterada", "Sua senha foi atualizada com sucesso.");
     });
