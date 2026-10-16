@@ -66,6 +66,7 @@ def _enforce_shared_rate_limit(
     identifier: str,
     max_attempts: int,
     window_seconds: int = 60,
+    prune_expired: bool = False,
 ) -> None:
     """Enforce a production-wide fixed window through the shared PostgreSQL database."""
     bind = db.get_bind()
@@ -74,6 +75,14 @@ def _enforce_shared_rate_limit(
 
     now = datetime.now(timezone.utc)
     cutoff = now - timedelta(seconds=window_seconds)
+    if prune_expired:
+        db.execute(
+            text(
+                "DELETE FROM auth_rate_limits "
+                "WHERE window_started_at < :cutoff"
+            ),
+            {"cutoff": cutoff},
+        )
     attempts = db.execute(
         text(
             """
@@ -115,8 +124,14 @@ def _enforce_auth_limits(
     subject_limit: int,
     client_limit: int,
 ) -> None:
+    _enforce_shared_rate_limit(
+        db,
+        f"{action}:client",
+        _client_identifier(request),
+        client_limit,
+        prune_expired=True,
+    )
     _enforce_shared_rate_limit(db, f"{action}:subject", subject, subject_limit)
-    _enforce_shared_rate_limit(db, f"{action}:client", _client_identifier(request), client_limit)
 
 
 def _verification_key(email: str) -> str:
