@@ -262,7 +262,12 @@ def login(request: Request, credentials: UserLogin, db: Session = Depends(get_db
         user.hashed_password = hash_password(credentials.password)
         db.add(user)
         db.commit()
-    payload = {"sub": str(user.id), "role": user.role, "access_level": user.access_level}
+    payload = {
+        "sub": str(user.id),
+        "role": user.role,
+        "access_level": user.access_level,
+        "ver": user.token_version,
+    }
     token = create_access_token(payload)
     refresh_token = create_refresh_token(payload)
     return TokenResponse(access_token=token, refresh_token=refresh_token)
@@ -286,12 +291,32 @@ def refresh_token(request: Request, payload: RefreshTokenRequest, db: Session = 
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token",
         )
+    try:
+        user_id = int(decoded["sub"])
+        token_version = int(decoded.get("ver", 0))
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+        ) from exc
+
+    user = get_user_by_id(db, user_id)
+    if not user or token_version != user.token_version:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or revoked refresh token",
+        )
+
     access_payload = {
-        "sub": decoded["sub"],
-        "role": decoded.get("role", "user"),
-        "access_level": decoded.get("access_level", 2),
+        "sub": str(user.id),
+        "role": user.role,
+        "access_level": user.access_level,
+        "ver": user.token_version,
     }
-    return TokenResponse(access_token=create_access_token(access_payload), refresh_token=token)
+    return TokenResponse(
+        access_token=create_access_token(access_payload),
+        refresh_token=create_refresh_token(access_payload),
+    )
 
 
 @router.get("/me", response_model=UserResponse)
@@ -351,6 +376,7 @@ def change_password(
         )
 
     user.hashed_password = hash_password(payload.new_password)
+    user.token_version += 1
     db.add(user)
     db.commit()
     return {"status": "updated"}

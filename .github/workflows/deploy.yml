@@ -80,7 +80,7 @@ jobs:
     name: Deploy Web to Vercel
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    needs: [test-web]
+    needs: [test-web, deploy-api]
     permissions:
       contents: read
     environment:
@@ -177,10 +177,15 @@ jobs:
           python-version: "3.12"
 
       - name: Install migration dependencies
-        run: python -m pip install sqlalchemy==2.0.30 psycopg2-binary==2.9.9
+        run: python -m pip install alembic==1.13.1 sqlalchemy==2.0.30 psycopg2-binary==2.9.9
 
-      - name: Migrate production schema
-        run: vercel env run --environment=production --scope=fpconnects-projects -- python apps/api/scripts/migrate_auth_schema.py
+      - name: Reconcile production schema
+        run: vercel env run --environment=production --scope=fpconnects-projects -- python apps/api/scripts/migrate_auth_schema.py --reconcile-alembic
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Run database migrations
+        run: vercel env run --environment=production --scope=fpconnects-projects -- sh -c 'cd apps/api && alembic upgrade head'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 

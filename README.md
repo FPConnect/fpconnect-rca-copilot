@@ -190,9 +190,10 @@ customer evidence or performance claims.
    S3_BUCKET_NAME=fpconnect-ticket-attachments
    ```
 
-4. Apply the idempotent production schema migration before promoting a deployment:
+4. Reconcile the idempotent legacy schema and then run the full migration chain before promoting a deployment:
    ```bash
-   vercel env run --environment=production -- python apps/api/scripts/migrate_auth_schema.py
+   vercel env run --environment=production -- python apps/api/scripts/migrate_auth_schema.py --reconcile-alembic
+   vercel env run --environment=production -- sh -c 'cd apps/api && alembic upgrade head'
    ```
 5. Add `api.fpconnect.tec.br` to this API project and verify `/health` and `/auth/login` before updating the alias.
 

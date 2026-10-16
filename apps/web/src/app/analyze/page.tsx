@@ -5,7 +5,7 @@ import { api, AnalyzeResponse } from "@/services/api";
 
 export default function AnalyzePage() {
   const [ticketId, setTicketId] = useState("101");
-  const [description, setDescription] = useState("Monitor multiparamétrico apresenta perda intermitente de SpO2 na UTI Adulto.");
+  const [description, setDescription] = useState("");
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

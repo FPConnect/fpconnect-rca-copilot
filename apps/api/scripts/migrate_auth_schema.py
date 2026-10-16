@@ -10,6 +10,17 @@ from sqlalchemy import create_engine, inspect, text
 
 EXPECTED_ROLES = ("master", "user", "visitor")
 
+ALEMBIC_LEGACY_BASELINE = "005"
+ALEMBIC_BASELINE_TABLES = {
+    "users",
+    "tickets",
+    "machines",
+    "kb_articles",
+    "ticket_attachments",
+    "playbooks",
+    "sla_contracts",
+}
+
 RUNTIME_COLUMNS = {
     "machines": (
         "ADD COLUMN IF NOT EXISTS model VARCHAR",
@@ -60,6 +71,12 @@ def migrate() -> None:
             )
         )
         connection.execute(
+            text(
+                "ALTER TABLE users "
+                "ADD COLUMN IF NOT EXISTS token_version INTEGER DEFAULT 0"
+            )
+        )
+        connection.execute(
             text("UPDATE users SET role = 'user' WHERE role::text = 'technician'")
         )
         connection.execute(
@@ -71,6 +88,9 @@ def migrate() -> None:
         )
         connection.execute(text("ALTER TABLE users ALTER COLUMN access_level SET DEFAULT 2"))
         connection.execute(text("ALTER TABLE users ALTER COLUMN access_level SET NOT NULL"))
+        connection.execute(text("UPDATE users SET token_version = 0 WHERE token_version IS NULL"))
+        connection.execute(text("ALTER TABLE users ALTER COLUMN token_version SET DEFAULT 0"))
+        connection.execute(text("ALTER TABLE users ALTER COLUMN token_version SET NOT NULL"))
 
         for table, column_definitions in RUNTIME_COLUMNS.items():
             for definition in column_definitions:
@@ -95,6 +115,46 @@ def migrate() -> None:
         )
 
     engine.dispose()
+
+
+def reconcile_alembic_baseline() -> bool:
+    """Record the verified legacy schema without replaying destructive migrations."""
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        raise RuntimeError("DATABASE_URL is required")
+
+    engine = create_engine(database_url, pool_pre_ping=True)
+    if engine.dialect.name != "postgresql":
+        raise RuntimeError("This production migration requires PostgreSQL")
+
+    stamped = False
+    with engine.begin() as connection:
+        inspector = inspect(connection)
+        tables = set(inspector.get_table_names())
+        if "alembic_version" not in tables:
+            missing_tables = ALEMBIC_BASELINE_TABLES - tables
+            if missing_tables:
+                names = ", ".join(sorted(missing_tables))
+                raise RuntimeError(
+                    "Cannot stamp the legacy Alembic baseline; required tables are missing: "
+                    f"{names}"
+                )
+
+            connection.execute(
+                text(
+                    "CREATE TABLE alembic_version ("
+                    "version_num VARCHAR(32) PRIMARY KEY NOT NULL"
+                    ")"
+                )
+            )
+            connection.execute(
+                text("INSERT INTO alembic_version (version_num) VALUES (:version)"),
+                {"version": ALEMBIC_LEGACY_BASELINE},
+            )
+            stamped = True
+
+    engine.dispose()
+    return stamped
 
 
 def remove_empty_regular_account(email: str) -> bool:
@@ -135,9 +195,13 @@ def remove_empty_regular_account(email: str) -> bool:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--remove-empty-account")
+    parser.add_argument("--reconcile-alembic", action="store_true")
     args = parser.parse_args()
     migrate()
     print("production schema migration: ok")
+    if args.reconcile_alembic:
+        stamped = reconcile_alembic_baseline()
+        print("legacy Alembic baseline stamped:", stamped)
     if args.remove_empty_account:
         removed = remove_empty_regular_account(args.remove_empty_account)
         print("stale account removed:", removed)

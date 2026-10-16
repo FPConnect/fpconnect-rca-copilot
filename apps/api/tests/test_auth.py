@@ -233,7 +233,7 @@ def test_refresh_token_success():
 
     assert response.status_code == 200
     assert response.json()["access_token"]
-    assert response.json()["refresh_token"] == refresh
+    assert response.json()["refresh_token"]
 
 
 def test_change_password_replaces_credentials():
@@ -243,6 +243,7 @@ def test_change_password_replaces_credentials():
     client.post("/auth/register", json={"email": email, "password": current_password})
     login_response = client.post("/auth/login", json={"email": email, "password": current_password})
     token = login_response.json()["access_token"]
+    refresh_token = login_response.json()["refresh_token"]
 
     response = client.post(
         "/auth/password",
@@ -251,6 +252,7 @@ def test_change_password_replaces_credentials():
     )
 
     assert response.status_code == 200
+    assert client.post("/auth/refresh", json={"refresh_token": refresh_token}).status_code == 401
     assert client.post("/auth/login", json={"email": email, "password": current_password}).status_code == 401
     assert client.post("/auth/login", json={"email": email, "password": new_password}).status_code == 200
 
