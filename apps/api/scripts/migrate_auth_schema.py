@@ -76,6 +76,24 @@ def migrate() -> None:
             for definition in column_definitions:
                 connection.execute(text(f"ALTER TABLE {table} {definition}"))
 
+        connection.execute(
+            text(
+                """
+                CREATE TABLE IF NOT EXISTS auth_rate_limits (
+                    bucket VARCHAR(64) PRIMARY KEY,
+                    window_started_at TIMESTAMPTZ NOT NULL,
+                    attempts INTEGER NOT NULL
+                )
+                """
+            )
+        )
+        connection.execute(
+            text(
+                "CREATE INDEX IF NOT EXISTS ix_auth_rate_limits_window "
+                "ON auth_rate_limits (window_started_at)"
+            )
+        )
+
     engine.dispose()
 
 

@@ -41,7 +41,7 @@ FPConnect permanece como identificador técnico temporário em domínio, reposit
 - Rotas administrativas devem validar autorização na API; ocultar um item de menu não substitui autorização do servidor.
 - Senhas exigem no mínimo 12 caracteres e complexidade; hashes atuais usam bcrypt.
 - CORS de produção deve aceitar apenas os domínios públicos necessários.
-- O limitador distribuído de autenticação usa `REDIS_URL` em produção; falha de Redis deve impedir a promoção do deployment da API.
+- O limitador distribuído de autenticação usa a tabela PostgreSQL `auth_rate_limits`; a migração precisa ser executada antes da promoção da API.
 - O envio de SMS retorna indisponível enquanto não houver provedor configurado; a interface não deve alegar ativação sem confirmação.
 
 ## Publicação
