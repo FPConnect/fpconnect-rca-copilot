@@ -13,8 +13,11 @@ import {
   History,
   Settings,
   Ticket,
+  BookOpenCheck,
+  FileCheck2,
   X,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import BrandLogo from "@/components/BrandLogo";
@@ -27,7 +30,8 @@ const navItems = [
   { href: "/tickets", label: "Tickets", icon: Ticket },
   { href: "/metrics", label: "Métricas", icon: BarChart2 },
   { href: "/maintenance", label: "Manutenção", icon: Wrench },
-  { href: "/access-control", label: "Controle de Acesso", icon: ShieldCheck },
+  { href: "/playbooks", label: "Playbooks", icon: BookOpenCheck },
+  { href: "/contracts", label: "Contratos e SLA", icon: FileCheck2 },
   { href: "/history", label: "Histórico", icon: History },
 ];
 
@@ -35,6 +39,10 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
   const { isOpen, close } = useSidebar();
+  const { user } = useAuth();
+  const visibleNavItems = user && (user.access_level ?? 0) >= 4
+    ? [...navItems, { href: "/access-control", label: "Controle de Acesso", icon: ShieldCheck }]
+    : navItems;
 
   const navContent = (
     <aside className="w-64 min-h-screen bg-gray-900 text-white flex flex-col">
@@ -49,7 +57,7 @@ export default function Sidebar() {
         </button>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {visibleNavItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link

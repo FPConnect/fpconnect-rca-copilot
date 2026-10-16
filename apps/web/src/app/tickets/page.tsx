@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { ScanSearch } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
 import { useNotifications } from "@/contexts/NotificationContext";
@@ -71,6 +73,18 @@ export default function TicketsPage() {
     medium: "bg-yellow-100 text-yellow-800",
     low: "bg-green-100 text-green-800",
   };
+  const priorityLabels: Record<string, string> = {
+    critical: "Crítico",
+    high: "Alto",
+    medium: "Médio",
+    low: "Baixo",
+  };
+  const statusLabels: Record<string, string> = {
+    open: "Aberto",
+    in_progress: "Em Andamento",
+    resolved: "Resolvido",
+    closed: "Fechado",
+  };
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -91,15 +105,28 @@ export default function TicketsPage() {
       </div>
       {filtered.length === 0 ? <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">Nenhum ticket encontrado.</div> : (
         <div className="space-y-3">
-          {filtered.map((t) => (
-            <div key={t.id} className="bg-white rounded-xl shadow p-4 flex items-center justify-between">
-              <div><span className="font-medium text-gray-900">{t.title}</span><span className="ml-2 text-sm text-gray-500">#{t.id}</span></div>
-              <div className="flex gap-2">
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${priorityColors[t.priority]}`}>{t.priority}</span>
-                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700">{t.status}</span>
+          {filtered.map((t) => {
+            const ticketId = Number(t.id);
+            const canAnalyze = Number.isSafeInteger(ticketId) && ticketId > 0;
+            return (
+              <div key={t.id} className="bg-white rounded-xl shadow p-4 flex items-center justify-between">
+                <div><span className="font-medium text-gray-900">{t.title}</span><span className="ml-2 text-sm text-gray-500">#{t.id}</span></div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-semibold px-2 py-1 rounded-full ${priorityColors[t.priority]}`}>{priorityLabels[t.priority] ?? t.priority}</span>
+                  <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700">{statusLabels[t.status] ?? t.status}</span>
+                  {canAnalyze && (
+                    <Link
+                      href={{ pathname: "/analyze", query: { ticket_id: ticketId } }}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:underline"
+                    >
+                      <ScanSearch size={14} aria-hidden="true" />
+                      Analisar
+                    </Link>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

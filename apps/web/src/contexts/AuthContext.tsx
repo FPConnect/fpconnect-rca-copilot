@@ -2,10 +2,11 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/services/api";
+import { api, UserProfile } from "@/services/api";
 
 type AuthContextValue = {
   token: string | null;
+  user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -33,17 +34,27 @@ async function establishServerSession(token: string | null) {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     api.clearLegacyPreviewCredentials();
     const stored = sessionStorage.getItem("auth_token");
-    establishServerSession(stored).then((valid) => {
-      if (valid && stored) setToken(stored);
-      else sessionStorage.removeItem("auth_token");
-    }).catch(() => {
-      sessionStorage.removeItem("auth_token");
-    }).finally(() => setIsLoading(false));
+    establishServerSession(stored)
+      .then(async (valid) => {
+        if (!valid || !stored) {
+          sessionStorage.removeItem("auth_token");
+          return;
+        }
+        const profile = await api.getMe();
+        setToken(stored);
+        setUser(profile);
+      })
+      .catch(() => {
+        sessionStorage.removeItem("auth_token");
+        setUser(null);
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -52,7 +63,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error("Não foi possível validar a sessão no servidor.");
     }
     sessionStorage.setItem("auth_token", result.access_token);
-    setToken(result.access_token);
+    try {
+      const profile = await api.getMe();
+      setToken(result.access_token);
+      setUser(profile);
+    } catch (error) {
+      sessionStorage.removeItem("auth_token");
+      await establishServerSession(null).catch(() => undefined);
+      throw error;
+    }
     router.push("/dashboard");
     router.refresh();
   }, [router]);
@@ -71,14 +90,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     sessionStorage.removeItem("auth_token");
     setToken(null);
+    setUser(null);
     void establishServerSession(null).catch(() => {
       // The server independently revalidates the short-lived cookie on every request.
     });
   }, []);
 
   const value = useMemo(
-    () => ({ token, isAuthenticated: Boolean(token), isLoading, login, register, logout }),
-    [token, isLoading, login, register, logout],
+    () => ({ token, user, isAuthenticated: Boolean(token && user), isLoading, login, register, logout }),
+    [token, user, isLoading, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

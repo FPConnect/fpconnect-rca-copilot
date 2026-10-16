@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 const SYSTEM_STORAGE_KEY = "fpconnect_system_preferences";
-const LANGUAGE_CHANGE_EVENT = "fpconnect:language-change";
+export const LANGUAGE_CHANGE_EVENT = "fpconnect:language-change";
 
 export type Language = "pt-BR" | "en-US";
 
@@ -24,6 +24,7 @@ const PT_TO_EN: Record<string, string> = {
   "Sair": "Sign out",
   "Conta": "Account",
   "Dashboard Operacional": "Operational Dashboard",
+  "Demonstração — dados fictícios. Estes indicadores não representam resultados de clientes nem uma operação em produção.": "Demo — fictional data. These indicators do not represent customer results or a production operation.",
   "Acompanhe disponibilidade, risco e performance dos equipamentos em um painel unificado para resposta rápida.": "Track availability, risk, and equipment performance in one unified panel for faster response.",
   "Tickets Abertos": "Open Tickets",
   "Em Progresso": "In Progress",
@@ -37,6 +38,7 @@ const PT_TO_EN: Record<string, string> = {
   "vs mês anterior": "vs previous month",
   "Primeiros Passos": "First Steps",
   "Configure a OPSPECTA em poucos minutos para começar a monitorar os equipamentos da sua operação.": "Configure OPSPECTA in a few minutes to start monitoring your operation's equipment.",
+  "Configure os dados e preferências necessários para acompanhar os equipamentos da sua operação.": "Configure the data and preferences required to monitor your operation's equipment.",
   "Cadastre suas máquinas": "Register your machines",
   "Adicione os equipamentos hospitalares que deseja monitorar.": "Add the hospital equipment you want to monitor.",
   "Configure verificações de saúde": "Configure health checks",
@@ -51,6 +53,21 @@ const PT_TO_EN: Record<string, string> = {
   "Ajuste idioma, fuso horário e preferências de notificação.": "Adjust language, time zone, and notification preferences.",
   "Entrar": "Sign in",
   "Acesse a plataforma OPSPECTA.": "Access the OPSPECTA platform.",
+  "Acesse a plataforma com sua conta autorizada.": "Access the platform with your authorized account.",
+  "Criar conta": "Create account",
+  "Crie sua conta autorizada para acessar a plataforma.": "Create your authorized account to access the platform.",
+  "Confirmar senha": "Confirm password",
+  "A senha deve ter pelo menos 12 caracteres.": "The password must contain at least 12 characters.",
+  "Use ao menos 12 caracteres, com maiúscula, minúscula, número e símbolo.": "Use at least 12 characters with uppercase, lowercase, a number, and a symbol.",
+  "As senhas não coincidem.": "The passwords do not match.",
+  "O cadastro não está liberado para este e-mail.": "Registration is not available for this email address.",
+  "Já existe uma conta para este e-mail.": "An account already exists for this email address.",
+  "O serviço de autenticação está temporariamente indisponível.": "The authentication service is temporarily unavailable.",
+  "Não foi possível criar a conta.": "Unable to create the account.",
+  "Não foi possível entrar. Tente novamente.": "Unable to sign in. Try again.",
+  "Criar novo usuário": "Create new user",
+  "Já tenho conta": "I already have an account",
+  "Aguarde...": "Please wait...",
   "Email": "Email",
   "Senha": "Password",
   "Credenciais inválidas.": "Invalid credentials.",
@@ -97,6 +114,16 @@ const PT_TO_EN: Record<string, string> = {
   "Push": "Push",
   "Notificações push do navegador": "Browser push notifications",
   "Preferências de notificação salvas": "Notification preferences saved",
+  "Sucesso": "Success",
+  "Erro": "Error",
+  "Aviso": "Warning",
+  "Nova": "New",
+  "Limpar tudo": "Clear all",
+  "Marcar todas como lidas": "Mark all as read",
+  "Remover notificação": "Remove notification",
+  "Fechar notificação": "Close notification",
+  "Nenhuma notificação.": "No notifications.",
+  "As notificações aparecerão aqui.": "Notifications will appear here.",
   "Segurança": "Security",
   "Alterar Senha": "Change Password",
   "Senha Atual": "Current Password",
@@ -123,6 +150,9 @@ const PT_TO_EN: Record<string, string> = {
   "Pesquisar tickets...": "Search tickets...",
   "Pesquisar alertas...": "Search alerts...",
   "Pesquisar histórico...": "Search history...",
+  "Limpar pesquisa": "Clear search",
+  "Pesquisar usuários...": "Search users...",
+  "Pesquisar playbooks por título ou equipamento...": "Search playbooks by title or equipment...",
   "Tipo": "Type",
   "Status": "Status",
   "Prioridade": "Priority",
@@ -132,6 +162,7 @@ const PT_TO_EN: Record<string, string> = {
   "Online": "Online",
   "Offline": "Offline",
   "Warning": "Warning",
+  "Atenção": "Warning",
   "Monitoramento": "Monitoring",
   "Suporte de Vida": "Life Support",
   "Infusão": "Infusion",
@@ -142,6 +173,7 @@ const PT_TO_EN: Record<string, string> = {
   "Aberto": "Open",
   "Em Andamento": "In Progress",
   "Resolvido": "Resolved",
+  "Fechado": "Closed",
   "Pendente": "Pending",
   "Reconhecido": "Acknowledged",
   "Reconhecer": "Acknowledge",
@@ -161,7 +193,13 @@ const PT_TO_EN: Record<string, string> = {
   "Preventiva": "Preventive",
   "Corretiva": "Corrective",
   "Calibração": "Calibration",
+  "Agendada": "Scheduled",
   "Histórico de Auditoria": "Audit History",
+  "Alerta": "Alert",
+  "Ticket criado": "Ticket created",
+  "Alerta reconhecido": "Alert acknowledged",
+  "Manutenção agendada": "Maintenance scheduled",
+  "Usuário criado": "User created",
   "Ação": "Action",
   "Usuário": "User",
   "Recurso": "Resource",
@@ -183,6 +221,60 @@ const PT_TO_EN: Record<string, string> = {
   "High": "High",
   "Critical": "Critical",
   "Create": "Create",
+  "Analisar": "Analyze",
+  "Analisando...": "Analyzing...",
+  "Diagnóstico de Falha": "Failure Diagnosis",
+  "Analisar ocorrência e sugerir causa raiz": "Analyze an incident and suggest a root cause",
+  "Use esta tela após abrir um chamado: informe a ocorrência, acione a análise e siga os próximos passos recomendados.": "Use this screen after opening a ticket: describe the incident, run the analysis, and follow the recommended next steps.",
+  "Chamado": "Ticket",
+  "Descrição da Ocorrência": "Incident Description",
+  "Analisar falha": "Analyze failure",
+  "Resultado do diagnóstico": "Diagnosis result",
+  "Sugestão de Causa Raiz": "Root Cause Suggestion",
+  "Explicação": "Explanation",
+  "Próximos Passos": "Next Steps",
+  "O diagnóstico aparecerá aqui com causa raiz, explicação e próximos passos.": "The diagnosis will appear here with the root cause, explanation, and next steps.",
+  "Não foi possível concluir a análise. Verifique o chamado e tente novamente.": "Unable to complete the analysis. Check the ticket and try again.",
+  "Procedimentos": "Procedures",
+  "Playbooks de reparo": "Repair Playbooks",
+  "Padronize ações de engenharia clínica por equipamento, com passos executáveis e arquivos de apoio.": "Standardize clinical engineering actions by equipment with executable steps and supporting files.",
+  "Título do playbook": "Playbook title",
+  "Título": "Title",
+  "Equipamento associado": "Associated equipment",
+  "Passos": "Steps",
+  "Passos do procedimento": "Procedure steps",
+  "Adicionar": "Add",
+  "Arquivos": "Files",
+  "sem anexos": "no attachments",
+  "Nenhum playbook encontrado.": "No playbooks found.",
+  "Não foi possível adicionar o playbook.": "Unable to add the playbook.",
+  "Acesso somente para consulta. Contas de gerente ou administrador podem criar playbooks.": "Read-only access. Manager or administrator accounts can create playbooks.",
+  "Governança": "Governance",
+  "Contratos e SLA": "Contracts and SLA",
+  "Acompanhe prazos de resposta, penalidades, vencimentos e cumprimento de SLA por equipamento contratado.": "Track response times, penalties, expiration dates, and SLA compliance for contracted equipment.",
+  "Equipamento": "Equipment",
+  "Fornecedor": "Vendor",
+  "Resposta": "Response",
+  "SLA cumprido": "SLA compliance",
+  "Vencimento": "Expiration",
+  "Sem alerta": "No alert",
+  "Nenhum contrato encontrado.": "No contracts found.",
+  "Acesso restrito": "Restricted access",
+  "Sua conta não possui permissão para acessar este módulo.": "Your account does not have permission to access this module.",
+  "Voltar ao dashboard": "Back to dashboard",
+  "Carregando permissões...": "Loading permissions...",
+  "Novo Usuário": "New User",
+  "Lista demonstrativa estática; os usuários exibidos não são contas reais.": "Static demonstration list; the displayed users are not real accounts.",
+  "Perfil": "Role",
+  "Administrador": "Administrator",
+  "Gerente": "Manager",
+  "Visitante": "Visitor",
+  "Ativo": "Active",
+  "Inativo": "Inactive",
+  "Nível": "Level",
+  "Ações": "Actions",
+  "Editar": "Edit",
+  "Nenhum usuário encontrado.": "No users found.",
   "Voltar": "Previous",
   "Avançar": "Next",
   "Redirecionando para login...": "Redirecting to login...",
@@ -266,7 +358,7 @@ const originalAttributes = new WeakMap<
   Map<string, { source: string; translated: string }>
 >();
 
-function readLanguage(): Language {
+export function getLanguagePreference(): Language {
   try {
     const raw = localStorage.getItem(SYSTEM_STORAGE_KEY);
     const language = raw ? JSON.parse(raw).language : "pt-BR";
@@ -285,15 +377,19 @@ function translateValue(value: string, language: Language): string {
   const translated = dictionary[trimmed] ?? dictionary[normalized];
   if (translated) return value.replace(trimmed, translated);
 
-  if (language === "en-US") {
-    return value
-      .replace(/^Página (\d+) de (\d+)$/, "Page $1 of $2")
-      .replace(/^(.+) vs semana anterior$/, "$1 vs previous week");
-  }
+  const dynamicTranslation = language === "en-US"
+    ? trimmed
+        .replace(/^Página (\d+) de (\d+)$/, "Page $1 of $2")
+        .replace(/^(\d+) dias$/, "$1 days")
+        .replace(/^(.+) vs semana anterior$/, "$1 vs previous week")
+    : trimmed
+        .replace(/^Page (\d+) of (\d+)$/, "Página $1 de $2")
+        .replace(/^(\d+) days$/, "$1 dias")
+        .replace(/^(.+) vs previous week$/, "$1 vs semana anterior");
 
-  return value
-    .replace(/^Page (\d+) of (\d+)$/, "Página $1 de $2")
-    .replace(/^(.+) vs previous week$/, "$1 vs semana anterior");
+  return dynamicTranslation === trimmed
+    ? value
+    : value.replace(trimmed, dynamicTranslation);
 }
 
 function translateTextNode(node: Text, language: Language) {
@@ -370,7 +466,7 @@ export function setLanguagePreference(language: Language) {
 
 export default function LanguageRuntime() {
   useEffect(() => {
-    const run = () => applyLanguage(readLanguage());
+    const run = () => applyLanguage(getLanguagePreference());
     run();
 
     const observer = new MutationObserver(() => {

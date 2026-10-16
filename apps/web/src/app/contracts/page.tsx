@@ -22,6 +22,9 @@ export default function ContractsPage() {
         <table className="min-w-[760px] w-full text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-slate-600"><tr>{["Equipamento", "Fornecedor", "Resposta", "SLA cumprido", "Vencimento", "Alerta"].map((h) => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr></thead>
           <tbody className="divide-y divide-slate-100">
+            {contracts.length === 0 && (
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-500">Nenhum contrato encontrado.</td></tr>
+            )}
             {contracts.map((contract) => (
               <tr key={contract.id}>
                 <td className="px-4 py-3 font-semibold text-slate-900">{contract.equipment}</td>

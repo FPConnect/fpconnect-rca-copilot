@@ -50,11 +50,16 @@ def analyze_ticket(
     ).strip()
 
     if not description:
+        english = request.language == "en-US"
         return [
             RCASuggestionResponse(
-                cause="Dados insuficientes para análise",
+                cause="Insufficient data for analysis" if english else "Dados insuficientes para análise",
                 confidence=0.0,
-                resolution="Adicione descrição detalhada e contexto técnico do incidente.",
+                resolution=(
+                    "Add a detailed description and technical context for the incident."
+                    if english
+                    else "Adicione descrição detalhada e contexto técnico do incidente."
+                ),
                 similar_incidents=[],
             )
         ]
@@ -65,11 +70,20 @@ def analyze_ticket(
         rows = []
 
     if not rows:
+        english = request.language == "en-US"
         return [
             RCASuggestionResponse(
-                cause="Nenhuma causa semelhante encontrada na base de conhecimento",
+                cause=(
+                    "No similar cause was found in the knowledge base"
+                    if english
+                    else "Nenhuma causa semelhante encontrada na base de conhecimento"
+                ),
                 confidence=0.5,
-                resolution="Escalone para N2 e inclua logs para enriquecer a base.",
+                resolution=(
+                    "Escalate to level 2 support and include logs to improve the knowledge base."
+                    if english
+                    else "Escalone para N2 e inclua logs para enriquecer a base."
+                ),
                 similar_incidents=[],
             )
         ]

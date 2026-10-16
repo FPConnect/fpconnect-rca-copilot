@@ -21,6 +21,10 @@ Open [http://localhost:3000](http://localhost:3000) to view the landing page.
 The authenticated workspace requires a working API and a valid account; local
 preview data is not an authentication mechanism.
 
+Production self-registration is limited to email addresses explicitly listed
+in `REGISTRATION_ALLOWED_EMAILS`. New accounts always receive the regular
+`user` role and cannot select their own access level.
+
 ### Run the API locally
 
 ```bash
@@ -29,6 +33,11 @@ cp .env.example .env
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
+
+Install `requirements-ml.txt` instead when local semantic-search embeddings are
+required. The Vercel runtime uses the smaller production dependency set and
+falls back to the documented non-semantic RCA response when that optional model
+is unavailable.
 
 To seed demo data and development test users, explicitly set
 `SEED_TEST_ACCOUNTS=true` and a unique `TEST_ACCOUNT_PASSWORD` of at least 12
@@ -137,7 +146,7 @@ customer evidence or performance claims.
 | Component | Platform | Notes |
 |---|---|---|
 | Web (Next.js) | [Vercel](https://vercel.com) | Free tier available |
-| API (FastAPI) | [Railway](https://railway.app) | Free trial available |
+| API (FastAPI) | [Vercel](https://vercel.com) | Existing `fpconnect-rca-copilot-main` project |
 | Database (PostgreSQL + pgvector) | [Neon](https://neon.tech) | Free tier, supports pgvector |
 | Redis | [Upstash](https://upstash.com) | Free tier |
 | Storage | [Cloudflare R2](https://cloudflare.com/r2) or AWS S3 | |
@@ -157,16 +166,16 @@ customer evidence or performance claims.
 2. Create a new **Redis** database (choose the region closest to your API)
 3. Copy the **Redis URL** (e.g. `rediss://default:password@host:port`)
 
-### Step 3 — API (Railway)
+### Step 3 — API (Vercel)
 
-1. Create an account at [railway.app](https://railway.app)
-2. Click **New Project → Deploy from GitHub repo** and select this repository
-3. Set the **Root Directory** to `apps/api`
-4. Add the following environment variables in Railway's dashboard:
+1. Import this repository into a dedicated Vercel project for the API.
+2. Set **Root Directory** to `apps/api` and **Framework Preset** to FastAPI.
+3. Add the following production environment variables in Vercel:
 
    ```
    APP_ENV=production
    PUBLIC_REGISTRATION_ENABLED=false
+   REGISTRATION_ALLOWED_EMAILS=[]
    CORS_ORIGINS=["https://fpconnect.tec.br","https://www.fpconnect.tec.br"]
    DATABASE_URL=<your Neon connection string>
    REDIS_URL=<your Upstash Redis URL>
@@ -181,21 +190,27 @@ customer evidence or performance claims.
    S3_BUCKET_NAME=fpconnect-ticket-attachments
    ```
 
-5. After deploying, run the database migrations from the Railway shell:
+4. Reconcile the idempotent legacy schema and then run the full migration chain before promoting a deployment:
    ```bash
-   alembic upgrade head
+   vercel env run --environment=production -- python apps/api/scripts/migrate_auth_schema.py --reconcile-alembic
+   vercel env run --environment=production -- sh -c 'cd apps/api && alembic upgrade head'
    ```
-6. Copy the public Railway URL (e.g. `https://fpconnect-api.up.railway.app`)
+5. Add `api.fpconnect.tec.br` to this API project and verify `/health` and `/auth/login` before updating the alias.
+
+To enable allowlisted self-registration, set `PUBLIC_REGISTRATION_ENABLED=true`,
+list the authorized addresses in `REGISTRATION_ALLOWED_EMAILS`, set
+`NEXT_PUBLIC_REGISTRATION_ENABLED=true` in the web project, and rebuild both
+deployments. The API allowlist remains the enforcement boundary.
 
 ### Step 4 — Web (Vercel)
 
 1. Create an account at [vercel.com](https://vercel.com)
 2. Click **Add New → Project** and import this GitHub repository
-3. The **Root Directory** is pre-configured via `vercel.json` — Vercel will detect `apps/web` automatically
+3. Set **Root Directory** to `apps/web` in the Vercel project settings.
 4. Add the following environment variables:
 
    ```
-   NEXT_PUBLIC_API_URL=<your Railway API URL from Step 3>
+   NEXT_PUBLIC_API_URL=https://api.fpconnect.tec.br
    NEXT_PUBLIC_APP_NAME=OPSPECTA
    NEXT_PUBLIC_APP_VERSION=1.0.0
    NEXT_PUBLIC_SITE_URL=https://fpconnect.tec.br
@@ -206,17 +221,24 @@ customer evidence or performance claims.
 
 ### Step 5 — Automated CI/CD (GitHub Actions)
 
-Push to `main` automatically tests and deploys both services. Add these secrets to your GitHub repository (**Settings → Secrets and variables → Actions**):
+Push to `main` automatically tests and deploys both services. Add this secret to your GitHub repository (**Settings → Secrets and variables → Actions**):
 
 | Secret | How to get it |
 |---|---|
 | `VERCEL_TOKEN` | Vercel dashboard → Settings → Tokens |
-| `RAILWAY_TOKEN` | Railway dashboard → Account → Tokens |
+
+Add these repository variables in the same Actions settings:
+
+| Variable | Value |
+|---|---|
+| `VERCEL_ORG_ID` | Vercel team ID |
+| `VERCEL_PROJECT_ID` | Web project ID |
+| `VERCEL_API_PROJECT_ID` | API project ID |
 
 Once the secrets are set, every push to `main` will:
 1. Run all tests
 2. Deploy the web app to Vercel
-3. Deploy the API to Railway
+3. Deploy the API to Vercel and promote it only after health and authentication probes pass
 
 ---
 

@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   test-api:
@@ -75,15 +78,15 @@ jobs:
 
   deploy-web:
     name: Deploy Web to Vercel
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    needs: [test-web]
+    needs: [test-web, deploy-api]
     permissions:
       contents: read
     environment:
       name: Production
       url: ${{ steps.deploy.outputs.url }}
     env:
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
     steps:
@@ -96,6 +99,8 @@ jobs:
 
       - name: Validate deployment configuration
         shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           test -n "$VERCEL_TOKEN"
           test -n "$VERCEL_ORG_ID"
@@ -103,55 +108,113 @@ jobs:
 
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=production --scope=fpconnects-projects
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Build project
         run: vercel build --prod --scope=fpconnects-projects
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel
         id: deploy
         shell: bash
         run: |
-          url=$(vercel deploy --prebuilt --prod --scope=fpconnects-projects)
+          url=$(vercel deploy --prebuilt --prod --skip-domain --scope=fpconnects-projects)
           echo "url=$url" >> "$GITHUB_OUTPUT"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Verify staged deployment
+        run: curl --fail --silent --show-error --retry 5 "${{ steps.deploy.outputs.url }}/login" > /dev/null
 
       - name: Update public aliases
         shell: bash
         run: |
           vercel alias set "${{ steps.deploy.outputs.url }}" www.fpconnect.tec.br --scope=fpconnects-projects
           vercel alias set "${{ steps.deploy.outputs.url }}" fpconnect.tec.br --scope=fpconnects-projects
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
   deploy-api:
-    name: Deploy API to Railway
-    if: ${{ vars.RAILWAY_PROJECT_ID != '' && vars.RAILWAY_SERVICE_ID != '' }}
+    name: Deploy API to Vercel
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     needs: [test-api]
     permissions:
       contents: read
     environment:
       name: Production
+      url: ${{ steps.deploy.outputs.url }}
     env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
-      RAILWAY_SERVICE_ID: ${{ vars.RAILWAY_SERVICE_ID }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_API_PROJECT_ID }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
 
-      - name: Install Railway CLI
-        run: npm install --global @railway/cli@5.63.4
+      - name: Install Vercel CLI
+        run: npm install --global vercel@60.1.3
 
       - name: Validate deployment configuration
         shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          test -n "$RAILWAY_TOKEN"
-          test -n "$RAILWAY_PROJECT_ID"
-          test -n "$RAILWAY_SERVICE_ID"
+          test -n "$VERCEL_TOKEN"
+          test -n "$VERCEL_ORG_ID"
+          test -n "$VERCEL_PROJECT_ID"
 
-      - name: Link Railway project
-        run: railway link --project "$RAILWAY_PROJECT_ID" --environment production --service "$RAILWAY_SERVICE_ID"
-        working-directory: apps/api
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --scope=fpconnects-projects
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
-      - name: Deploy to Railway
-        run: railway up --detach
-        working-directory: apps/api
+      - name: Set up Python for migrations
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install migration dependencies
+        run: python -m pip install alembic==1.13.1 sqlalchemy==2.0.30 psycopg2-binary==2.9.9
+
+      - name: Reconcile production schema
+        run: vercel env run --environment=production --scope=fpconnects-projects -- python apps/api/scripts/migrate_auth_schema.py --reconcile-alembic
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Run database migrations
+        run: vercel env run --environment=production --scope=fpconnects-projects -- sh -c 'cd apps/api && alembic upgrade head'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build API
+        run: vercel build --prod --scope=fpconnects-projects
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy API
+        id: deploy
+        shell: bash
+        run: |
+          url=$(vercel deploy --prebuilt --prod --skip-domain --scope=fpconnects-projects)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Verify staged API
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --retry 5 "${{ steps.deploy.outputs.url }}/health" > /dev/null
+          auth_status=$(curl --silent --show-error --retry 5 \
+            --output /dev/null --write-out "%{http_code}" \
+            --header "Content-Type: application/json" \
+            --data '{"email":"deployment-probe@invalid.example","password":"invalid"}' \
+            "${{ steps.deploy.outputs.url }}/auth/login")
+          test "$auth_status" = "401"
+
+      - name: Update API alias
+        run: vercel alias set "${{ steps.deploy.outputs.url }}" api.fpconnect.tec.br --scope=fpconnects-projects
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { UserPlus } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
+import AccessGuard from "@/components/AccessGuard";
 
 const USERS = [
   { id: 1, name: "Master", email: "master@example.invalid", role: "master", accessLevel: 5, status: "active" },
@@ -19,6 +20,14 @@ const ROLE_COLORS: Record<string, string> = {
   manager: "bg-blue-100 text-blue-700",
   user: "bg-green-100 text-green-700",
   visitor: "bg-gray-100 text-gray-700",
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  master: "Master",
+  admin: "Administrador",
+  manager: "Gerente",
+  user: "Usuário",
+  visitor: "Visitante",
 };
 
 const FILTERS = [
@@ -62,6 +71,7 @@ export default function AccessControlPage() {
   }, [users, search, filters]);
 
   return (
+    <AccessGuard minimum={4}>
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Controle de Acesso</h1>
@@ -114,7 +124,7 @@ export default function AccessControlPage() {
                   <td className="px-4 py-3 text-gray-600">{u.email}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${ROLE_COLORS[u.role]}`}>
-                      {u.role}
+                      {ROLE_LABELS[u.role]}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -124,7 +134,7 @@ export default function AccessControlPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${u.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                      {u.status}
+                      {u.status === "active" ? "Ativo" : "Inativo"}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -137,5 +147,6 @@ export default function AccessControlPage() {
         </table>
       </div>
     </div>
+    </AccessGuard>
   );
 }

@@ -1,6 +1,10 @@
 """Authentication, password policy, JWT, and rate-limit utilities."""
 
+import base64
+import binascii
 from datetime import datetime, timedelta, timezone
+import hashlib
+import hmac
 import re
 from typing import Optional
 
@@ -26,9 +30,49 @@ def hash_password(password: str) -> str:
     return hashed.decode("utf-8")
 
 
+def _decode_adapted_base64(value: str) -> bytes:
+    """Decode Passlib's unpadded base64 variant used by legacy hashes."""
+    normalized = value.replace(".", "+")
+    normalized += "=" * (-len(normalized) % 4)
+    return base64.b64decode(normalized, validate=True)
+
+
+def _verify_legacy_pbkdf2_sha256(plain: str, hashed: str) -> bool:
+    """Verify hashes created by the former Passlib PBKDF2-SHA256 setup."""
+    try:
+        empty, scheme, rounds_value, salt_value, checksum_value = hashed.split("$")
+        if empty or scheme != "pbkdf2-sha256":
+            return False
+        rounds = int(rounds_value)
+        if rounds < 1_000 or rounds > 10_000_000:
+            return False
+        salt = _decode_adapted_base64(salt_value)
+        expected = _decode_adapted_base64(checksum_value)
+        actual = hashlib.pbkdf2_hmac(
+            "sha256",
+            plain.encode("utf-8"),
+            salt,
+            rounds,
+            dklen=len(expected),
+        )
+        return hmac.compare_digest(actual, expected)
+    except (TypeError, ValueError, binascii.Error):
+        return False
+
+
 def verify_password(plain: str, hashed: str) -> bool:
-    """Verify a plain-text password against its hash."""
-    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    """Verify current bcrypt hashes and supported legacy PBKDF2 hashes."""
+    if hashed.startswith("$pbkdf2-sha256$"):
+        return _verify_legacy_pbkdf2_sha256(plain, hashed)
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    except (TypeError, ValueError):
+        return False
+
+
+def password_needs_rehash(hashed: str) -> bool:
+    """Return whether a verified password should be upgraded to bcrypt."""
+    return not hashed.startswith(("$2a$", "$2b$", "$2y$"))
 
 
 def validate_password(password: str) -> tuple[bool, list[str]]:

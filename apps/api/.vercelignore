@@ -1,0 +1,10 @@
+.pytest_cache/
+.ruff_cache/
+**/__pycache__/
+*.db
+tests/
+scripts/
+alembic/
+alembic.ini
+Dockerfile
+railway.toml

@@ -18,6 +18,28 @@ function LoginModeToggle() {
   );
 }
 
+function DashboardDisclosure() {
+  return (
+    <>
+      <LanguageRuntime />
+      <p role="note">
+        Demonstração — dados fictícios. Estes indicadores não representam resultados de clientes nem uma operação em produção.
+      </p>
+    </>
+  );
+}
+
+function CustomerEnglishSurface() {
+  return (
+    <>
+      <LanguageRuntime />
+      <p>Configure os dados e preferências necessários para acompanhar os equipamentos da sua operação.</p>
+      <button aria-label="Remover notificação">Remover notificação</button>
+      <p>{"  Página 1 de 2  "}</p>
+    </>
+  );
+}
+
 describe("LanguageRuntime", () => {
   beforeEach(() => {
     localStorage.setItem(
@@ -54,10 +76,42 @@ describe("LanguageRuntime", () => {
     render(<LoginModeToggle />);
 
     expect(screen.getByRole("textbox", { name: "Password" })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Criar novo usuário" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create new user" }));
 
     await waitFor(() => {
       expect(screen.getAllByRole("textbox", { name: "Name" })).toHaveLength(2);
+    });
+  });
+
+  it("translates the dashboard disclosure when English is selected", async () => {
+    localStorage.setItem(
+      "fpconnect_system_preferences",
+      JSON.stringify({ language: "en-US" }),
+    );
+
+    render(<DashboardDisclosure />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("note")).toHaveTextContent(
+        "Demo — fictional data. These indicators do not represent customer results or a production operation.",
+      );
+    });
+  });
+
+  it("translates customer controls and dynamic pagination with surrounding whitespace", async () => {
+    localStorage.setItem(
+      "fpconnect_system_preferences",
+      JSON.stringify({ language: "en-US" }),
+    );
+
+    render(<CustomerEnglishSurface />);
+
+    await waitFor(() => {
+      expect(screen.getByText(
+        "Configure the data and preferences required to monitor your operation's equipment.",
+      )).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Remove notification" })).toBeInTheDocument();
+      expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
     });
   });
 });

@@ -1,5 +1,8 @@
 """Tests for authentication endpoints."""
 
+import base64
+import hashlib
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -7,7 +10,9 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 from app.core.database import Base, get_db
+from app.core.security import verify_password
 from app.main import app
+from app.models.user import User
 
 # Use an in-memory SQLite database for tests
 TEST_DB_URL = "sqlite:///./test.db"
@@ -35,6 +40,17 @@ def setup_db():
 
 
 client = TestClient(app)
+
+
+def legacy_pbkdf2_sha256(password: str, rounds: int = 29_000) -> str:
+    """Create the legacy Passlib-compatible format for migration tests."""
+    salt = b"legacy-test-salt"
+    checksum = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, rounds)
+
+    def adapted_base64(value: bytes) -> str:
+        return base64.b64encode(value).decode().rstrip("=").replace("+", ".")
+
+    return f"$pbkdf2-sha256${rounds}${adapted_base64(salt)}${adapted_base64(checksum)}"
 
 
 def test_register_success():
@@ -74,6 +90,23 @@ def test_register_is_blocked_when_public_registration_is_disabled(monkeypatch):
     assert response.status_code == 403
 
 
+def test_register_respects_email_allowlist(monkeypatch):
+    monkeypatch.setattr(settings, "registration_allowed_emails", ["owner@example.com"])
+
+    blocked = client.post(
+        "/auth/register",
+        json={"email": "other@example.com", "password": "SecurePass123!"},
+    )
+    allowed = client.post(
+        "/auth/register",
+        json={"email": "Owner@Example.com", "password": "SecurePass123!"},
+    )
+
+    assert blocked.status_code == 403
+    assert allowed.status_code == 201
+    assert allowed.json()["email"] == "owner@example.com"
+
+
 def test_login_success():
     client.post(
         "/auth/register",
@@ -93,6 +126,81 @@ def test_login_invalid_credentials():
         json={"email": "nobody@example.com", "password": "wrong"},
     )
     assert response.status_code == 401
+
+
+def test_login_with_malformed_hash_returns_unauthorized():
+    db = TestingSessionLocal()
+    db.add(
+        User(
+            email="broken-hash@example.com",
+            hashed_password="not-a-valid-password-hash",
+            role="admin",
+            access_level=4,
+        )
+    )
+    db.commit()
+    db.close()
+
+    response = client.post(
+        "/auth/login",
+        json={"email": "broken-hash@example.com", "password": "AnyPassword123!"},
+    )
+
+    assert response.status_code == 401
+
+
+def test_login_migrates_legacy_pbkdf2_hash_to_bcrypt():
+    password = "LegacyAdmin123!"
+    db = TestingSessionLocal()
+    db.add(
+        User(
+            email="legacy-admin@example.com",
+            hashed_password=legacy_pbkdf2_sha256(password),
+            role="admin",
+            access_level=4,
+        )
+    )
+    db.commit()
+    db.close()
+
+    response = client.post(
+        "/auth/login",
+        json={"email": "legacy-admin@example.com", "password": password},
+    )
+
+    assert response.status_code == 200
+    db = TestingSessionLocal()
+    migrated = db.query(User).filter(User.email == "legacy-admin@example.com").one()
+    assert migrated.hashed_password.startswith("$2")
+    assert verify_password(password, migrated.hashed_password)
+    db.close()
+
+
+def test_login_preserves_long_legacy_pbkdf2_password():
+    password = "LongLegacy1!" + ("x" * 80)
+    db = TestingSessionLocal()
+    db.add(
+        User(
+            email="long-legacy-admin@example.com",
+            hashed_password=legacy_pbkdf2_sha256(password),
+            role="admin",
+            access_level=4,
+        )
+    )
+    db.commit()
+    db.close()
+
+    response = client.post(
+        "/auth/login",
+        json={"email": "long-legacy-admin@example.com", "password": password},
+    )
+
+    assert response.status_code == 200
+    db = TestingSessionLocal()
+    preserved = db.query(User).filter(User.email == "long-legacy-admin@example.com").one()
+    assert preserved.hashed_password.startswith("$pbkdf2-sha256$")
+    assert verify_password(password, preserved.hashed_password)
+    db.close()
 
 
 def test_register_normalizes_email_case():
@@ -125,7 +233,43 @@ def test_refresh_token_success():
 
     assert response.status_code == 200
     assert response.json()["access_token"]
-    assert response.json()["refresh_token"] == refresh
+    assert response.json()["refresh_token"]
+
+
+def test_change_password_replaces_credentials():
+    email = "password-change@example.com"
+    current_password = "SecurePass123!"
+    new_password = "NewSecurePass456!"
+    client.post("/auth/register", json={"email": email, "password": current_password})
+    login_response = client.post("/auth/login", json={"email": email, "password": current_password})
+    token = login_response.json()["access_token"]
+    refresh_token = login_response.json()["refresh_token"]
+
+    response = client.post(
+        "/auth/password",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"current_password": current_password, "new_password": new_password},
+    )
+
+    assert response.status_code == 200
+    assert client.post("/auth/refresh", json={"refresh_token": refresh_token}).status_code == 401
+    assert client.post("/auth/login", json={"email": email, "password": current_password}).status_code == 401
+    assert client.post("/auth/login", json={"email": email, "password": new_password}).status_code == 200
+
+
+def test_change_password_rejects_wrong_current_password():
+    email = "wrong-current@example.com"
+    password = "SecurePass123!"
+    client.post("/auth/register", json={"email": email, "password": password})
+    token = client.post("/auth/login", json={"email": email, "password": password}).json()["access_token"]
+
+    response = client.post(
+        "/auth/password",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"current_password": "WrongPassword123!", "new_password": "NewSecurePass456!"},
+    )
+
+    assert response.status_code == 400
 
 
 def test_send_verification_code_success():

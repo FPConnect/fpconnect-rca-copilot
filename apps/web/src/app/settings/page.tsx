@@ -59,7 +59,6 @@ const INITIAL_NOTIF: NotificationPrefs = {
   push: false,
 };
 
-const PROFILE_STORAGE_KEY = "fpconnect_profile";
 const SYSTEM_STORAGE_KEY = "fpconnect_system_preferences";
 const NOTIFICATION_STORAGE_KEY = "fpconnect_notification_preferences";
 
@@ -184,12 +183,8 @@ export default function SettingsPage() {
   const { addNotification } = useNotifications();
 
   /* Profile */
-  const [profile, setProfile] = useState<ProfileForm>(() =>
-    readStorage(PROFILE_STORAGE_KEY, INITIAL_PROFILE),
-  );
-  const [profileDraft, setProfileDraft] = useState<ProfileForm>(() =>
-    readStorage(PROFILE_STORAGE_KEY, INITIAL_PROFILE),
-  );
+  const [profile, setProfile] = useState<ProfileForm>(INITIAL_PROFILE);
+  const [profileDraft, setProfileDraft] = useState<ProfileForm>(INITIAL_PROFILE);
   const profileSave = useSaveStatus();
 
   useEffect(() => {
@@ -205,10 +200,9 @@ export default function SettingsPage() {
         };
         setProfile(nextProfile);
         setProfileDraft(nextProfile);
-        writeStorage(PROFILE_STORAGE_KEY, nextProfile);
       })
       .catch(() => {
-        // Preview mode keeps using local profile storage when the API is offline.
+        // Keep personal data empty when the authenticated API cannot be reached.
       });
     return () => {
       active = false;
@@ -229,24 +223,18 @@ export default function SettingsPage() {
       return;
     }
     profileSave.save(async () => {
-      let savedProfile = profileDraft;
-      try {
-        const user = await api.updateMe({
-          email: profileDraft.email.trim(),
-          full_name: profileDraft.name.trim(),
-          phone_number: profileDraft.phone.trim(),
-        });
-        savedProfile = {
-          name: user.full_name || user.email.split("@")[0],
-          email: user.email,
-          phone: user.phone_number || "",
-        };
-      } catch {
-        // Preview mode persists locally when the API is offline.
-      }
+      const user = await api.updateMe({
+        email: profileDraft.email.trim(),
+        full_name: profileDraft.name.trim(),
+        phone_number: profileDraft.phone.trim(),
+      });
+      const savedProfile = {
+        name: user.full_name || user.email.split("@")[0],
+        email: user.email,
+        phone: user.phone_number || "",
+      };
       setProfile(savedProfile);
       setProfileDraft(savedProfile);
-      writeStorage(PROFILE_STORAGE_KEY, savedProfile);
       addNotification("success", "Perfil atualizado", "Suas informações foram salvas.");
     });
   };
@@ -334,7 +322,11 @@ export default function SettingsPage() {
       addNotification("error", "Senhas não coincidem", "A confirmação da senha não corresponde.");
       return;
     }
-    passwordSave.save(() => {
+    passwordSave.save(async () => {
+      await api.changePassword({
+        current_password: passwordForm.current,
+        new_password: passwordForm.newPassword,
+      });
       setPasswordForm({ current: "", newPassword: "", confirm: "" });
       addNotification("success", "Senha alterada", "Sua senha foi atualizada com sucesso.");
     });
@@ -715,9 +707,6 @@ export default function SettingsPage() {
                 setSystem(INITIAL_SYSTEM);
                 setNotifDraft(INITIAL_NOTIF);
                 setNotifPrefs(INITIAL_NOTIF);
-                setProfileDraft(INITIAL_PROFILE);
-                setProfile(INITIAL_PROFILE);
-                writeStorage(PROFILE_STORAGE_KEY, INITIAL_PROFILE);
                 writeStorage(SYSTEM_STORAGE_KEY, INITIAL_SYSTEM);
                 writeStorage(NOTIFICATION_STORAGE_KEY, INITIAL_NOTIF);
                 applyThemePreference(INITIAL_SYSTEM.theme);

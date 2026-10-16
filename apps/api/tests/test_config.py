@@ -16,6 +16,7 @@ def test_production_is_the_default_and_test_account_seeding_is_disabled(monkeypa
         secret_key="prod-secret-key-that-is-long-enough",
         refresh_secret_key="prod-refresh-key-that-is-long-enough",
         cors_origins=["https://fpconnect.tec.br"],
+        public_registration_enabled=False,
     )
     assert settings.app_env == "production"
     assert settings.seed_test_accounts is False
@@ -49,3 +50,23 @@ def test_production_rejects_insecure_cors_origins():
             seed_test_accounts=True,
             test_account_password="short",
         )
+
+
+def test_production_registration_requires_and_normalizes_an_email_allowlist():
+    base = {
+        "_env_file": None,
+        "app_env": "production",
+        "secret_key": "prod-secret-key-that-is-long-enough",
+        "refresh_secret_key": "prod-refresh-key-that-is-long-enough",
+        "cors_origins": ["https://fpconnect.tec.br"],
+        "public_registration_enabled": True,
+    }
+
+    with pytest.raises(ValidationError, match="REGISTRATION_ALLOWED_EMAILS is required"):
+        Settings(**base, registration_allowed_emails=[])
+
+    settings = Settings(
+        **base,
+        registration_allowed_emails=[" Owner@Example.com ", "owner@example.com"],
+    )
+    assert settings.registration_allowed_emails == ["owner@example.com"]

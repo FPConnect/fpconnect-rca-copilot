@@ -16,6 +16,12 @@ const STATUS_COLORS: Record<string, string> = {
   completed: "bg-green-100 text-green-700",
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  scheduled: "Agendada",
+  in_progress: "Em Andamento",
+  completed: "Concluída",
+};
+
 const MAINTENANCE_STORAGE_KEY = "fpconnect_maintenance_schedule";
 
 function readSchedule() {
@@ -92,7 +98,7 @@ export default function MaintenancePage() {
                 <td className="px-4 py-3 text-gray-600">{s.technician}</td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[s.status]}`}>
-                    {s.status}
+                    {STATUS_LABELS[s.status] ?? s.status}
                   </span>
                 </td>
               </tr>
