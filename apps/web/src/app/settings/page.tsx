@@ -59,7 +59,6 @@ const INITIAL_NOTIF: NotificationPrefs = {
   push: false,
 };
 
-const PROFILE_STORAGE_KEY = "fpconnect_profile";
 const SYSTEM_STORAGE_KEY = "fpconnect_system_preferences";
 const NOTIFICATION_STORAGE_KEY = "fpconnect_notification_preferences";
 
@@ -184,12 +183,8 @@ export default function SettingsPage() {
   const { addNotification } = useNotifications();
 
   /* Profile */
-  const [profile, setProfile] = useState<ProfileForm>(() =>
-    readStorage(PROFILE_STORAGE_KEY, INITIAL_PROFILE),
-  );
-  const [profileDraft, setProfileDraft] = useState<ProfileForm>(() =>
-    readStorage(PROFILE_STORAGE_KEY, INITIAL_PROFILE),
-  );
+  const [profile, setProfile] = useState<ProfileForm>(INITIAL_PROFILE);
+  const [profileDraft, setProfileDraft] = useState<ProfileForm>(INITIAL_PROFILE);
   const profileSave = useSaveStatus();
 
   useEffect(() => {
@@ -205,10 +200,9 @@ export default function SettingsPage() {
         };
         setProfile(nextProfile);
         setProfileDraft(nextProfile);
-        writeStorage(PROFILE_STORAGE_KEY, nextProfile);
       })
       .catch(() => {
-        // Preview mode keeps using local profile storage when the API is offline.
+        // Keep personal data empty when the authenticated API cannot be reached.
       });
     return () => {
       active = false;
@@ -241,7 +235,6 @@ export default function SettingsPage() {
       };
       setProfile(savedProfile);
       setProfileDraft(savedProfile);
-      writeStorage(PROFILE_STORAGE_KEY, savedProfile);
       addNotification("success", "Perfil atualizado", "Suas informações foram salvas.");
     });
   };
@@ -714,9 +707,6 @@ export default function SettingsPage() {
                 setSystem(INITIAL_SYSTEM);
                 setNotifDraft(INITIAL_NOTIF);
                 setNotifPrefs(INITIAL_NOTIF);
-                setProfileDraft(INITIAL_PROFILE);
-                setProfile(INITIAL_PROFILE);
-                writeStorage(PROFILE_STORAGE_KEY, INITIAL_PROFILE);
                 writeStorage(SYSTEM_STORAGE_KEY, INITIAL_SYSTEM);
                 writeStorage(NOTIFICATION_STORAGE_KEY, INITIAL_NOTIF);
                 applyThemePreference(INITIAL_SYSTEM.theme);
