@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, DateTime, Enum, Integer, String, func
 
-from app.core.database import Base
+from app.core.base import Base
 
 
 class Machine(Base):

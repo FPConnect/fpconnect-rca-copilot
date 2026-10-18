@@ -1,18 +1,20 @@
 """Alembic migration environment."""
 
 from logging.config import fileConfig
+import os
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from app.core.config import settings
-from app.core.database import Base
+from app.core.base import Base
 
 # Import all models so Alembic can detect them
 from app.models import user, ticket  # noqa: F401
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.database_url)
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

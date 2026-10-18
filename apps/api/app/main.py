@@ -11,7 +11,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.routes import analyze, auth, contracts, enterprise, machines, notifications, playbooks, tickets
 from app.core.config import settings
-from app.core.database import Base, SessionLocal, engine
+from app.core.base import Base
+from app.core.database import SessionLocal, engine
 from app.core.security import limiter
 from app.core.test_accounts import reset_test_accounts
 from app.models import machine, playbook, ticket, user  # noqa: F401

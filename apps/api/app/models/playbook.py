@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text, func
 
-from app.core.database import Base
+from app.core.base import Base
 
 
 class Playbook(Base):
