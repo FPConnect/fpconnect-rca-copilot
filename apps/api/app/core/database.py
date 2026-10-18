@@ -1,8 +1,9 @@
 """SQLAlchemy database setup."""
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
+from app.core.base import Base as Base
 from app.core.config import settings
 
 engine = create_engine(
@@ -13,9 +14,6 @@ engine = create_engine(
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base = declarative_base()
-
 
 def get_db():
     """Dependency that provides a database session."""
