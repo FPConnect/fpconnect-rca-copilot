@@ -23,9 +23,9 @@ const copy = {
     title: "Encontre padrões de falha antes de investir em mais manutenção.",
     subtitle:
       "O OPSPECTA organiza ordens de serviço, logs e códigos de erro para revelar recorrências, gargalos de atendimento e oportunidades de redução de tempo de indisponibilidade. A validação técnica final permanece com a equipe responsável.",
-    priceLabel: "Investimento inicial",
-    price: "A partir de R$ 3.500",
-    intl: "ou US$ 750 para projetos internacionais",
+    commercialLabel: "Enquadramento comercial",
+    commercialTitle: "Proposta sob medida",
+    commercialText: "O investimento é definido após confirmar volume de dados, complexidade, integrações, requisitos de segurança e critérios de aceite.",
     cta: "Solicitar diagnóstico",
     secondary: "Ver plataforma",
     deliverableTitle: "O que você recebe",
@@ -63,9 +63,9 @@ const copy = {
     title: "Find failure patterns before spending more on maintenance.",
     subtitle:
       "OPSPECTA organizes service orders, logs and error codes to surface recurring issues, service bottlenecks and opportunities to reduce downtime. Final technical validation remains with the responsible team.",
-    priceLabel: "Starting investment",
-    price: "From US$ 750",
-    intl: "Brazilian projects from R$ 3,500",
+    commercialLabel: "Commercial scoping",
+    commercialTitle: "Tailored proposal",
+    commercialText: "Investment is defined after confirming data volume, complexity, integrations, security requirements and acceptance criteria.",
     cta: "Request diagnostic",
     secondary: "View platform",
     deliverableTitle: "What you receive",
@@ -170,9 +170,9 @@ export default function DiagnosticPage() {
           </div>
 
           <aside className="rounded-2xl border border-slate-200 bg-[#071a33] p-8 text-white shadow-xl">
-            <p className="text-sm font-black uppercase tracking-wide text-[#8eece7]">{t.priceLabel}</p>
-            <p className="mt-3 text-4xl font-black">{t.price}</p>
-            <p className="mt-2 text-sm text-slate-300">{t.intl}</p>
+            <p className="text-sm font-black uppercase tracking-wide text-[#8eece7]">{t.commercialLabel}</p>
+            <p className="mt-3 text-3xl font-black">{t.commercialTitle}</p>
+            <p className="mt-3 text-sm leading-6 text-slate-300">{t.commercialText}</p>
             <div className="mt-8 space-y-5 border-t border-slate-600 pt-6">
               <div className="flex gap-3">
                 <Clock3 size={20} className="mt-0.5 shrink-0 text-[#22d7cf]" aria-hidden="true" />
