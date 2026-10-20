@@ -92,3 +92,46 @@ html.dark input::placeholder,
 html.dark textarea::placeholder {
   color: #94a3b8;
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  html.motion-enabled [data-motion] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  html.motion-enabled [data-motion="fade"] {
+    transform: none;
+  }
+
+  html.motion-enabled [data-motion="scale"] {
+    transform: scale(0.975);
+  }
+
+  html.motion-enabled [data-motion].motion-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .motion-lift {
+    transition:
+      transform 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+
+  .motion-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 36px rgb(7 26 61 / 10%);
+  }
+
+  .motion-arrow svg {
+    transition: transform 180ms ease;
+  }
+
+  .motion-arrow:hover svg {
+    transform: translateX(3px);
+  }
+}

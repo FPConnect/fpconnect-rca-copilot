@@ -14,6 +14,7 @@ from app.models.machine import Machine
 from app.models.user import User
 from app.core.security import hash_password
 from app.services.clinical_metrics import calculate_equipment_criticality
+from app.services.equipment_report import normalize_criticality
 from app.services import analyze_service
 from app.schemas.ticket import AnalyzeTicketRequest
 
@@ -246,3 +247,8 @@ def test_equipment_report_returns_not_found_for_unknown_code():
     response = client.get("/enterprise/reports/equipment/UNKNOWN", headers=headers)
 
     assert response.status_code == 404
+
+
+def test_equipment_report_repairs_legacy_criticality_encoding():
+    assert normalize_criticality("M?dia") == "Média"
+    assert normalize_criticality("Cr?tica") == "Crítica"
