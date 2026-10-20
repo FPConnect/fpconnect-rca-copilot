@@ -17,7 +17,10 @@ import {
   Target,
 } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
-import { setLanguagePreference } from "@/components/LanguageRuntime";
+import {
+  setLanguagePreference,
+  useLanguagePreference,
+} from "@/components/LanguageRuntime";
 import { APP_NAME } from "@/lib/brand";
 
 type Locale = "pt" | "en";
@@ -28,6 +31,8 @@ const planOrder: PlanKey[] = ["basic", "premium", "vip", "consultoria"];
 const copy = {
   pt: {
     languageLabel: "Selecionar idioma",
+    brandTagline: "Inteligência operacional para a saúde",
+    heroAlt: "Profissional de tecnologia em saúde analisando indicadores operacionais anonimizados",
     badge: "Inteligência de dados para operações MedTech",
     headline: "Performance de tecnologia em saúde",
     subtitle:
@@ -107,6 +112,8 @@ const copy = {
   },
   en: {
     languageLabel: "Select language",
+    brandTagline: "Operational intelligence for healthcare",
+    heroAlt: "Healthcare technology professional reviewing anonymized operational indicators",
     badge: "Data intelligence for MedTech operations",
     headline: "Healthcare technology performance",
     subtitle:
@@ -187,14 +194,14 @@ const copy = {
 } as const;
 
 export default function LandingPage() {
-  const [locale, setLocale] = useState<Locale>("pt");
+  const languagePreference = useLanguagePreference();
+  const locale: Locale = languagePreference === "en-US" ? "en" : "pt";
   const [activePlan, setActivePlan] = useState<PlanKey>("premium");
   const t = copy[locale];
   const active = useMemo(() => t.plans[activePlan], [activePlan, t.plans]);
 
   const handleLocaleChange = (nextLocale: Locale) => {
     setLanguagePreference(nextLocale === "pt" ? "pt-BR" : "en-US");
-    setLocale(nextLocale);
   };
 
   useEffect(() => {
@@ -237,7 +244,7 @@ export default function LandingPage() {
       <section className="relative min-h-[680px] overflow-hidden border-b border-slate-200 bg-white">
         <Image
           src="/brand/opspecta-hero.png"
-          alt="Profissional de tecnologia em saúde analisando indicadores operacionais anonimizados"
+          alt={t.heroAlt}
           fill
           priority
           sizes="100vw"
@@ -286,7 +293,7 @@ export default function LandingPage() {
               >
                 <Image
                   src="/brand/opspecta-brand-banner.jpg"
-                  alt={`${APP_NAME} - Inteligência operacional para a saúde`}
+                  alt={`${APP_NAME} - ${t.brandTagline}`}
                   fill
                   priority
                   sizes="(max-width: 768px) calc(100vw - 40px), 672px"
@@ -440,7 +447,7 @@ export default function LandingPage() {
       <footer className="bg-white py-10">
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-6 px-5 sm:px-8">
           <BrandLogo />
-          <p className="text-sm text-slate-500">© {new Date().getFullYear()} {APP_NAME}. Inteligência operacional para a saúde.</p>
+          <p className="text-sm text-slate-500">© {new Date().getFullYear()} {APP_NAME}. {t.brandTagline}.</p>
         </div>
       </footer>
     </main>
