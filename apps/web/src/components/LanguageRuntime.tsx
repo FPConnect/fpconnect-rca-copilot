@@ -186,6 +186,8 @@ const PT_TO_EN: Record<string, string> = {
   "Máquina": "Machine",
   "Localização": "Location",
   "Último Check": "Last Check",
+  "Relatório": "Report",
+  "Não foi possível gerar o relatório. Tente novamente.": "Unable to generate the report. Try again.",
   "Data": "Date",
   "Técnico": "Technician",
   "Agendar Manutenção": "Schedule Maintenance",
@@ -381,10 +383,12 @@ function translateValue(value: string, language: Language): string {
     ? trimmed
         .replace(/^Página (\d+) de (\d+)$/, "Page $1 of $2")
         .replace(/^(\d+) dias$/, "$1 days")
+        .replace(/^Gerar relatório de (.+)$/, "Generate report for $1")
         .replace(/^(.+) vs semana anterior$/, "$1 vs previous week")
     : trimmed
         .replace(/^Page (\d+) of (\d+)$/, "Página $1 de $2")
         .replace(/^(\d+) days$/, "$1 dias")
+        .replace(/^Generate report for (.+)$/, "Gerar relatório de $1")
         .replace(/^(.+) vs previous week$/, "$1 vs semana anterior");
 
   return dynamicTranslation === trimmed
