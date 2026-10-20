@@ -100,7 +100,10 @@ def test_analyze_endpoint_persists_root_cause():
     assert response.status_code == 200
     data = response.json()
     assert data["root_cause"] == "Sensor SpO2 com cabo intermitente"
-    assert data["recommendation"] == "Trocar cabo, validar curva e registrar teste funcional."
+    assert (
+        data["recommendation"]
+        == "Trocar cabo, validar curva e registrar teste funcional."
+    )
 
     ticket_response = client.get(f"/tickets/{ticket_id}", headers=headers)
     assert ticket_response.json()["root_cause"] == "Sensor SpO2 com cabo intermitente"
@@ -108,7 +111,9 @@ def test_analyze_endpoint_persists_root_cause():
 
 
 def test_analyze_fallback_honors_english_language(monkeypatch):
-    monkeypatch.setattr(analyze_service, "get_root_cause_analysis", lambda db, description: [])
+    monkeypatch.setattr(
+        analyze_service, "get_root_cause_analysis", lambda db, description: []
+    )
     ticket = SimpleNamespace(title="Synthetic monitor fault", description=None)
 
     suggestions = analyze_service.analyze_ticket(
@@ -151,15 +156,24 @@ def test_playbook_crud():
 
 
 def test_equipment_criticality_calculation():
-    assert calculate_equipment_criticality(
-        status="offline", recurrent_failures=0, base_criticality="Baixa"
-    ) == "Alta"
-    assert calculate_equipment_criticality(
-        status="online", recurrent_failures=3, base_criticality="Média"
-    ) == "Alta"
-    assert calculate_equipment_criticality(
-        status="online", recurrent_failures=0, base_criticality="Baixa"
-    ) == "Baixa"
+    assert (
+        calculate_equipment_criticality(
+            status="offline", recurrent_failures=0, base_criticality="Baixa"
+        )
+        == "Alta"
+    )
+    assert (
+        calculate_equipment_criticality(
+            status="online", recurrent_failures=3, base_criticality="Média"
+        )
+        == "Alta"
+    )
+    assert (
+        calculate_equipment_criticality(
+            status="online", recurrent_failures=0, base_criticality="Baixa"
+        )
+        == "Baixa"
+    )
 
 
 def test_machine_schema_includes_clinical_fields():
@@ -186,3 +200,49 @@ def test_machine_schema_includes_clinical_fields():
     data = response.json()[0]
     assert data["criticality"] == "Média"
     assert data["recurrent_failures"] == 2
+
+
+def test_equipment_report_is_generated_from_persisted_records():
+    headers = auth_headers()
+    db = TestingSessionLocal()
+    db.add(
+        Machine(
+            code="REPORT-01",
+            name="Ventilador <QA> & teste",
+            model="QA 2026",
+            location="Laboratório",
+            type="life-support",
+            status="warning",
+            criticality="Alta",
+            last_failure="Alarme de pressão",
+            recurrent_failures=1,
+        )
+    )
+    db.commit()
+    db.close()
+
+    response = client.get(
+        "/enterprise/reports/equipment/REPORT-01?period_days=30&demonstration=true",
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.headers["cache-control"] == "private, no-store"
+    assert "opspecta-relatorio-report-01.pdf" in response.headers["content-disposition"]
+    assert response.content.startswith(b"%PDF-")
+    assert len(response.content) > 4000
+
+
+def test_equipment_report_requires_authentication():
+    response = client.get("/enterprise/reports/equipment/REPORT-01")
+
+    assert response.status_code == 401
+
+
+def test_equipment_report_returns_not_found_for_unknown_code():
+    headers = auth_headers()
+
+    response = client.get("/enterprise/reports/equipment/UNKNOWN", headers=headers)
+
+    assert response.status_code == 404

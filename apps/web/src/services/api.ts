@@ -43,6 +43,27 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function requestFile(
+  path: string,
+): Promise<{ blob: Blob; filename: string }> {
+  const token = getAuthToken();
+  const res = await fetch(`${API_URL}${path}`, {
+    headers: {
+      Accept: "application/pdf",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    throw new ApiError(res.status, text);
+  }
+  const disposition = res.headers.get("content-disposition") ?? "";
+  const filename =
+    disposition.match(/filename="?([^";]+)"?/i)?.[1] ??
+    "opspecta-relatorio-equipamento.pdf";
+  return { blob: await res.blob(), filename };
+}
+
 export interface Machine {
   id: number;
   code: string;
@@ -342,6 +363,19 @@ async function createTicket(data: CreateTicketPayload): Promise<Ticket> {
   );
 }
 
+async function getEquipmentReport(
+  equipmentCode: string,
+  periodDays = 90,
+): Promise<{ blob: Blob; filename: string }> {
+  const params = new URLSearchParams({
+    period_days: String(periodDays),
+    demonstration: "true",
+  });
+  return requestFile(
+    `/enterprise/reports/equipment/${encodeURIComponent(equipmentCode)}?${params}`,
+  );
+}
+
 export const api = {
   health: () => withFallback(() => request<HealthStatus>("/health"), () => ({ status: "ok", version: "preview" })),
   login,
@@ -357,6 +391,7 @@ export const api = {
   createPlaybook,
   getContracts: () => withFallback(() => request<SLAContract[]>("/contracts/"), () => FALLBACK_CONTRACTS),
   getMachines: () => withFallback(() => request<Machine[]>("/machines"), () => FALLBACK_MACHINES),
+  getEquipmentReport,
   getTickets: () => withFallback(() => request<Ticket[]>("/tickets"), readPreviewTickets),
   createTicket,
 };
