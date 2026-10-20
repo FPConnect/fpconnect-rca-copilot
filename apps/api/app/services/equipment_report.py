@@ -114,6 +114,16 @@ def _priority_label(priority: str) -> str:
     }.get(priority, _safe_text(priority, 30))
 
 
+def normalize_criticality(value: str) -> str:
+    """Repair known legacy encodings before rendering a report."""
+    normalized = value.strip().casefold()
+    if normalized in {"m?dia", "média", "media", "mã©dia"}:
+        return "Média"
+    if normalized in {"cr?tica", "crítica", "critica", "crãtica"}:
+        return "Crítica"
+    return value
+
+
 def _styles() -> dict[str, ParagraphStyle]:
     base = getSampleStyleSheet()
     return {
@@ -240,7 +250,7 @@ def _metadata_table(
         [
             _field("Local", equipment.location, styles),
             _field("Categoria", equipment.equipment_type, styles),
-            _field("Criticidade", equipment.criticality, styles),
+            _field("Criticidade", normalize_criticality(equipment.criticality), styles),
         ],
     ]
     table = Table(data, colWidths=[55 * mm, 67 * mm, 49 * mm])

@@ -206,6 +206,32 @@ export default function LandingPage() {
     };
   }, [locale]);
 
+  useEffect(() => {
+    const prefersReducedMotion =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion || typeof IntersectionObserver === "undefined") return;
+
+    document.documentElement.classList.add("motion-enabled");
+    const elements = Array.from(document.querySelectorAll<HTMLElement>("[data-motion]"));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("motion-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "0px 0px -8%", threshold: 0.12 },
+    );
+
+    elements.forEach((element) => observer.observe(element));
+    return () => {
+      observer.disconnect();
+      document.documentElement.classList.remove("motion-enabled");
+    };
+  }, []);
+
   return (
     <main className="brand-surface min-h-screen bg-white text-[#071a3d]" data-no-translate>
       <section className="relative min-h-[680px] overflow-hidden border-b border-slate-200 bg-white">
@@ -220,7 +246,7 @@ export default function LandingPage() {
         <div className="absolute inset-y-0 left-0 w-full bg-white/95 md:w-[72%] md:bg-white/90 lg:w-[61%]" />
 
         <div className="relative mx-auto flex min-h-[680px] w-full max-w-[1440px] flex-col px-5 sm:px-8 lg:px-10">
-          <nav className="flex min-h-20 items-center justify-between gap-4 border-b border-slate-200/80">
+          <nav data-motion="fade" className="flex min-h-20 items-center justify-between gap-4 border-b border-slate-200/80">
             <BrandLogo />
             <div
               className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-1 text-sm font-bold shadow-sm"
@@ -248,7 +274,7 @@ export default function LandingPage() {
 
           <div className="flex flex-1 items-center py-10">
             <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#1bbdb6]/40 bg-white/85 px-4 py-2 text-sm font-bold text-[#075c63]">
+              <div data-motion className="inline-flex items-center gap-2 rounded-full border border-[#1bbdb6]/40 bg-white/85 px-4 py-2 text-sm font-bold text-[#075c63]">
                 <ShieldCheck size={16} aria-hidden="true" />
                 {t.badge}
               </div>
@@ -256,6 +282,7 @@ export default function LandingPage() {
               <div
                 className="relative mt-7 aspect-[22/5] w-full max-w-2xl overflow-hidden bg-white"
                 data-brand-banner
+                data-motion="scale"
               >
                 <Image
                   src="/brand/opspecta-brand-banner.jpg"
@@ -266,26 +293,26 @@ export default function LandingPage() {
                   className="object-cover object-center"
                 />
               </div>
-              <p className="mt-5 max-w-xl text-3xl font-bold leading-tight text-[#0a7f86]">{t.headline}</p>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">{t.subtitle}</p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <p data-motion className="mt-5 max-w-xl text-3xl font-bold leading-tight text-[#0a7f86]">{t.headline}</p>
+              <p data-motion className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">{t.subtitle}</p>
+              <div data-motion className="mt-8 flex flex-wrap gap-3">
                 <Link
                   href="https://wa.me/5547996789861"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#071a3d] px-6 font-bold text-white shadow-lg transition hover:bg-[#0a7f86]"
+                  className="motion-arrow motion-lift inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#071a3d] px-6 font-bold text-white shadow-lg transition hover:bg-[#0a7f86]"
                 >
                   <MessageCircle size={19} aria-hidden="true" />
                   {t.cta}
                 </Link>
                 <Link
                   href="/login"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-[#071a3d] bg-white/90 px-6 font-bold text-[#071a3d] transition hover:border-[#0a7f86] hover:text-[#0a7f86]"
+                  className="motion-arrow motion-lift inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-[#071a3d] bg-white/90 px-6 font-bold text-[#071a3d] transition hover:border-[#0a7f86] hover:text-[#0a7f86]"
                 >
                   {t.secondaryCta}
                   <ArrowRight size={18} aria-hidden="true" />
                 </Link>
               </div>
 
-              <div className="mt-9 border-y border-slate-300 bg-white/80 py-4">
+              <div data-motion className="mt-9 border-y border-slate-300 bg-white/80 py-4">
                 <p className="mb-3 text-xs font-bold uppercase text-slate-500">{t.pilotReference}</p>
                 <div className="grid gap-4 sm:grid-cols-3">
                   {t.kpis.map(({ label, value, icon: Icon }) => (
@@ -306,11 +333,11 @@ export default function LandingPage() {
 
       <section className="bg-[#f4f8fa] py-16">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
-          <p className="text-sm font-black uppercase text-[#0a7f86]">{t.sectionEyebrow}</p>
-          <h2 className="mt-3 max-w-3xl text-4xl font-black leading-tight text-[#071a3d]">{t.sectionTitle}</h2>
+          <p data-motion className="text-sm font-black uppercase text-[#0a7f86]">{t.sectionEyebrow}</p>
+          <h2 data-motion className="mt-3 max-w-3xl text-4xl font-black leading-tight text-[#071a3d]">{t.sectionTitle}</h2>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {t.highlights.map(({ icon: Icon, title, description }) => (
-              <article key={title} className="rounded-lg border border-slate-200 bg-white p-7 shadow-sm">
+            {t.highlights.map(({ icon: Icon, title, description }, index) => (
+              <article key={title} data-motion className="motion-lift rounded-lg border border-slate-200 bg-white p-7 shadow-sm" style={{ transitionDelay: `${index * 80}ms` }}>
                 <span className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-[#dff8f6] text-[#08777c]">
                   <Icon size={22} aria-hidden="true" />
                 </span>
@@ -324,11 +351,11 @@ export default function LandingPage() {
 
       <section className="bg-[#071a33] py-14 text-white">
         <div className="mx-auto grid max-w-[1280px] gap-8 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-          <div>
+          <div data-motion>
             <BarChart3 size={34} className="text-[#22d7cf]" aria-hidden="true" />
             <h2 className="mt-5 text-3xl font-black leading-tight">{t.evidenceTitle}</h2>
           </div>
-          <div className="border-l border-slate-600 pl-6">
+          <div data-motion className="border-l border-slate-600 pl-6">
             <p className="text-lg leading-8 text-slate-100">{t.evidenceText}</p>
             <p className="mt-4 text-sm leading-6 text-slate-300">{t.privacyText}</p>
           </div>
@@ -337,10 +364,10 @@ export default function LandingPage() {
 
       <section className="py-16">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
-          <h2 className="text-4xl font-black text-[#071a3d]">{t.processTitle}</h2>
+          <h2 data-motion className="text-4xl font-black text-[#071a3d]">{t.processTitle}</h2>
           <div className="mt-10 grid gap-8 md:grid-cols-3">
-            {t.process.map((step) => (
-              <article key={step.number} className="border-t-4 border-[#18c8c0] pt-5">
+            {t.process.map((step, index) => (
+              <article key={step.number} data-motion className="border-t-4 border-[#18c8c0] pt-5" style={{ transitionDelay: `${index * 80}ms` }}>
                 <span className="text-sm font-black text-[#0a7f86]">{step.number}</span>
                 <h3 className="mt-3 text-2xl font-black text-[#071a3d]">{step.title}</h3>
                 <p className="mt-3 leading-7 text-slate-600">{step.text}</p>
@@ -352,7 +379,7 @@ export default function LandingPage() {
 
       <section id="plans" className="border-y border-slate-200 bg-[#f4f8fa] py-16">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
-          <div className="max-w-4xl">
+          <div data-motion className="max-w-4xl">
             <p className="text-sm font-black uppercase text-[#0a7f86]">{t.chooseTitle}</p>
             <h2 className="mt-3 text-4xl font-black text-[#071a3d]">{t.plansTitle}</h2>
             <p className="mt-5 text-lg leading-8 text-slate-600">{t.plansText}</p>
@@ -366,8 +393,10 @@ export default function LandingPage() {
                 <button
                   key={plan.name}
                   type="button"
+                  data-motion
                   onClick={() => setActivePlan(planKey)}
-                  className={`min-h-28 rounded-lg border p-5 text-left transition ${
+                  style={{ transitionDelay: `${planOrder.indexOf(planKey) * 70}ms` }}
+                  className={`motion-lift min-h-28 rounded-lg border p-5 text-left transition ${
                     selected
                       ? "border-[#0a7f86] bg-[#071a33] text-white shadow-md"
                       : "border-slate-300 bg-white text-[#071a3d] hover:border-[#0a7f86]"
@@ -380,7 +409,7 @@ export default function LandingPage() {
             })}
           </div>
 
-          <div className="mt-8 grid gap-8 rounded-lg border border-slate-200 bg-white p-7 shadow-sm lg:grid-cols-[1fr_0.8fr] lg:p-9">
+          <div data-motion className="mt-8 grid gap-8 rounded-lg border border-slate-200 bg-white p-7 shadow-sm lg:grid-cols-[1fr_0.8fr] lg:p-9">
             <div>
               <p className="text-sm font-bold uppercase text-[#0a7f86]">{active.label}</p>
               <h3 className="mt-3 text-3xl font-black text-[#071a3d]">{active.name}</h3>
@@ -398,7 +427,7 @@ export default function LandingPage() {
               <p className="max-w-md text-base leading-7 text-slate-600">{t.planHint}</p>
               <Link
                 href="https://wa.me/5547996789861"
-                className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#18c8c0] px-6 font-black text-[#071a3d] transition hover:bg-[#39ddd5]"
+                className="motion-arrow motion-lift mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#18c8c0] px-6 font-black text-[#071a3d] transition hover:bg-[#39ddd5]"
               >
                 {active.cta}
                 <ArrowRight size={18} aria-hidden="true" />
