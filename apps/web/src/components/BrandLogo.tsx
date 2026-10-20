@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import { APP_NAME } from "@/lib/brand";
+import { useLanguagePreference } from "@/components/LanguageRuntime";
 
 type BrandLogoProps = {
   inverse?: boolean;
@@ -8,10 +11,15 @@ type BrandLogoProps = {
 };
 
 export default function BrandLogo({ inverse = false, compact = false, className = "" }: BrandLogoProps) {
+  const language = useLanguagePreference();
+  const tagline = language === "en-US"
+    ? "Operational intelligence for healthcare"
+    : "Inteligência operacional para a saúde";
+
   return (
     <span
       className={`inline-flex items-center gap-2.5 ${className}`}
-      aria-label={`${APP_NAME} - Inteligência operacional para a saúde`}
+      aria-label={`${APP_NAME} - ${tagline}`}
       data-no-translate
     >
       <Image
@@ -33,7 +41,7 @@ export default function BrandLogo({ inverse = false, compact = false, className 
           <span
             className={`brand-tagline mt-1.5 block text-[10px] leading-none ${inverse ? "text-slate-300" : "text-slate-600"}`}
           >
-            Inteligência operacional para a saúde
+            {tagline}
           </span>
         </span>
       )}

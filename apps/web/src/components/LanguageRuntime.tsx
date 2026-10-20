@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const SYSTEM_STORAGE_KEY = "fpconnect_system_preferences";
 export const LANGUAGE_CHANGE_EVENT = "fpconnect:language-change";
@@ -466,6 +466,23 @@ export function setLanguagePreference(language: Language) {
   }
 
   notifyLanguageChanged();
+}
+
+export function useLanguagePreference(): Language {
+  const [language, setLanguage] = useState<Language>("pt-BR");
+
+  useEffect(() => {
+    const syncLanguage = () => setLanguage(getLanguagePreference());
+    syncLanguage();
+    window.addEventListener(LANGUAGE_CHANGE_EVENT, syncLanguage);
+    window.addEventListener("storage", syncLanguage);
+    return () => {
+      window.removeEventListener(LANGUAGE_CHANGE_EVENT, syncLanguage);
+      window.removeEventListener("storage", syncLanguage);
+    };
+  }, []);
+
+  return language;
 }
 
 export default function LanguageRuntime() {

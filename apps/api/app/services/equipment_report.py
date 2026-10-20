@@ -6,12 +6,15 @@ import io
 import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Sequence
 from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 from reportlab.lib.pagesizes import A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import (
@@ -36,6 +39,21 @@ SURFACE = colors.HexColor("#F4F8FC")
 WARNING = colors.HexColor("#B45309")
 CRITICAL = colors.HexColor("#B4233C")
 SUCCESS = colors.HexColor("#087A55")
+
+ASSET_DIR = Path(__file__).resolve().parents[1] / "assets"
+LOGO_PATH = ASSET_DIR / "opspecta-logo.png"
+FONT_REGULAR_PATH = ASSET_DIR / "fonts" / "Manrope-Regular.ttf"
+FONT_BOLD_PATH = ASSET_DIR / "fonts" / "Manrope-Bold.ttf"
+FONT_REGULAR = "OpspectaManrope"
+FONT_BOLD = "OpspectaManropeBold"
+
+
+def _register_fonts() -> None:
+    registered = set(pdfmetrics.getRegisteredFontNames())
+    if FONT_REGULAR not in registered:
+        pdfmetrics.registerFont(TTFont(FONT_REGULAR, FONT_REGULAR_PATH))
+    if FONT_BOLD not in registered:
+        pdfmetrics.registerFont(TTFont(FONT_BOLD, FONT_BOLD_PATH))
 
 
 @dataclass(frozen=True)
@@ -125,12 +143,13 @@ def normalize_criticality(value: str) -> str:
 
 
 def _styles() -> dict[str, ParagraphStyle]:
+    _register_fonts()
     base = getSampleStyleSheet()
     return {
         "title": ParagraphStyle(
             "EquipmentTitle",
             parent=base["Heading1"],
-            fontName="Helvetica-Bold",
+            fontName=FONT_BOLD,
             fontSize=22,
             leading=27,
             textColor=NAVY,
@@ -139,7 +158,7 @@ def _styles() -> dict[str, ParagraphStyle]:
         "subtitle": ParagraphStyle(
             "EquipmentSubtitle",
             parent=base["BodyText"],
-            fontName="Helvetica",
+            fontName=FONT_REGULAR,
             fontSize=9,
             leading=13,
             textColor=MUTED,
@@ -147,7 +166,7 @@ def _styles() -> dict[str, ParagraphStyle]:
         "section": ParagraphStyle(
             "EquipmentSection",
             parent=base["Heading2"],
-            fontName="Helvetica-Bold",
+            fontName=FONT_BOLD,
             fontSize=12,
             leading=15,
             textColor=NAVY,
@@ -157,7 +176,7 @@ def _styles() -> dict[str, ParagraphStyle]:
         "body": ParagraphStyle(
             "EquipmentBody",
             parent=base["BodyText"],
-            fontName="Helvetica",
+            fontName=FONT_REGULAR,
             fontSize=8.5,
             leading=12,
             textColor=INK,
@@ -165,7 +184,7 @@ def _styles() -> dict[str, ParagraphStyle]:
         "small": ParagraphStyle(
             "EquipmentSmall",
             parent=base["BodyText"],
-            fontName="Helvetica",
+            fontName=FONT_REGULAR,
             fontSize=7.3,
             leading=10,
             textColor=MUTED,
@@ -173,7 +192,7 @@ def _styles() -> dict[str, ParagraphStyle]:
         "label": ParagraphStyle(
             "EquipmentLabel",
             parent=base["BodyText"],
-            fontName="Helvetica-Bold",
+            fontName=FONT_BOLD,
             fontSize=7.2,
             leading=9,
             textColor=TEAL,
@@ -181,7 +200,7 @@ def _styles() -> dict[str, ParagraphStyle]:
         "value": ParagraphStyle(
             "EquipmentValue",
             parent=base["BodyText"],
-            fontName="Helvetica-Bold",
+            fontName=FONT_BOLD,
             fontSize=9,
             leading=12,
             textColor=NAVY,
@@ -189,7 +208,7 @@ def _styles() -> dict[str, ParagraphStyle]:
         "center": ParagraphStyle(
             "EquipmentCenter",
             parent=base["BodyText"],
-            fontName="Helvetica-Bold",
+            fontName=FONT_BOLD,
             fontSize=8.5,
             leading=11,
             alignment=TA_CENTER,
@@ -199,30 +218,45 @@ def _styles() -> dict[str, ParagraphStyle]:
 
 
 def _header_footer(canvas, doc, *, report_id: str, demonstration: bool) -> None:
+    _register_fonts()
     canvas.saveState()
     width, height = A4
     canvas.setFillColor(NAVY)
     canvas.rect(0, height - 24 * mm, width, 24 * mm, fill=1, stroke=0)
-    canvas.setFont("Helvetica-Bold", 15)
+    logo_size = 12.5 * mm
+    logo_x = 18 * mm
+    logo_y = height - 18.5 * mm
     canvas.setFillColor(colors.white)
-    canvas.drawString(18 * mm, height - 14 * mm, "OPSPECTA")
-    canvas.setFont("Helvetica", 7)
+    canvas.roundRect(logo_x, logo_y, logo_size, logo_size, 2 * mm, fill=1, stroke=0)
+    canvas.drawImage(
+        str(LOGO_PATH),
+        logo_x + 0.6 * mm,
+        logo_y + 0.6 * mm,
+        width=logo_size - 1.2 * mm,
+        height=logo_size - 1.2 * mm,
+        preserveAspectRatio=True,
+        mask="auto",
+    )
+    canvas.setFont(FONT_BOLD, 15)
+    canvas.setFillColor(colors.white)
+    canvas.drawString(34 * mm, height - 12.8 * mm, "OPSPECTA")
+    canvas.setFont(FONT_REGULAR, 6.7)
     canvas.setFillColor(CYAN)
     canvas.drawString(
-        18 * mm, height - 18 * mm, "INTELIGÊNCIA OPERACIONAL PARA A SAÚDE"
+        34 * mm, height - 17.2 * mm, "INTELIGÊNCIA OPERACIONAL PARA A SAÚDE"
     )
-    canvas.setFont("Helvetica-Bold", 7.5)
+    canvas.setFont(FONT_BOLD, 7.5)
     canvas.setFillColor(colors.white)
     canvas.drawRightString(width - 18 * mm, height - 14 * mm, report_id)
     if demonstration:
         canvas.setFillColor(colors.HexColor("#FFF3D6"))
         canvas.roundRect(18 * mm, 13 * mm, 74 * mm, 7 * mm, 2 * mm, fill=1, stroke=0)
-        canvas.setFont("Helvetica-Bold", 6.8)
+        canvas.setFont(FONT_BOLD, 6.8)
         canvas.setFillColor(WARNING)
         canvas.drawCentredString(55 * mm, 15.4 * mm, "DEMONSTRAÇÃO - DADOS FICTÍCIOS")
     canvas.setStrokeColor(LINE)
     canvas.line(18 * mm, 11 * mm, width - 18 * mm, 11 * mm)
-    canvas.setFont("Helvetica", 6.8)
+    canvas.setFont(FONT_REGULAR, 6.8)
     canvas.setFillColor(MUTED)
     canvas.drawString(18 * mm, 7 * mm, "Documento gerado pela plataforma OPSPECTA")
     canvas.drawRightString(width - 18 * mm, 7 * mm, f"Página {doc.page}")
