@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ScanSearch } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import FilterBar from "@/components/FilterBar";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { api, Ticket } from "@/services/api";
 
@@ -31,7 +32,9 @@ const FILTERS = [
 ];
 
 export default function TicketsPage() {
+  const { user } = useAuth();
   const { addNotification } = useNotifications();
+  const canWrite = (user?.access_level ?? 0) >= 2;
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("medium");
@@ -89,7 +92,7 @@ export default function TicketsPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Tickets</h1>
-      <form onSubmit={handleCreate} className="bg-white rounded-xl shadow p-6 mb-6">
+      {canWrite ? <form onSubmit={handleCreate} className="bg-white rounded-lg shadow p-6 mb-6">
         <h2 className="text-lg font-semibold mb-4">Create Ticket</h2>
         <div className="flex gap-3">
           <input type="text" placeholder="Ticket title" value={title} onChange={(e) => setTitle(e.target.value)} className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -98,7 +101,11 @@ export default function TicketsPage() {
           </select>
           <button type="submit" className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition">Create</button>
         </div>
-      </form>
+      </form> : (
+        <p role="note" className="mb-6 rounded-lg border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-900">
+          Acesso somente para consulta. Contas de usuário ou superiores podem criar e analisar tickets.
+        </p>
+      )}
       <div className="flex flex-wrap gap-3 mb-4">
         <SearchBar placeholder="Pesquisar tickets..." value={search} onChange={setSearch} className="w-64" />
         <FilterBar filters={FILTERS} values={filters} onChange={(key, value) => setFilters((p) => ({ ...p, [key]: value }))} onClear={() => setFilters({})} />
@@ -114,7 +121,7 @@ export default function TicketsPage() {
                 <div className="flex items-center gap-2">
                   <span className={`text-xs font-semibold px-2 py-1 rounded-full ${priorityColors[t.priority]}`}>{priorityLabels[t.priority] ?? t.priority}</span>
                   <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700">{statusLabels[t.status] ?? t.status}</span>
-                  {canAnalyze && (
+                  {canWrite && canAnalyze && (
                     <Link
                       href={{ pathname: "/analyze", query: { ticket_id: ticketId } }}
                       className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:underline"

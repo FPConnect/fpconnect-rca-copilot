@@ -9,7 +9,17 @@ from slowapi.errors import RateLimitExceeded
 import structlog
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.api.routes import analyze, auth, contracts, enterprise, machines, notifications, playbooks, tickets
+from app.api.routes import (
+    analyze,
+    auth,
+    contracts,
+    enterprise,
+    machines,
+    notifications,
+    playbooks,
+    tickets,
+    users,
+)
 from app.core.config import settings
 from app.core.base import Base
 from app.core.database import SessionLocal, engine
@@ -44,9 +54,13 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "no-referrer"
-        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        response.headers["Permissions-Policy"] = (
+            "camera=(), microphone=(), geolocation=()"
+        )
         if settings.app_env != "development":
-            response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=63072000; includeSubDomains"
+            )
         return response
 
 
@@ -55,7 +69,9 @@ Base.metadata.create_all(bind=engine)
 
 if settings.seed_test_accounts:
     if settings.test_account_password is None:
-        raise RuntimeError("TEST_ACCOUNT_PASSWORD is required when SEED_TEST_ACCOUNTS is enabled")
+        raise RuntimeError(
+            "TEST_ACCOUNT_PASSWORD is required when SEED_TEST_ACCOUNTS is enabled"
+        )
     with SessionLocal() as seed_db:
         reset_test_accounts(seed_db, settings.test_account_password)
 
@@ -84,11 +100,14 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
 app.include_router(machines.router, prefix="/machines", tags=["machines"])
-app.include_router(notifications.router, prefix="/notifications", tags=["notifications"])
+app.include_router(
+    notifications.router, prefix="/notifications", tags=["notifications"]
+)
 app.include_router(analyze.router, prefix="/analyze", tags=["clinical-diagnosis"])
 app.include_router(playbooks.router, prefix="/playbooks", tags=["playbooks"])
 app.include_router(contracts.router, prefix="/contracts", tags=["contracts"])
 app.include_router(enterprise.router, prefix="/enterprise", tags=["enterprise"])
+app.include_router(users.router, prefix="/users", tags=["users"])
 
 
 @app.get("/health")

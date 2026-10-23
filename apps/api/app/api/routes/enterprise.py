@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user_id
+from app.api.deps import AuthenticatedUser, get_current_user_id, require_access_level
 from app.core.database import get_db
 from app.core.security import limiter
 from app.models.machine import Machine
@@ -60,7 +60,7 @@ class ComplianceReportRequest(BaseModel):
 @router.post("/rca")
 def create_advanced_rca(
     payload: RCARequest,
-    user_id: int = Depends(get_current_user_id),
+    _: AuthenticatedUser = Depends(require_access_level(2)),
 ) -> dict[str, Any]:
     """Generate methodical RCA output for regulated clinical engineering workflows."""
     try:
@@ -82,7 +82,7 @@ def list_rca_methods(
 @router.post("/predictive/risk")
 def calculate_predictive_risk(
     payload: PredictiveRiskRequest,
-    user_id: int = Depends(get_current_user_id),
+    _: AuthenticatedUser = Depends(require_access_level(2)),
 ) -> dict[str, Any]:
     """Calculate predictive maintenance risk for one equipment item."""
     try:
@@ -96,7 +96,7 @@ def calculate_predictive_risk(
 @router.post("/calibration/schedule")
 def create_calibration_schedule(
     payload: CalibrationScheduleRequest,
-    user_id: int = Depends(get_current_user_id),
+    _: AuthenticatedUser = Depends(require_access_level(2)),
 ) -> dict[str, Any]:
     """Schedule a calibration event."""
     return schedule_calibration(payload.equipment_id, payload.interval_days)
@@ -105,7 +105,7 @@ def create_calibration_schedule(
 @router.post("/calibration/validate")
 def validate_calibration_results(
     payload: CalibrationValidationRequest,
-    user_id: int = Depends(get_current_user_id),
+    _: AuthenticatedUser = Depends(require_access_level(2)),
 ) -> dict[str, Any]:
     """Validate calibration measurements and summarize compliance."""
     return validate_calibration(payload.results)
@@ -114,7 +114,7 @@ def validate_calibration_results(
 @router.post("/compliance/anvisa-report")
 def create_anvisa_report(
     payload: ComplianceReportRequest,
-    user_id: int = Depends(get_current_user_id),
+    _: AuthenticatedUser = Depends(require_access_level(2)),
 ) -> Response:
     """Generate a PDF ANVISA compliance report."""
     pdf = generate_anvisa_pdf(payload.model_dump())

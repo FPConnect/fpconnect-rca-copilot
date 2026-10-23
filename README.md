@@ -25,6 +25,24 @@ Production self-registration is limited to email addresses explicitly listed
 in `REGISTRATION_ALLOWED_EMAILS`. New accounts always receive the regular
 `user` role and cannot select their own access level.
 
+### Access administration
+
+Account permissions are enforced by the API, not only by the web interface:
+
+| Role | Level | Account administration | Operational access |
+|---|---:|---|---|
+| `master` | 5 | Creates and manages admin, manager, user, and visitor accounts | Full |
+| `admin` | 4 | Creates and manages manager, user, and visitor accounts | Full |
+| `manager` | 3 | No account administration | Operational and management workflows |
+| `user` | 2 | No account administration | Standard operational workflows |
+| `visitor` | 1 | No account administration | Read only |
+
+No API route creates or assigns another `master`. Administrators cannot change
+their own role or manage an account at the same or a higher level. Disabling an
+account or changing its role increments its session version, which revokes its
+existing access and refresh tokens. Administrative changes are recorded in the
+structured application log without passwords or token values.
+
 ### Run the API locally
 
 ```bash

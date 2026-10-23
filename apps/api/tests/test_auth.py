@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 from app.core.database import Base, get_db
-from app.core.security import verify_password
+from app.core.security import hash_password, verify_password
 from app.main import app
 from app.models.user import User
 
@@ -197,7 +197,9 @@ def test_login_preserves_long_legacy_pbkdf2_password():
 
     assert response.status_code == 200
     db = TestingSessionLocal()
-    preserved = db.query(User).filter(User.email == "long-legacy-admin@example.com").one()
+    preserved = (
+        db.query(User).filter(User.email == "long-legacy-admin@example.com").one()
+    )
     assert preserved.hashed_password.startswith("$pbkdf2-sha256$")
     assert verify_password(password, preserved.hashed_password)
     db.close()
@@ -241,7 +243,9 @@ def test_change_password_replaces_credentials():
     current_password = "SecurePass123!"
     new_password = "NewSecurePass456!"
     client.post("/auth/register", json={"email": email, "password": current_password})
-    login_response = client.post("/auth/login", json={"email": email, "password": current_password})
+    login_response = client.post(
+        "/auth/login", json={"email": email, "password": current_password}
+    )
     token = login_response.json()["access_token"]
     refresh_token = login_response.json()["refresh_token"]
 
@@ -252,21 +256,39 @@ def test_change_password_replaces_credentials():
     )
 
     assert response.status_code == 200
-    assert client.post("/auth/refresh", json={"refresh_token": refresh_token}).status_code == 401
-    assert client.post("/auth/login", json={"email": email, "password": current_password}).status_code == 401
-    assert client.post("/auth/login", json={"email": email, "password": new_password}).status_code == 200
+    assert (
+        client.post("/auth/refresh", json={"refresh_token": refresh_token}).status_code
+        == 401
+    )
+    assert (
+        client.post(
+            "/auth/login", json={"email": email, "password": current_password}
+        ).status_code
+        == 401
+    )
+    assert (
+        client.post(
+            "/auth/login", json={"email": email, "password": new_password}
+        ).status_code
+        == 200
+    )
 
 
 def test_change_password_rejects_wrong_current_password():
     email = "wrong-current@example.com"
     password = "SecurePass123!"
     client.post("/auth/register", json={"email": email, "password": password})
-    token = client.post("/auth/login", json={"email": email, "password": password}).json()["access_token"]
+    token = client.post(
+        "/auth/login", json={"email": email, "password": password}
+    ).json()["access_token"]
 
     response = client.post(
         "/auth/password",
         headers={"Authorization": f"Bearer {token}"},
-        json={"current_password": "WrongPassword123!", "new_password": "NewSecurePass456!"},
+        json={
+            "current_password": "WrongPassword123!",
+            "new_password": "NewSecurePass456!",
+        },
     )
 
     assert response.status_code == 400
@@ -291,11 +313,17 @@ def test_send_verification_code_fails_when_sms_is_not_configured(monkeypatch):
     monkeypatch.setattr(settings, "app_env", "production")
     response = client.post(
         "/auth/verification-code",
-        json={"email": "production-verify@example.com", "phone_number": "+55 51 98510-2172"},
+        json={
+            "email": "production-verify@example.com",
+            "phone_number": "+55 51 98510-2172",
+        },
     )
 
     assert response.status_code == 503
-    assert response.json()["detail"] == "SMS verification is not configured for this deployment"
+    assert (
+        response.json()["detail"]
+        == "SMS verification is not configured for this deployment"
+    )
 
 
 def test_register_with_verification_code_success():
@@ -339,3 +367,224 @@ def test_register_with_invalid_verification_code_fails():
     )
 
     assert response.status_code == 400
+
+
+def _create_privileged_user(email: str, role: str, access_level: int) -> str:
+    password = "SecurePass123!"
+    db = TestingSessionLocal()
+    db.add(
+        User(
+            email=email,
+            hashed_password=hash_password(password),
+            role=role,
+            access_level=access_level,
+            is_active=True,
+        )
+    )
+    db.commit()
+    db.close()
+    response = client.post("/auth/login", json={"email": email, "password": password})
+    assert response.status_code == 200
+    return response.json()["access_token"]
+
+
+def test_master_can_create_admin_and_list_real_users():
+    token = _create_privileged_user("master@example.com", "master", 5)
+    response = client.post(
+        "/users",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "email": "new-admin@example.com",
+            "password": "AdminSecure123!",
+            "full_name": "New Admin",
+            "role": "admin",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["role"] == "admin"
+    assert response.json()["access_level"] == 4
+    assert response.json()["is_active"] is True
+    listed = client.get("/users", headers={"Authorization": f"Bearer {token}"})
+    assert listed.status_code == 200
+    assert {account["email"] for account in listed.json()} == {
+        "master@example.com",
+        "new-admin@example.com",
+    }
+
+
+def test_admin_can_create_manager_but_not_another_admin():
+    token = _create_privileged_user("admin@example.com", "admin", 4)
+    manager = client.post(
+        "/users",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "email": "manager@example.com",
+            "password": "ManagerSecure123!",
+            "role": "manager",
+        },
+    )
+    peer = client.post(
+        "/users",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "email": "peer-admin@example.com",
+            "password": "AdminSecure123!",
+            "role": "admin",
+        },
+    )
+
+    assert manager.status_code == 201
+    assert manager.json()["access_level"] == 3
+    assert peer.status_code == 403
+
+
+def test_manager_cannot_access_user_administration_or_inject_access_level():
+    manager_token = _create_privileged_user("manager@example.com", "manager", 3)
+    assert (
+        client.get(
+            "/users", headers={"Authorization": f"Bearer {manager_token}"}
+        ).status_code
+        == 403
+    )
+
+    master_token = _create_privileged_user("master@example.com", "master", 5)
+    injected = client.post(
+        "/users",
+        headers={"Authorization": f"Bearer {master_token}"},
+        json={
+            "email": "injected@example.com",
+            "password": "InjectedSecure123!",
+            "role": "visitor",
+            "access_level": 5,
+        },
+    )
+    assert injected.status_code == 422
+
+
+def test_deactivation_revokes_existing_tokens_and_blocks_login():
+    master_token = _create_privileged_user("master@example.com", "master", 5)
+    user_password = "UserSecure123!"
+    created = client.post(
+        "/users",
+        headers={"Authorization": f"Bearer {master_token}"},
+        json={"email": "user@example.com", "password": user_password, "role": "user"},
+    ).json()
+    user_token = client.post(
+        "/auth/login",
+        json={"email": "user@example.com", "password": user_password},
+    ).json()["access_token"]
+
+    deactivated = client.patch(
+        f"/users/{created['id']}",
+        headers={"Authorization": f"Bearer {master_token}"},
+        json={"is_active": False},
+    )
+
+    assert deactivated.status_code == 200
+    assert deactivated.json()["is_active"] is False
+    assert (
+        client.get(
+            "/auth/me", headers={"Authorization": f"Bearer {user_token}"}
+        ).status_code
+        == 401
+    )
+    assert (
+        client.post(
+            "/auth/login",
+            json={"email": "user@example.com", "password": user_password},
+        ).status_code
+        == 401
+    )
+
+
+def test_role_change_recalculates_level_and_revokes_old_token():
+    master_token = _create_privileged_user("master@example.com", "master", 5)
+    admin_token = _create_privileged_user("admin@example.com", "admin", 4)
+    db = TestingSessionLocal()
+    admin = db.query(User).filter(User.email == "admin@example.com").one()
+    admin_id = admin.id
+    db.close()
+
+    updated = client.patch(
+        f"/users/{admin_id}",
+        headers={"Authorization": f"Bearer {master_token}"},
+        json={"role": "manager"},
+    )
+
+    assert updated.status_code == 200
+    assert updated.json()["role"] == "manager"
+    assert updated.json()["access_level"] == 3
+    assert (
+        client.get(
+            "/users", headers={"Authorization": f"Bearer {admin_token}"}
+        ).status_code
+        == 401
+    )
+
+
+def test_admin_cannot_modify_master_or_its_own_access():
+    master_token = _create_privileged_user("master@example.com", "master", 5)
+    admin_token = _create_privileged_user("admin@example.com", "admin", 4)
+    db = TestingSessionLocal()
+    master_id = db.query(User).filter(User.email == "master@example.com").one().id
+    admin_id = db.query(User).filter(User.email == "admin@example.com").one().id
+    db.close()
+
+    master_update = client.patch(
+        f"/users/{master_id}",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"is_active": False},
+    )
+    self_update = client.patch(
+        f"/users/{admin_id}",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"role": "manager"},
+    )
+
+    assert master_update.status_code == 403
+    assert self_update.status_code == 403
+    assert (
+        client.get(
+            "/users", headers={"Authorization": f"Bearer {master_token}"}
+        ).status_code
+        == 200
+    )
+
+
+def test_visitor_is_read_only_for_operational_actions():
+    master_token = _create_privileged_user("master@example.com", "master", 5)
+    visitor_password = "VisitorSecure123!"
+    created = client.post(
+        "/users",
+        headers={"Authorization": f"Bearer {master_token}"},
+        json={
+            "email": "visitor@example.com",
+            "password": visitor_password,
+            "role": "visitor",
+        },
+    )
+    assert created.status_code == 201
+    visitor_token = client.post(
+        "/auth/login",
+        json={"email": "visitor@example.com", "password": visitor_password},
+    ).json()["access_token"]
+    headers = {"Authorization": f"Bearer {visitor_token}"}
+
+    assert client.get("/tickets", headers=headers).status_code == 200
+    assert (
+        client.post(
+            "/tickets",
+            headers=headers,
+            json={"title": "Unauthorized write", "priority": "low"},
+        ).status_code
+        == 403
+    )
+    assert (
+        client.post(
+            "/enterprise/rca",
+            headers=headers,
+            json={"problem": "Unauthorized RCA"},
+        ).status_code
+        == 403
+    )

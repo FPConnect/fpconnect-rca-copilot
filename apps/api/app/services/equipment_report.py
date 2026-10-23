@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import io
 import re
+from html import escape
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Sequence
-from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
@@ -88,8 +88,8 @@ class TicketRecord:
 def _safe_text(value: object, maximum: int = 500) -> str:
     text = " ".join(str(value or "-").split())
     if len(text) <= maximum:
-        return escape(text)
-    return escape(f"{text[: maximum - 3].rstrip()}...")
+        return escape(text, quote=False)
+    return escape(f"{text[: maximum - 3].rstrip()}...", quote=False)
 
 
 def _safe_code(value: str) -> str:

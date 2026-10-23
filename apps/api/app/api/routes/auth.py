@@ -42,15 +42,21 @@ router = APIRouter()
 VERIFICATION_TTL_SECONDS = 10 * 60
 _verification_codes: dict[str, tuple[str, datetime]] = {}
 LOGIN_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "5/minute"
-REGISTRATION_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "3/minute"
+REGISTRATION_RATE_LIMIT = (
+    "1000/minute" if settings.app_env == "development" else "3/minute"
+)
 REFRESH_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "20/minute"
-PASSWORD_CHANGE_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "5/minute"
+PASSWORD_CHANGE_RATE_LIMIT = (
+    "1000/minute" if settings.app_env == "development" else "5/minute"
+)
 
 
 def _rate_limit_bucket(action: str, identifier: str) -> str:
     """Hash rate-limit subjects so addresses and tokens are never stored verbatim."""
     payload = f"{action}:{identifier.strip().lower()}".encode("utf-8")
-    return hmac.new(settings.secret_key.encode("utf-8"), payload, hashlib.sha256).hexdigest()
+    return hmac.new(
+        settings.secret_key.encode("utf-8"), payload, hashlib.sha256
+    ).hexdigest()
 
 
 def _client_identifier(request: Request) -> str:
@@ -77,10 +83,7 @@ def _enforce_shared_rate_limit(
     cutoff = now - timedelta(seconds=window_seconds)
     if prune_expired:
         db.execute(
-            text(
-                "DELETE FROM auth_rate_limits "
-                "WHERE window_started_at < :cutoff"
-            ),
+            text("DELETE FROM auth_rate_limits " "WHERE window_started_at < :cutoff"),
             {"cutoff": cutoff},
         )
     attempts = db.execute(
@@ -184,7 +187,9 @@ def _validate_user_create(user_data: UserCreate, db: Session) -> None:
         )
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED
+)
 @limiter.limit(REGISTRATION_RATE_LIMIT)
 def register(request: Request, user_data: UserCreate, db: Session = Depends(get_db)):
     """Register a regular user only when self-registration is explicitly allowed."""
@@ -196,7 +201,9 @@ def register(request: Request, user_data: UserCreate, db: Session = Depends(get_
 
 @router.post("/verification-code", response_model=VerificationCodeResponse)
 @limiter.limit(REGISTRATION_RATE_LIMIT)
-def send_verification_code(request: Request, payload: VerificationCodeRequest, db: Session = Depends(get_db)):
+def send_verification_code(
+    request: Request, payload: VerificationCodeRequest, db: Session = Depends(get_db)
+):
     """Generate a development verification code; no SMS is sent."""
     _enforce_auth_limits(db, request, "registration", str(payload.email), 3, 10)
     _ensure_registration_allowed(str(payload.email))
@@ -225,7 +232,9 @@ def send_verification_code(request: Request, payload: VerificationCodeRequest, d
         if expires_at <= now:
             _verification_codes.pop(key, None)
     if len(_verification_codes) >= 1000:
-        oldest_key = min(_verification_codes, key=lambda key: _verification_codes[key][1])
+        oldest_key = min(
+            _verification_codes, key=lambda key: _verification_codes[key][1]
+        )
         _verification_codes.pop(oldest_key, None)
     expires_at = now + timedelta(seconds=VERIFICATION_TTL_SECONDS)
     _verification_codes[_verification_key(str(payload.email))] = (code, expires_at)
@@ -238,23 +247,34 @@ def send_verification_code(request: Request, payload: VerificationCodeRequest, d
     )
 
 
-@router.post("/register/verify", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register/verify", response_model=UserResponse, status_code=status.HTTP_201_CREATED
+)
 @limiter.limit(REGISTRATION_RATE_LIMIT)
-def register_verified(request: Request, user_data: UserCreateVerified, db: Session = Depends(get_db)):
+def register_verified(
+    request: Request, user_data: UserCreateVerified, db: Session = Depends(get_db)
+):
     """Register a new user only after validating the phone verification code."""
     _enforce_auth_limits(db, request, "registration", str(user_data.email), 3, 10)
     _ensure_registration_allowed(str(user_data.email))
     key = _verification_key(str(user_data.email))
     stored = _verification_codes.get(key)
     if not stored:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification code not requested")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Verification code not requested",
+        )
 
     expected_code, expires_at = stored
     if datetime.now(timezone.utc) > expires_at:
         _verification_codes.pop(key, None)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification code expired")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Verification code expired"
+        )
     if not secrets.compare_digest(expected_code, user_data.verification_code):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification code")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification code"
+        )
 
     _validate_user_create(user_data, db)
     user = create_user(db, user_data)
@@ -268,12 +288,19 @@ def login(request: Request, credentials: UserLogin, db: Session = Depends(get_db
     """Authenticate a user and return a JWT token."""
     _enforce_auth_limits(db, request, "login", str(credentials.email), 5, 30)
     user = get_user_by_email(db, credentials.email)
-    if not user or not verify_password(credentials.password, user.hashed_password):
+    if (
+        not user
+        or not user.is_active
+        or not verify_password(credentials.password, user.hashed_password)
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
-    if password_needs_rehash(user.hashed_password) and len(credentials.password.encode("utf-8")) <= 72:
+    if (
+        password_needs_rehash(user.hashed_password)
+        and len(credentials.password.encode("utf-8")) <= 72
+    ):
         user.hashed_password = hash_password(credentials.password)
         db.add(user)
         db.commit()
@@ -290,7 +317,9 @@ def login(request: Request, credentials: UserLogin, db: Session = Depends(get_db
 
 @router.post("/refresh", response_model=TokenResponse)
 @limiter.limit(REFRESH_RATE_LIMIT)
-def refresh_token(request: Request, payload: RefreshTokenRequest, db: Session = Depends(get_db)):
+def refresh_token(
+    request: Request, payload: RefreshTokenRequest, db: Session = Depends(get_db)
+):
     """Exchange a valid refresh token for a new access token."""
     token = payload.refresh_token
     _enforce_auth_limits(db, request, "refresh", token, 20, 60)
@@ -316,7 +345,7 @@ def refresh_token(request: Request, payload: RefreshTokenRequest, db: Session = 
         ) from exc
 
     user = get_user_by_id(db, user_id)
-    if not user or token_version != user.token_version:
+    if not user or not user.is_active or token_version != user.token_version:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or revoked refresh token",
@@ -339,7 +368,9 @@ def get_me(user_id: int = Depends(get_current_user_id), db: Session = Depends(ge
     """Return the currently authenticated user profile."""
     user = get_user_by_id(db, user_id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     return user
 
 
@@ -352,11 +383,16 @@ def update_me(
     """Update the currently authenticated user profile."""
     user = get_user_by_id(db, user_id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     if user_data.email and user_data.email != user.email:
         existing = get_user_by_email(db, str(user_data.email))
         if existing:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered",
+            )
     return update_user(db, user, user_data)
 
 

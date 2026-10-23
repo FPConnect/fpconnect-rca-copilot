@@ -22,8 +22,21 @@ def test_production_is_the_default_and_test_account_seeding_is_disabled(monkeypa
     assert settings.seed_test_accounts is False
 
 
+def test_production_requires_explicit_signing_keys():
+    with pytest.raises(ValidationError, match="SECRET_KEY must be set"):
+        Settings(
+            _env_file=None,
+            app_env="production",
+            secret_key="",
+            refresh_secret_key="",
+            cors_origins=["https://fpconnect.tec.br"],
+        )
+
+
 def test_test_account_seeding_requires_development_and_a_strong_password():
-    with pytest.raises(ValidationError, match="SEED_TEST_ACCOUNTS can only be enabled in development"):
+    with pytest.raises(
+        ValidationError, match="SEED_TEST_ACCOUNTS can only be enabled in development"
+    ):
         Settings(
             app_env="production",
             secret_key="prod-secret-key-that-is-long-enough",
@@ -44,7 +57,9 @@ def test_production_rejects_insecure_cors_origins():
             cors_origins=["http://localhost:3000"],
         )
 
-    with pytest.raises(ValidationError, match="TEST_ACCOUNT_PASSWORD must be at least 12 characters"):
+    with pytest.raises(
+        ValidationError, match="TEST_ACCOUNT_PASSWORD must be at least 12 characters"
+    ):
         Settings(
             app_env="development",
             seed_test_accounts=True,
@@ -62,7 +77,9 @@ def test_production_registration_requires_and_normalizes_an_email_allowlist():
         "public_registration_enabled": True,
     }
 
-    with pytest.raises(ValidationError, match="REGISTRATION_ALLOWED_EMAILS is required"):
+    with pytest.raises(
+        ValidationError, match="REGISTRATION_ALLOWED_EMAILS is required"
+    ):
         Settings(**base, registration_allowed_emails=[])
 
     settings = Settings(

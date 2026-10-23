@@ -1,5 +1,7 @@
 """Application configuration loaded from environment variables."""
 
+import secrets
+
 from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -10,13 +12,13 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_env: str = "production"
-    secret_key: str = "dev-only-change-this-key-32-chars!!"
+    secret_key: str = ""
     algorithm: str = "HS256"
     jwt_issuer: str = "opspecta-api"
     jwt_audience: str = "opspecta-app"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
-    refresh_secret_key: str = "dev-only-refresh-key-32-chars!!!"
+    refresh_secret_key: str = ""
     seed_test_accounts: bool = False
     test_account_password: str | None = None
     public_registration_enabled: bool = False
@@ -61,15 +63,23 @@ class Settings(BaseSettings):
         )
         if self.seed_test_accounts:
             if self.app_env != "development":
-                raise ValueError("SEED_TEST_ACCOUNTS can only be enabled in development")
+                raise ValueError(
+                    "SEED_TEST_ACCOUNTS can only be enabled in development"
+                )
             if not self.test_account_password or len(self.test_account_password) < 12:
-                raise ValueError("TEST_ACCOUNT_PASSWORD must be at least 12 characters when seeding test accounts")
-        if self.app_env != "development" and self.secret_key == "dev-only-change-this-key-32-chars!!":
-            raise ValueError("SECRET_KEY must be set to a strong value")
+                raise ValueError(
+                    "TEST_ACCOUNT_PASSWORD must be at least 12 characters when seeding test accounts"
+                )
+        if not self.secret_key:
+            if self.app_env != "development":
+                raise ValueError("SECRET_KEY must be set to a strong value")
+            self.secret_key = secrets.token_urlsafe(48)
         if len(self.secret_key) < 32:
             raise ValueError("SECRET_KEY must be at least 32 characters long")
-        if self.app_env != "development" and self.refresh_secret_key == "dev-only-refresh-key-32-chars!!!":
-            raise ValueError("REFRESH_SECRET_KEY must be set to a strong value")
+        if not self.refresh_secret_key:
+            if self.app_env != "development":
+                raise ValueError("REFRESH_SECRET_KEY must be set to a strong value")
+            self.refresh_secret_key = secrets.token_urlsafe(48)
         if len(self.refresh_secret_key) < 32:
             raise ValueError("REFRESH_SECRET_KEY must be at least 32 characters long")
         if self.algorithm != "HS256":
@@ -78,7 +88,9 @@ class Settings(BaseSettings):
             raise ValueError("JWT_ISSUER and JWT_AUDIENCE must not be empty")
         if any(origin == "*" for origin in self.cors_origins):
             raise ValueError("CORS_ORIGINS must not contain a wildcard")
-        if self.app_env != "development" and any(not origin.startswith("https://") for origin in self.cors_origins):
+        if self.app_env != "development" and any(
+            not origin.startswith("https://") for origin in self.cors_origins
+        ):
             raise ValueError("Production CORS origins must use HTTPS")
         if (
             self.app_env != "development"
@@ -89,5 +101,6 @@ class Settings(BaseSettings):
                 "REGISTRATION_ALLOWED_EMAILS is required when production registration is enabled"
             )
         return self
+
 
 settings = Settings()

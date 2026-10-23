@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from PIL import Image, UnidentifiedImageError
 from sqlalchemy.orm import Session
 
-from app.api.deps import AuthenticatedUser, get_current_user
+from app.api.deps import AuthenticatedUser, get_current_user, require_access_level
 from app.core.config import settings
 from app.core.database import get_db
 from app.crud.ticket import (
@@ -42,8 +42,12 @@ router = APIRouter()
 def _authorized_ticket(db: Session, ticket_id: int, current_user: AuthenticatedUser):
     """Return a visible ticket without disclosing another user's ticket IDs."""
     ticket = get_ticket_by_id(db, ticket_id)
-    if not ticket or (current_user.access_level < 3 and ticket.creator_id != current_user.id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+    if not ticket or (
+        current_user.access_level < 3 and ticket.creator_id != current_user.id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found"
+        )
     return ticket
 
 
@@ -73,7 +77,7 @@ def get_ticket(
 def create_new_ticket(
     ticket_data: TicketCreate,
     db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user),
+    current_user: AuthenticatedUser = Depends(require_access_level(2)),
 ):
     """Create a new support ticket."""
     return create_ticket(db, ticket_data, creator_id=current_user.id)
@@ -84,13 +88,15 @@ def update_existing_ticket(
     ticket_id: int,
     ticket_data: TicketUpdate,
     db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user),
+    current_user: AuthenticatedUser = Depends(require_access_level(2)),
 ):
     """Update an existing ticket's fields."""
     _authorized_ticket(db, ticket_id, current_user)
     ticket = update_ticket(db, ticket_id, ticket_data)
     if not ticket:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found"
+        )
     return ticket
 
 
@@ -98,12 +104,14 @@ def update_existing_ticket(
 def remove_ticket(
     ticket_id: int,
     db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user),
+    current_user: AuthenticatedUser = Depends(require_access_level(2)),
 ):
     """Delete a ticket by ID."""
     _authorized_ticket(db, ticket_id, current_user)
     if not delete_ticket(db, ticket_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found"
+        )
 
 
 @router.post("/{ticket_id}/analyze", response_model=AnalyzeTicketResponse)
@@ -111,7 +119,7 @@ def analyze_existing_ticket(
     ticket_id: int,
     request: AnalyzeTicketRequest,
     db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user),
+    current_user: AuthenticatedUser = Depends(require_access_level(2)),
 ):
     """Run RCA analysis on a ticket and return suggestions."""
     ticket = _authorized_ticket(db, ticket_id, current_user)
@@ -141,8 +149,15 @@ async def validate_image_real_type(body: bytes) -> str:
     try:
         with Image.open(BytesIO(body)) as image:
             image.verify()
-            mime = IMAGE_FORMAT_TO_MIME.get(image.format or "", "application/octet-stream")
-    except (UnidentifiedImageError, OSError, SyntaxError, Image.DecompressionBombError) as exc:
+            mime = IMAGE_FORMAT_TO_MIME.get(
+                image.format or "", "application/octet-stream"
+            )
+    except (
+        UnidentifiedImageError,
+        OSError,
+        SyntaxError,
+        Image.DecompressionBombError,
+    ) as exc:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail="Image data is invalid or unsafe",
@@ -161,6 +176,7 @@ def _sanitize_filename(filename: str | None) -> str:
     name = Path((filename or "ticket-image").replace("\\", "/")).name
     safe = re.sub(r"[^A-Za-z0-9._-]", "_", name).strip("._")
     return (safe or "ticket-image")[:120]
+
 
 def _attachment_response(attachment) -> TicketAttachmentResponse:
     """Build an API response with a short-lived attachment URL."""
@@ -186,7 +202,8 @@ def list_ticket_attachments(
     """Return image attachments for a ticket with temporary download URLs."""
     _authorized_ticket(db, ticket_id, current_user)
     return [
-        _attachment_response(attachment) for attachment in get_ticket_attachments(db, ticket_id)
+        _attachment_response(attachment)
+        for attachment in get_ticket_attachments(db, ticket_id)
     ]
 
 
@@ -199,7 +216,7 @@ async def upload_ticket_image(
     ticket_id: int,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user),
+    current_user: AuthenticatedUser = Depends(require_access_level(2)),
 ):
     """Upload a ticket image to MinIO/S3 and persist its metadata."""
     _authorized_ticket(db, ticket_id, current_user)
@@ -214,7 +231,9 @@ async def upload_ticket_image(
     body = await file.read(settings.max_upload_size_bytes + 1)
     await file.close()
     if not body:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File is empty")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="File is empty"
+        )
     if len(body) > settings.max_upload_size_bytes:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
