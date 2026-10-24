@@ -1,6 +1,7 @@
 """Pydantic schemas for user-related endpoints."""
 
-from typing import Optional
+from datetime import datetime
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -60,6 +61,33 @@ class UserResponse(BaseModel):
     phone_number: Optional[str] = None
     role: str
     access_level: int
+    is_active: bool
+    created_at: Optional[datetime] = None
+
+
+ManagedRole = Literal["admin", "manager", "user", "visitor"]
+
+
+class ManagedUserCreate(BaseModel):
+    """Account payload accepted only from privileged users."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: EmailStr
+    password: str = Field(..., min_length=12, max_length=128)
+    full_name: Optional[str] = Field(default=None, max_length=120)
+    phone_number: Optional[str] = Field(default=None, max_length=32)
+    role: ManagedRole = "user"
+
+
+class ManagedUserUpdate(BaseModel):
+    """Administrative fields that may be changed without replacing an account."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    role: Optional[ManagedRole] = None
+    is_active: Optional[bool] = None
+
 
 class UserUpdate(BaseModel):
     """Schema for updating the current user profile."""

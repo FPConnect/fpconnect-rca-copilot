@@ -3,10 +3,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import AuthenticatedUser, get_current_user
+from app.api.deps import AuthenticatedUser, require_access_level
 from app.core.database import get_db
 from app.crud.ticket import complete_ticket_analysis, get_ticket_by_id
-from app.schemas.ticket import AnalyzeIncidentRequest, AnalyzeIncidentResponse, AnalyzeTicketRequest
+from app.schemas.ticket import (
+    AnalyzeIncidentRequest,
+    AnalyzeIncidentResponse,
+    AnalyzeTicketRequest,
+)
 from app.services.analyze_service import analyze_ticket
 
 router = APIRouter()
@@ -16,12 +20,16 @@ router = APIRouter()
 def analyze_incident(
     request: AnalyzeIncidentRequest,
     db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user),
+    current_user: AuthenticatedUser = Depends(require_access_level(2)),
 ):
     """Run clinical failure diagnosis for an incident and persist the result."""
     ticket = get_ticket_by_id(db, request.ticket_id)
-    if not ticket or (current_user.access_level < 3 and ticket.creator_id != current_user.id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Incident not found")
+    if not ticket or (
+        current_user.access_level < 3 and ticket.creator_id != current_user.id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Incident not found"
+        )
 
     suggestions = analyze_ticket(
         db,
@@ -30,13 +38,19 @@ def analyze_incident(
     )
     primary = suggestions[0] if suggestions else None
     english = request.language == "en-US"
-    root_cause = primary.cause if primary else (
-        "Root cause not determined" if english else "Causa raiz não determinada"
+    root_cause = (
+        primary.cause
+        if primary
+        else ("Root cause not determined" if english else "Causa raiz não determinada")
     )
-    recommendation = primary.resolution if primary and primary.resolution else (
-        "Escalate to level 2 clinical engineering support."
-        if english
-        else "Acionar engenharia clínica N2."
+    recommendation = (
+        primary.resolution
+        if primary and primary.resolution
+        else (
+            "Escalate to level 2 clinical engineering support."
+            if english
+            else "Acionar engenharia clínica N2."
+        )
     )
     if primary:
         explanation = (

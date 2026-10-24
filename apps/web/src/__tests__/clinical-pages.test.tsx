@@ -8,6 +8,10 @@ jest.mock("@/contexts/NotificationContext", () => ({
   useNotifications: () => ({ addNotification: jest.fn() }),
 }));
 
+jest.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({ user: { id: 1, role: "user", access_level: 2, is_active: true } }),
+}));
+
 jest.mock("@/services/api", () => ({
   api: {
     getMachines: jest.fn(),

@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user_id
+from app.api.deps import AuthenticatedUser, require_access_level
 from app.core.config import settings
 from app.core.database import get_db
 from app.crud.user import get_user_by_id
@@ -20,7 +20,7 @@ def _normalize_phone(phone_number: str | None) -> str:
 @router.post("/sms", response_model=SmsNotificationResponse)
 def send_sms_notification(
     payload: SmsNotificationRequest,
-    user_id: int = Depends(get_current_user_id),
+    current_user: AuthenticatedUser = Depends(require_access_level(2)),
     db: Session = Depends(get_db),
 ):
     """Return a preview response only when running in development."""
@@ -30,9 +30,11 @@ def send_sms_notification(
             detail="SMS delivery is not configured for this deployment",
         )
 
-    user = get_user_by_id(db, user_id)
+    user = get_user_by_id(db, current_user.id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     phone_number = _normalize_phone(user.phone_number)
     if len("".join(ch for ch in phone_number if ch.isdigit())) < 10:

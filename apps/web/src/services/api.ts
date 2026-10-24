@@ -130,6 +130,29 @@ export interface UserProfile {
   phone_number?: string | null;
   role: string;
   access_level?: number;
+  is_active?: boolean;
+  created_at?: string | null;
+}
+
+export type ManagedRole = "master" | "admin" | "manager" | "user" | "visitor";
+
+export interface ManagedUser extends UserProfile {
+  role: ManagedRole;
+  access_level: number;
+  is_active: boolean;
+}
+
+export interface CreateManagedUserPayload {
+  email: string;
+  password: string;
+  full_name?: string;
+  phone_number?: string;
+  role: Exclude<ManagedRole, "master">;
+}
+
+export interface UpdateManagedUserPayload {
+  role?: Exclude<ManagedRole, "master">;
+  is_active?: boolean;
 }
 
 export interface UpdateProfilePayload {
@@ -303,6 +326,24 @@ async function changePassword(data: ChangePasswordPayload): Promise<{ status: st
   });
 }
 
+async function getUsers(): Promise<ManagedUser[]> {
+  return request<ManagedUser[]>("/users");
+}
+
+async function createManagedUser(data: CreateManagedUserPayload): Promise<ManagedUser> {
+  return request<ManagedUser>("/users", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+async function updateManagedUser(id: number, data: UpdateManagedUserPayload): Promise<ManagedUser> {
+  return request<ManagedUser>(`/users/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
 async function sendSmsNotification(message: string): Promise<SmsResponse> {
   return request<SmsResponse>("/notifications/sms", {
     method: "POST",
@@ -384,6 +425,9 @@ export const api = {
   getMe,
   updateMe,
   changePassword,
+  getUsers,
+  createManagedUser,
+  updateManagedUser,
   clearLegacyPreviewCredentials,
   sendSmsNotification,
   analyzeIncident,
