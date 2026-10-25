@@ -19,11 +19,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, isLoading, pathname, router]);
 
   if (isLoading) {
-    return <div className="p-6 text-sm text-gray-500">Carregando sessão...</div>;
+    return <div className="app-theme app-viewport grid place-items-center p-6 text-sm text-gray-500">Carregando sessão...</div>;
   }
 
   if (!isAuthenticated && pathname !== "/login" && pathname !== "/") {
-    return <div className="p-6 text-sm text-gray-500">Redirecionando para login...</div>;
+    return <div className="app-theme app-viewport grid place-items-center p-6 text-sm text-gray-500">Redirecionando para login...</div>;
   }
 
   return <>{children}</>;

@@ -90,24 +90,24 @@ export default function TicketsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="mx-auto min-w-0 max-w-4xl">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Tickets</h1>
-      {canWrite ? <form onSubmit={handleCreate} className="bg-white rounded-lg shadow p-6 mb-6">
+      {canWrite ? <form onSubmit={handleCreate} className="mb-6 rounded-lg bg-white p-4 shadow sm:p-6">
         <h2 className="text-lg font-semibold mb-4">Create Ticket</h2>
-        <div className="flex gap-3">
-          <input type="text" placeholder="Ticket title" value={title} onChange={(e) => setTitle(e.target.value)} className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <select value={priority} onChange={(e) => setPriority(e.target.value)} className="border rounded-lg px-3 py-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+          <input type="text" placeholder="Ticket title" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full min-w-0 rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full min-w-0 rounded-lg border px-3 py-2 sm:w-auto">
             <option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option>
           </select>
-          <button type="submit" className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition">Create</button>
+          <button type="submit" className="w-full rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700 sm:w-auto">Create</button>
         </div>
       </form> : (
         <p role="note" className="mb-6 rounded-lg border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-900">
           Acesso somente para consulta. Contas de usuário ou superiores podem criar e analisar tickets.
         </p>
       )}
-      <div className="flex flex-wrap gap-3 mb-4">
-        <SearchBar placeholder="Pesquisar tickets..." value={search} onChange={setSearch} className="w-64" />
+      <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <SearchBar placeholder="Pesquisar tickets..." value={search} onChange={setSearch} className="w-full sm:w-64" />
         <FilterBar filters={FILTERS} values={filters} onChange={(key, value) => setFilters((p) => ({ ...p, [key]: value }))} onClear={() => setFilters({})} />
       </div>
       {filtered.length === 0 ? <div className="bg-white rounded-xl shadow p-8 text-center text-gray-400">Nenhum ticket encontrado.</div> : (
@@ -116,9 +116,9 @@ export default function TicketsPage() {
             const ticketId = Number(t.id);
             const canAnalyze = Number.isSafeInteger(ticketId) && ticketId > 0;
             return (
-              <div key={t.id} className="bg-white rounded-xl shadow p-4 flex items-center justify-between">
-                <div><span className="font-medium text-gray-900">{t.title}</span><span className="ml-2 text-sm text-gray-500">#{t.id}</span></div>
-                <div className="flex items-center gap-2">
+              <div key={t.id} className="flex min-w-0 flex-col gap-3 rounded-xl bg-white p-4 shadow sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0"><span className="break-words font-medium text-gray-900">{t.title}</span><span className="ml-2 text-sm text-gray-500">#{t.id}</span></div>
+                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
                   <span className={`text-xs font-semibold px-2 py-1 rounded-full ${priorityColors[t.priority]}`}>{priorityLabels[t.priority] ?? t.priority}</span>
                   <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-700">{statusLabels[t.status] ?? t.status}</span>
                   {canWrite && canAnalyze && (

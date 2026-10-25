@@ -74,8 +74,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="brand-surface min-h-[80vh] grid place-items-center px-4">
-      <form onSubmit={onSubmit} className="bg-white w-full max-w-md rounded-lg border border-slate-200 shadow-lg p-7 space-y-4">
+    <div className="brand-surface grid min-h-[calc(100dvh-2rem)] place-items-center py-4">
+      <form onSubmit={onSubmit} className="w-full max-w-md space-y-4 rounded-lg border border-slate-200 bg-white p-5 shadow-lg sm:p-7">
         <BrandLogo />
         <div>
           <h1 className="text-2xl font-bold text-[#071a3d]">

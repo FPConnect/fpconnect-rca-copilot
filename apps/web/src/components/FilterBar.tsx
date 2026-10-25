@@ -29,9 +29,9 @@ export default function FilterBar({
   const activeCount = Object.values(values).filter(Boolean).length;
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="grid w-full min-w-0 grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
       {filters.map((f) => (
-        <div key={f.key} className="flex items-center gap-1.5">
+        <div key={f.key} className="flex min-w-0 items-center gap-1.5">
           <label
             htmlFor={`filter-${f.key}`}
             className="text-xs font-medium text-gray-500"
@@ -42,7 +42,7 @@ export default function FilterBar({
             id={`filter-${f.key}`}
             value={values[f.key] ?? ""}
             onChange={(e) => onChange(f.key, e.target.value)}
-            className="text-sm border border-gray-300 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 sm:flex-none"
           >
             <option value="">Todos</option>
             {f.options.map((opt) => (
@@ -56,7 +56,7 @@ export default function FilterBar({
       {activeCount > 0 && (
         <button
           onClick={onClear}
-          className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-600 px-2 py-1.5 rounded-lg border border-gray-200 hover:border-red-200 transition-colors"
+          className="col-span-full flex items-center justify-center gap-1 rounded-lg border border-gray-200 px-2 py-1.5 text-xs text-gray-500 transition-colors hover:border-red-200 hover:text-red-600 sm:col-auto"
           aria-label="Limpar filtros"
         >
           <X size={12} />

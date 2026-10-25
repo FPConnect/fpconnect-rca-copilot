@@ -287,8 +287,8 @@ export default function AccessControlPage() {
       </main>
 
       {createOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4" role="presentation">
-          <section role="dialog" aria-modal="true" aria-labelledby="create-user-title" className="w-full max-w-lg rounded-lg bg-white shadow-2xl">
+        <div className="modal-layer fixed inset-0 z-50 flex items-start justify-center bg-slate-950/60 px-4 sm:items-center" role="presentation">
+          <section role="dialog" aria-modal="true" aria-labelledby="create-user-title" className="modal-panel my-auto w-full max-w-lg rounded-lg bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
               <div><h2 id="create-user-title" className="text-xl font-bold text-slate-950">Criar novo usuário</h2><p className="mt-1 text-sm text-slate-500">Defina o nível inicial e uma senha temporária segura.</p></div>
               <button type="button" onClick={() => setCreateOpen(false)} className="rounded-md p-2 text-slate-500 hover:bg-slate-100" aria-label="Fechar"><X size={18} /></button>
@@ -309,8 +309,8 @@ export default function AccessControlPage() {
       )}
 
       {editing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4" role="presentation">
-          <section role="dialog" aria-modal="true" aria-labelledby="edit-user-title" className="w-full max-w-md rounded-lg bg-white shadow-2xl">
+        <div className="modal-layer fixed inset-0 z-50 flex items-start justify-center bg-slate-950/60 px-4 sm:items-center" role="presentation">
+          <section role="dialog" aria-modal="true" aria-labelledby="edit-user-title" className="modal-panel my-auto w-full max-w-md rounded-lg bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
               <div><h2 id="edit-user-title" className="text-xl font-bold text-slate-950">Editar acesso</h2><p className="mt-1 text-sm text-slate-500">{editing.email}</p></div>
               <button type="button" onClick={() => setEditing(null)} className="rounded-md p-2 text-slate-500 hover:bg-slate-100" aria-label="Fechar"><X size={18} /></button>

@@ -240,7 +240,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <main className="brand-surface min-h-screen bg-white text-[#071a3d]" data-no-translate>
+    <main className="brand-surface app-viewport bg-white text-[#071a3d]" data-no-translate>
       <section className="relative min-h-[680px] overflow-hidden border-b border-slate-200 bg-white">
         <Image
           src="/brand/opspecta-hero.png"
@@ -254,17 +254,18 @@ export default function LandingPage() {
 
         <div className="relative mx-auto flex min-h-[680px] w-full max-w-[1440px] flex-col px-5 sm:px-8 lg:px-10">
           <nav data-motion="fade" className="flex min-h-20 items-center justify-between gap-4 border-b border-slate-200/80">
-            <BrandLogo />
+            <BrandLogo compact className="sm:hidden" />
+            <BrandLogo className="hidden sm:inline-flex" />
             <div
               className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-1 text-sm font-bold shadow-sm"
               aria-label={t.languageLabel}
             >
-              <Languages size={16} className="ml-2 text-[#0a7f86]" aria-hidden="true" />
+              <Languages size={16} className="ml-2 hidden text-[#0a7f86] sm:block" aria-hidden="true" />
               <button
                 type="button"
                 aria-pressed={locale === "pt"}
                 onClick={() => handleLocaleChange("pt")}
-                className={`min-h-9 rounded-md px-3 ${locale === "pt" ? "bg-[#071a3d] text-white" : "text-slate-600"}`}
+                className={`min-h-9 rounded-md px-2 sm:px-3 ${locale === "pt" ? "bg-[#071a3d] text-white" : "text-slate-600"}`}
               >
                 Português
               </button>
@@ -272,7 +273,7 @@ export default function LandingPage() {
                 type="button"
                 aria-pressed={locale === "en"}
                 onClick={() => handleLocaleChange("en")}
-                className={`min-h-9 rounded-md px-3 ${locale === "en" ? "bg-[#071a3d] text-white" : "text-slate-600"}`}
+                className={`min-h-9 rounded-md px-2 sm:px-3 ${locale === "en" ? "bg-[#071a3d] text-white" : "text-slate-600"}`}
               >
                 English
               </button>

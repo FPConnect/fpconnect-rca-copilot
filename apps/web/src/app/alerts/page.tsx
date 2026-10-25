@@ -88,12 +88,12 @@ export default function AlertsPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Alertas</h1>
-      <div className="flex flex-wrap gap-3 mb-4">
+      <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
         <SearchBar
           placeholder="Pesquisar alertas..."
           value={search}
           onChange={setSearch}
-          className="w-64"
+          className="w-full sm:w-64"
         />
         <FilterBar
           filters={FILTERS}
@@ -113,7 +113,7 @@ export default function AlertsPage() {
             return (
               <div key={a.id} className={`border rounded-xl p-4 flex items-start gap-3 ${bg}`}>
                 <Icon size={20} className={text} />
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <p className={`font-medium ${text}`}>{a.message}</p>
                   <p className="text-xs text-gray-500 mt-0.5">
                     {a.machine} &middot; {a.time}
@@ -122,7 +122,7 @@ export default function AlertsPage() {
                 {!a.acknowledged ? (
                   <button
                     onClick={() => acknowledge(a.id)}
-                    className="text-xs px-3 py-1 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="shrink-0 rounded-lg border border-gray-300 bg-white px-3 py-1 text-xs text-gray-700 transition-colors hover:bg-gray-50"
                   >
                     Reconhecer
                   </button>

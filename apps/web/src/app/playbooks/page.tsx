@@ -56,7 +56,7 @@ export default function PlaybooksPage() {
         </p>
       )}
 
-      <SearchBar placeholder="Pesquisar playbooks por título ou equipamento..." value={search} onChange={setSearch} className="w-96" />
+      <SearchBar placeholder="Pesquisar playbooks por título ou equipamento..." value={search} onChange={setSearch} className="w-full sm:w-96" />
       <div className="grid gap-4 md:grid-cols-2">
         {filtered.length === 0 && (
           <p className="text-sm text-slate-500">Nenhum playbook encontrado.</p>

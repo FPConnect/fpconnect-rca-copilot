@@ -85,7 +85,7 @@ export function StrategicMoatsContent() {
               depois; a revisão e a decisão técnica permanecem humanas.
             </p>
           </div>
-          <div className="grid min-w-[260px] grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-center">
+          <div className="grid w-full min-w-0 grid-cols-3 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-center sm:w-auto sm:min-w-[260px]">
             <div>
               <div className="text-2xl font-black text-slate-950">3</div>
               <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
