@@ -92,8 +92,8 @@ export default function MachinesPage() {
   return (
     <div className="max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Máquinas</h1>
-      <div className="flex flex-wrap gap-3 mb-4">
-        <SearchBar placeholder="Pesquisar máquinas..." value={search} onChange={(v) => { setSearch(v); setPage(1); }} className="w-64" />
+      <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <SearchBar placeholder="Pesquisar máquinas..." value={search} onChange={(v) => { setSearch(v); setPage(1); }} className="w-full sm:w-64" />
         <FilterBar filters={FILTERS} values={filters} onChange={(key, value) => { setFilters((prev) => ({ ...prev, [key]: value })); setPage(1); }} onClear={() => { setFilters({}); setPage(1); }} />
       </div>
       {reportError ? (

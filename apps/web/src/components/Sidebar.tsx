@@ -45,7 +45,7 @@ export default function Sidebar() {
     : navItems;
 
   const navContent = (
-    <aside className="w-64 min-h-screen bg-gray-900 text-white flex flex-col">
+    <aside className="mobile-navigation flex w-64 flex-col bg-gray-900 text-white">
       <div className="px-5 py-5 border-b border-gray-700 flex items-center justify-between">
         <BrandLogo inverse />
         <button
@@ -117,7 +117,7 @@ export default function Sidebar() {
 
       {/* Mobile sidebar overlay */}
       {isOpen && (
-        <div className="md:hidden fixed inset-0 z-40 flex">
+        <div className="fixed inset-0 z-40 flex h-dvh overflow-hidden md:hidden">
           <button
             className="fixed inset-0 bg-black/50 cursor-default"
             onClick={close}

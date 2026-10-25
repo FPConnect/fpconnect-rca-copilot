@@ -403,12 +403,12 @@ export default function SettingsPage() {
               Usado como destino das notificações por SMS quando esse canal estiver ativo.
             </p>
           </div>
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
             <StatusBanner status={profileSave.status} />
-            <div className="flex gap-2 ml-auto">
+            <div className="flex w-full gap-2 sm:ml-auto sm:w-auto">
               <button
                 onClick={() => setProfileDraft(profile)}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 sm:flex-none"
               >
                 <X size={14} />
                 Cancelar
@@ -416,7 +416,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleProfileSave}
                 disabled={profileSave.status === "saving"}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700 disabled:opacity-50 sm:flex-none"
               >
                 <Save size={14} />
                 {profileSave.status === "saving" ? "Salvando..." : "Salvar"}
@@ -509,12 +509,12 @@ export default function SettingsPage() {
               </select>
             </div>
           </div>
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
             <StatusBanner status={systemSave.status} />
-            <div className="flex gap-2 ml-auto">
+            <div className="flex w-full gap-2 sm:ml-auto sm:w-auto">
               <button
                 onClick={() => setSystemDraft(system)}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 sm:flex-none"
               >
                 <X size={14} />
                 Cancelar
@@ -522,7 +522,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleSystemSave}
                 disabled={systemSave.status === "saving"}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700 disabled:opacity-50 sm:flex-none"
               >
                 <Save size={14} />
                 {systemSave.status === "saving" ? "Salvando..." : "Salvar"}
@@ -570,12 +570,12 @@ export default function SettingsPage() {
             onChange={(v) => setNotifDraft((p) => ({ ...p, push: v }))}
           />
         </div>
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-4">
+        <div className="mt-4 flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <StatusBanner status={notifSave.status} />
-          <div className="flex gap-2 ml-auto">
+          <div className="flex w-full gap-2 sm:ml-auto sm:w-auto">
             <button
               onClick={() => setNotifDraft(notifPrefs)}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 sm:flex-none"
             >
               <X size={14} />
               Cancelar
@@ -583,7 +583,7 @@ export default function SettingsPage() {
             <button
               onClick={handleNotifSave}
               disabled={notifSave.status === "saving"}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700 disabled:opacity-50 sm:flex-none"
             >
               <Save size={14} />
               {notifSave.status === "saving" ? "Salvando..." : "Salvar"}
@@ -649,14 +649,14 @@ export default function SettingsPage() {
             {showPasswords ? "Ocultar senhas" : "Mostrar senhas"}
           </button>
         </div>
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-4">
+        <div className="mt-4 flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <StatusBanner status={passwordSave.status} />
-          <div className="flex gap-2 ml-auto">
+          <div className="flex w-full gap-2 sm:ml-auto sm:w-auto">
             <button
               onClick={() =>
                 setPasswordForm({ current: "", newPassword: "", confirm: "" })
               }
-              className="flex items-center gap-1.5 px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 sm:flex-none"
             >
               <X size={14} />
               Cancelar
@@ -664,7 +664,7 @@ export default function SettingsPage() {
             <button
               onClick={handlePasswordSave}
               disabled={passwordSave.status === "saving"}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700 disabled:opacity-50 sm:flex-none"
             >
               <Save size={14} />
               {passwordSave.status === "saving" ? "Salvando..." : "Alterar Senha"}
@@ -676,7 +676,7 @@ export default function SettingsPage() {
       {/* Data Management */}
       <SectionCard title="Dados e Privacidade">
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div className="flex flex-col items-start gap-3 rounded-lg bg-gray-50 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-medium text-gray-700">
                 Exportar Dados
@@ -687,12 +687,12 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={handleExportData}
-              className="text-sm px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-white transition-colors"
+              className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition-colors hover:bg-white sm:w-auto"
             >
               Exportar
             </button>
           </div>
-          <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+          <div className="flex flex-col items-start gap-3 rounded-lg bg-red-50 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-medium text-red-700">
                 Redefinir Preferências
@@ -713,7 +713,7 @@ export default function SettingsPage() {
                 notifyLanguageChanged();
                 addNotification("warning", "Preferências redefinidas", "Todas as configurações foram restauradas.");
               }}
-              className="text-sm px-4 py-2 border border-red-200 rounded-lg text-red-600 hover:bg-red-100 transition-colors"
+              className="w-full rounded-lg border border-red-200 px-4 py-2 text-sm text-red-600 transition-colors hover:bg-red-100 sm:w-auto"
             >
               Redefinir
             </button>

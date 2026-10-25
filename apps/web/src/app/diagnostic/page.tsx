@@ -112,15 +112,16 @@ export default function DiagnosticPage() {
     );
 
   return (
-    <main className="brand-surface min-h-screen bg-white text-[#071a3d]" data-no-translate>
+    <main className="brand-surface app-viewport bg-white text-[#071a3d]" data-no-translate>
       <section className="border-b border-slate-200 bg-[#f4f8fa]">
         <div className="mx-auto max-w-[1180px] px-5 py-5 sm:px-8">
           <nav className="flex items-center justify-between gap-4">
             <Link href="/" aria-label={APP_NAME}>
-              <BrandLogo />
+              <BrandLogo compact className="sm:hidden" />
+              <BrandLogo className="hidden sm:inline-flex" />
             </Link>
             <div className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-1 text-sm font-bold">
-              <Languages size={16} className="ml-2 text-[#0a7f86]" aria-hidden="true" />
+              <Languages size={16} className="ml-2 hidden text-[#0a7f86] sm:block" aria-hidden="true" />
               <button
                 type="button"
                 onClick={() => setLocale("pt")}

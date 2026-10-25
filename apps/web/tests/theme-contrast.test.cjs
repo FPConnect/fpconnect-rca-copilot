@@ -24,8 +24,8 @@ function contrast(foreground, background) {
 }
 
 test("dark theme maps gray and slate utilities inside the product shell", () => {
-  assert.match(appShell, /app-theme flex min-h-screen/);
-  assert.match(appShell, /app-theme min-h-screen bg-gray-50/);
+  assert.match(appShell, /app-theme app-viewport flex/);
+  assert.match(appShell, /app-theme app-viewport app-main [^"]*bg-gray-50/);
 
   for (const utility of [
     "text-gray-900",

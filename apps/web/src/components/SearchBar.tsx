@@ -48,7 +48,7 @@ export default function SearchBar({
   }, []);
 
   return (
-    <div className={`relative flex items-center ${className}`}>
+    <div className={`relative flex min-w-0 items-center ${className}`}>
       <Search
         size={16}
         className="absolute left-3 text-gray-400 pointer-events-none"

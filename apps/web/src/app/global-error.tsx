@@ -15,7 +15,7 @@ export default function GlobalError({
 
   return (
     <html lang="pt-BR">
-      <body className="flex flex-col items-center justify-center min-h-screen text-center px-4 bg-gray-50">
+      <body className="app-viewport flex flex-col items-center justify-center bg-gray-50 px-4 text-center">
         <h2 className="text-2xl font-semibold text-gray-700 mb-2">Algo deu errado</h2>
         <p className="text-gray-500 mb-8">
           Ocorreu um erro crítico. Tente recarregar a página.

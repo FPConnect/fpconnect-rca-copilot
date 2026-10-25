@@ -128,6 +128,64 @@ html.dark .app-theme textarea::placeholder {
   color: #94a3b8;
 }
 
+/* Form controls must be allowed to shrink inside mobile grid and flex layouts. */
+.app-theme :where(input, select, textarea) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.app-viewport {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.app-main {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.mobile-navigation {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.modal-layer {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-y: auto;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+.modal-panel {
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+
+.toast-region {
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  max-width: calc(100vw - 2rem);
+}
+
+@media (min-width: 640px) {
+  .app-main {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-navigation {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-y: visible;
+    padding-bottom: 0;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   html.motion-enabled [data-motion] {
     opacity: 0;

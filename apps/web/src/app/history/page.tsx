@@ -60,12 +60,12 @@ export default function HistoryPage() {
   return (
     <div className="max-w-5xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Histórico de Auditoria</h1>
-      <div className="flex flex-wrap gap-3 mb-4">
+      <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
         <SearchBar
           placeholder="Pesquisar histórico..."
           value={search}
           onChange={handleSearch}
-          className="w-64"
+          className="w-full sm:w-64"
         />
         <FilterBar
           filters={FILTERS}

@@ -38,7 +38,7 @@ export default function MetricsPage() {
         <div className="space-y-4">
           {PERFORMANCE.map((p) => (
             <div key={p.machine}>
-              <div className="flex justify-between text-sm mb-1">
+              <div className="mb-1 flex flex-col gap-0.5 text-sm sm:flex-row sm:justify-between">
                 <span className="font-medium text-gray-700">{p.machine}</span>
                 <span className="text-gray-500">
                   {p.uptime}% &middot; {p.incidents} incidente(s)

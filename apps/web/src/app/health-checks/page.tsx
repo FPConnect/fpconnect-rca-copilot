@@ -24,14 +24,14 @@ export default function HealthChecksPage() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Health Checks</h1>
-        <div className="flex gap-2">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
           {["ALL", "OK", "WARNING", "FAIL"].map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`w-full rounded-lg px-3 py-1.5 text-sm font-medium transition-colors sm:w-auto ${
                 filter === f
                   ? "bg-blue-600 text-white"
                   : "bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -46,15 +46,15 @@ export default function HealthChecksPage() {
         {filtered.map((c) => {
           const { icon: Icon, color } = RESULT_CONFIG[c.result];
           return (
-            <div key={c.id} className="bg-white rounded-xl shadow p-4 flex items-center gap-4">
-              <Icon size={24} className={color} />
-              <div className="flex-1">
+            <div key={c.id} className="flex items-start gap-3 rounded-xl bg-white p-4 shadow sm:items-center sm:gap-4">
+              <Icon size={24} className={`${color} shrink-0`} />
+              <div className="min-w-0 flex-1">
                 <p className="font-medium text-gray-900">
                   {c.machine} — {c.check}
                 </p>
                 <p className="text-sm text-gray-500">{c.value}</p>
               </div>
-              <span className="text-xs text-gray-400">{c.time}</span>
+              <span className="shrink-0 whitespace-nowrap text-xs text-gray-400">{c.time}</span>
             </div>
           );
         })}

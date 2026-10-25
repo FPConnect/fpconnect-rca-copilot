@@ -71,7 +71,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Notificações</h1>
           {unreadCount > 0 && (
@@ -80,11 +80,11 @@ export default function NotificationsPage() {
             </p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           {unreadCount > 0 && (
             <button
               onClick={markAllRead}
-              className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50"
             >
               <CheckCheck size={16} />
               Marcar todas como lidas
@@ -93,7 +93,7 @@ export default function NotificationsPage() {
           {notifications.length > 0 && (
             <button
               onClick={clearAll}
-              className="flex items-center gap-2 text-sm px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+              className="flex items-center justify-center gap-2 rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
             >
               <Trash2 size={16} />
               Limpar tudo
