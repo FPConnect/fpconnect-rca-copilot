@@ -48,59 +48,84 @@ body {
   overflow-x: hidden;
 }
 
-html.dark body {
-  background: #0f172a;
-  color: #e5e7eb;
+/* Dark-mode utilities are scoped to the authenticated product surface. */
+html.dark .app-theme {
+  background-color: #1f2937;
+  color: #f8fafc;
 }
 
-html.dark .bg-white {
+html.dark .app-theme .bg-white {
   background-color: #111827 !important;
 }
 
-html.dark .bg-gray-50,
-html.dark .bg-gray-100 {
+html.dark .app-theme .bg-gray-50,
+html.dark .app-theme .bg-gray-100,
+html.dark .app-theme .bg-slate-50,
+html.dark .app-theme .bg-slate-100 {
   background-color: #1f2937 !important;
 }
 
-html.dark .text-gray-900,
-html.dark .text-gray-800,
-html.dark .text-gray-700 {
+html.dark .app-theme .bg-gray-200,
+html.dark .app-theme .bg-gray-300,
+html.dark .app-theme .bg-slate-200,
+html.dark .app-theme .bg-slate-300 {
+  background-color: #334155 !important;
+}
+
+html.dark .app-theme .text-gray-900,
+html.dark .app-theme .text-gray-800,
+html.dark .app-theme .text-gray-700,
+html.dark .app-theme .text-slate-950,
+html.dark .app-theme .text-slate-900,
+html.dark .app-theme .text-slate-800,
+html.dark .app-theme .text-slate-700 {
   color: #f8fafc !important;
 }
 
-html.dark .text-gray-600,
-html.dark .text-gray-500,
-html.dark .text-gray-400 {
+html.dark .app-theme .text-gray-600,
+html.dark .app-theme .text-gray-500,
+html.dark .app-theme .text-gray-400,
+html.dark .app-theme .text-slate-600,
+html.dark .app-theme .text-slate-500,
+html.dark .app-theme .text-slate-400 {
   color: #cbd5e1 !important;
 }
 
-html.dark .border-gray-100,
-html.dark .border-gray-200,
-html.dark .border-gray-300 {
+html.dark .app-theme .border-gray-100,
+html.dark .app-theme .border-gray-200,
+html.dark .app-theme .border-gray-300,
+html.dark .app-theme .border-slate-100,
+html.dark .app-theme .border-slate-200,
+html.dark .app-theme .border-slate-300 {
+  border-color: #475569 !important;
+}
+
+html.dark .app-theme .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .app-theme .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+html.dark .app-theme .divide-slate-100 > :not([hidden]) ~ :not([hidden]),
+html.dark .app-theme .divide-slate-200 > :not([hidden]) ~ :not([hidden]) {
   border-color: #334155 !important;
 }
 
-html.dark input,
-html.dark select,
-html.dark textarea {
+html.dark .app-theme .hover\:bg-gray-50:hover,
+html.dark .app-theme .hover\:bg-gray-100:hover,
+html.dark .app-theme .hover\:bg-slate-50:hover,
+html.dark .app-theme .hover\:bg-slate-100:hover {
+  background-color: #334155 !important;
+}
+
+html.dark .app-theme input,
+html.dark .app-theme select,
+html.dark .app-theme textarea {
   background-color: #0f172a;
   color: #f8fafc;
   border-color: #475569;
+  color-scheme: dark;
 }
 
-html.dark input::placeholder,
-html.dark textarea::placeholder {
+html.dark .app-theme input::placeholder,
+html.dark .app-theme textarea::placeholder {
   color: #94a3b8;
-}
-
-/* The public brand surface has its own deliberate light/dark bands. */
-html.dark .brand-surface {
-  background-color: #ffffff !important;
-  color: #071a3d !important;
-}
-
-html.dark .brand-surface .bg-white {
-  background-color: #ffffff !important;
 }
 
 @media (prefers-reduced-motion: no-preference) {
