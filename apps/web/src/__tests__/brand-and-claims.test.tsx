@@ -35,7 +35,7 @@ describe("display name and commercial claims", () => {
       expect(wordmark).toHaveClass("brand-wordmark");
       expect(wordmark).toHaveTextContent("OPSPECTA");
     });
-    expect(screen.getByRole("heading", { level: 1, name: "OPSPECTA" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Transforme ordens de serviço em prioridades de ação" })).toBeInTheDocument();
     expect(document.querySelector("[data-brand-banner]")).toBeInTheDocument();
   });
 

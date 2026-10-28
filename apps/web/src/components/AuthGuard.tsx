@@ -18,6 +18,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   }, [isAuthenticated, isLoading, pathname, router]);
 
+  // Public pages must render even while session validation is pending.
+  if (pathname === "/" || pathname === "/login") return <>{children}</>;
+
   if (isLoading) {
     return <div className="app-theme app-viewport grid place-items-center p-6 text-sm text-gray-500">Carregando sessão...</div>;
   }
