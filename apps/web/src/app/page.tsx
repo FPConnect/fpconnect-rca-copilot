@@ -34,10 +34,10 @@ const copy = {
     brandTagline: "Inteligência operacional para a saúde",
     heroAlt: "Profissional de tecnologia em saúde analisando indicadores operacionais anonimizados",
     badge: "Inteligência de dados para operações MedTech",
-    headline: "Performance de tecnologia em saúde",
+    headline: "Transforme ordens de serviço em prioridades de ação",
     subtitle:
       `${APP_NAME} organiza chamados, logs e histórico de equipamentos para apoiar triagem, revisão de hipóteses de causa raiz e acompanhamento de disponibilidade. A decisão técnica permanece com a equipe responsável.`,
-    cta: "Fale com nossa equipe",
+    cta: "Conversar sobre o piloto",
     secondaryCta: "Acessar plataforma",
     pilotReference: "Referência do piloto de indicadores",
     kpis: [
@@ -115,10 +115,10 @@ const copy = {
     brandTagline: "Operational intelligence for healthcare",
     heroAlt: "Healthcare technology professional reviewing anonymized operational indicators",
     badge: "Data intelligence for MedTech operations",
-    headline: "Healthcare technology performance",
+    headline: "Turn service records into priorities for action",
     subtitle:
       `${APP_NAME} organizes service records, logs and equipment history to support triage, root-cause hypothesis review and availability tracking. Technical decisions remain with the responsible team.`,
-    cta: "Talk to our team",
+    cta: "Discuss the pilot",
     secondaryCta: "Access platform",
     pilotReference: "Metrics pilot reference",
     kpis: [
@@ -286,7 +286,6 @@ export default function LandingPage() {
                 <ShieldCheck size={16} aria-hidden="true" />
                 {t.badge}
               </div>
-              <h1 className="sr-only">{APP_NAME}</h1>
               <div
                 className="relative mt-7 aspect-[22/5] w-full max-w-2xl overflow-hidden bg-white"
                 data-brand-banner
@@ -301,11 +300,11 @@ export default function LandingPage() {
                   className="object-cover object-center"
                 />
               </div>
-              <p data-motion className="mt-5 max-w-xl text-3xl font-bold leading-tight text-[#0a7f86]">{t.headline}</p>
+              <h1 data-motion className="mt-5 max-w-xl text-3xl font-bold leading-tight text-[#0a7f86]">{t.headline}</h1>
               <p data-motion className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">{t.subtitle}</p>
               <div data-motion className="mt-8 flex flex-wrap gap-3">
                 <Link
-                  href="https://wa.me/5547996789861"
+                  href={`https://wa.me/5547996789861?text=${encodeURIComponent(locale === "pt" ? "Olá! Quero conversar sobre o piloto de indicadores da OPSPECTA." : "Hello! I would like to discuss the OPSPECTA metrics pilot.")}`}
                   className="motion-arrow motion-lift inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#071a3d] px-6 font-bold text-white shadow-lg transition hover:bg-[#0a7f86]"
                 >
                   <MessageCircle size={19} aria-hidden="true" />
@@ -402,6 +401,7 @@ export default function LandingPage() {
                   key={plan.name}
                   type="button"
                   data-motion
+                  aria-pressed={selected}
                   onClick={() => setActivePlan(planKey)}
                   style={{ transitionDelay: `${planOrder.indexOf(planKey) * 70}ms` }}
                   className={`motion-lift min-h-28 rounded-lg border p-5 text-left transition ${
@@ -434,7 +434,7 @@ export default function LandingPage() {
             <div className="flex flex-col justify-between border-t border-slate-200 pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
               <p className="max-w-md text-base leading-7 text-slate-600">{t.planHint}</p>
               <Link
-                href="https://wa.me/5547996789861"
+                href={`https://wa.me/5547996789861?text=${encodeURIComponent(locale === "pt" ? `Olá! Quero conversar com a OPSPECTA sobre: ${active.name}.` : `Hello! I would like to discuss ${active.name} with OPSPECTA.`)}`}
                 className="motion-arrow motion-lift mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#18c8c0] px-6 font-black text-[#071a3d] transition hover:bg-[#39ddd5]"
               >
                 {active.cta}
