@@ -1,5 +1,5 @@
 # OPSPECTA — Sistema de aquisição e autoridade B2B
-**Plano de implantação:** novembro de 2026 · **Canais iniciais:** LinkedIn pessoal, LinkedIn empresarial, site e e-mail opt-in
+**Plano de implantação:** novembro de 2026 · **Canais iniciais:** LinkedIn EMPRESARIAL OPSPECTA, site corporativo e e-mail opt-in. **Fora de escopo:** perfil pessoal do fundador (proibição expressa de alterações, posts ou interações por esta campanha).
 **Status:** plano estratégico; metas não são resultados comprovados. Sem mídia paga, bots de comentários, compra de listas ou assinaturas obrigatórias.
 
 ## Diagnóstico e posicionamento
@@ -24,8 +24,7 @@ Compradores indiretos: qualidade, TI/segurança, compras e liderança financeira
 
 ## 2. Função dos canais e cadência inicial
 
-- **LinkedIn pessoal do fundador** (prioridade 1, 2 publicações/semana): voz profissional baseada em experiência real de campo, observação técnica e lições de dados. Não transformar o perfil em vitrine exclusiva da startup; preservar a carreira MedTech.
-- **LinkedIn da OPSPECTA** (prioridade 1, 2 publicações/semana): exemplos visuais fictícios e transparentes, checklists, evidências do produto, escopo comercial. Não repetir integralmente o post pessoal.
+- **LinkedIn da OPSPECTA** (prioridade 1, 2–3 publicações/semana): exemplos visuais fictícios e transparentes, checklists, evidências de produto e escopo comercial. Toda publicação e interação deve acontecer **somente em nome da página empresarial OPSPECTA**; jamais no perfil do fundador.
 - **Site /recursos + /diagnostic** (prioridade 1): material perene, checklist de OS, próximo passo comercial. Site mantém domínio público fpconnect.tec.br; OPSPECTA é a marca de comunicação. Não exigir login para páginas públicas.
 - **Newsletter externa opt-in** (prioridade 2, quinzenal nos primeiros 60 dias): "Inteligência em Serviço — OPSPECTA", 1 caso didático + 1 checklist + 1 recomendação técnica + 1 CTA. Criar conta de provedor e cadastrar envio apenas depois de verificação de propriedade, base legal, descadastro e autenticação de domínio.
 - **E-mail marketing B2B** (prioridade 2): somente contatos que aceitaram comunicação marketing; separar newsletter (editorial) de fluxos de diagnóstico (comerciais). Não importar contatos de candidaturas, listas compradas, sites nem e-mails históricos como assinantes sem base apropriada.
@@ -44,27 +43,25 @@ D) **Marca/oferta (10%)** — diagnóstico inicial, pessoas por trás do projeto
 
 Formatos prioritários: (i) carrossel/documento 4–6 páginas; (ii) postagem curta de fundador com opinião testável; (iii) vídeo de demonstração 45–90s; (iv) artigo/edição editorial quinzenal. Medir alcance qualificado e conversas, não apenas likes. Escrever em português para mercado brasileiro; produzir edições em inglês separadamente para internacional quando houver demanda e capacidade, sem duplicar dois textos longos na mesma publicação.
 
-### Cadência de quatro semanas (esboço, sem disparo automático)
+### Cadência de quatro semanas (empresa somente; esboço, não é prova de postagem)
 
-| Semana | Fundador (2 posts) | Empresa (2 posts) | Newsletter/ativo |
-| --- | --- | --- | --- |
-| 1 | A história por trás da OPSPECTA; observação de campo | Checklist de OS com link; exemplo de campo ausente | Publicar /recursos e preparar cadastro |
-| 2 | Tempo parado não é só reparo; erro comum de indicadores | Linha do tempo fictícia; oferta de diagnóstico | Edição 1: OS como evidência |
-| 3 | Onde RCA falha sem histórico; lição prática | Carrossel “fato x hipótese”; exemplo de relatório | Conversas voluntárias com interessados |
-| 4 | Lições da criação da OPSPECTA; pergunta de campo | Perguntas de qualificação; demo curta | Edição 2 + revisão de métricas |
+| Semana | Página empresarial OPSPECTA | Material de apoio |
+| --- | --- | --- |
+| 1 | Checklist gratuito de OS; exemplo de erro em campo obrigatório | Publicar /recursos e demonstrar análise fictícia |
+| 2 | Carrossel "tempo de espera versus reparo"; convite ao diagnóstico | Edição 1 da newsletter, somente após configurar opt-in |
+| 3 | RCA: separar fato e hipótese; como verificar uma reincidência | Mini-relatório demonstrativo |
+| 4 | Triagem de inconsistências; perguntas de qualificação de compradores | Revisão de métricas e conversões |
 
-**Distribuição orgânica:** responder comentários próprios, contribuir em publicações de parceiros/entidades quando houver algo real a acrescentar (não estabelecer meta de 15 comentários genéricos/dia). Convidar a seguir a página só pessoas com pertinência profissional, respeitando regras da plataforma; não enviar contatos frios por DM sob a autorização atual.
+**Distribuição orgânica:** responder comentários pertinentes da página OPSPECTA, participar como empresa apenas em conversas comerciais/técnicas realmente relevantes e convidar conexões apropriadas, se houver autorização e ferramenta com permissão. Não impor quota de comentários genéricos ou spam; não enviar DMs frias nem tocar no perfil pessoal.
 
-## 4. Marca pessoal do fundador
+## 4. Identidade corporativa da OPSPECTA (exclusivamente página empresarial)
 
-Posicionamento: **profissional de field service em MedTech que traduz a operação técnica em inteligência e melhores decisões — fundador da OPSPECTA**. A empresa complementa a carreira, não elimina sua elegibilidade a oportunidades de engenharia e analytics.
+Nome: **OPSPECTA**.
+Tagline: **Inteligência operacional para a saúde**.
+Descrição-base para LinkedIn (ajustar a limites de campo ao publicar):
+"Transformamos históricos de ordens de serviço e registros técnicos em informações mais claras para equipes MedTech. A OPSPECTA desenvolve serviços de diagnóstico e pilotos de indicadores para investigar qualidade dos dados, recorrências, tempos de espera e gargalos operacionais. Atuamos como apoio analítico à engenharia clínica, fabricantes, distribuidores e prestadores de serviço, sem executar manutenção física ou substituir a validação técnica. Conheça o diagnóstico remoto e nossos materiais gratuitos em fpconnect.tec.br."
 
-Headline de trabalho (verificar exatidão das qualificações exibidas no LinkedIn):
-**Field Service Engineer | MedTech & Diagnostic Imaging | Technical Data, RCA & Service Analytics | Founder, OPSPECTA**
-
-Texto "Sobre" proposto:
-"Trabalho na interface entre tecnologia médica, assistência técnica e dados operacionais. Minha atuação em serviços de campo mostrou como registros de atendimento, hipóteses de falha e histórico de equipamentos podem ganhar valor quando são organizados com rigor e contexto. Na OPSPECTA, desenvolvo uma abordagem de inteligência operacional para apoiar equipes MedTech na análise de ordens de serviço, gargalos e recorrências, sempre com revisão humana. Também tenho interesse em operações de field service, engenharia, analytics e colaboração internacional. Busco conexões com equipes que valorizem segurança, rastreabilidade e melhorias mensuráveis." 
-Não acrescentar certificações, clientes, empregadores ou impacto numérico não comprovado. Se forem publicados textos em primeira pessoa, o fundador mantém autoria pessoal.
+CTA empresarial primário: **Conheça o diagnóstico operacional** (URL /diagnostic). CTA de conteúdo: **Checklist gratuito para registros de OS** (/recursos). Não afirmar certificações, clientes, resultados, aprovações regulatórias ou economia verificada inexistentes. Documentar somente publicações confirmadas com URL permanente e data.
 
 ## 5. Newsletter dos primeiros 0 aos 1.000 inscritos
 
@@ -127,6 +124,6 @@ Objetivo qualitativo: primeiros 20 leitores/participantes profissionais que reto
 
 ### Restrições explícitas
 - Não executar mensagens diretas frias, disparos comerciais ou convites indiscriminados durante a pausa de prospecção. Conteúdo público e respostas solicitadas são permitidos.
-- Não publicar em nome pessoal do fundador sem revisão/autoria apropriada.
+- Não acessar, editar, publicar, comentar, curtir ou convidar em nome do perfil pessoal do fundador. Todas as ações de LinkedIn desta campanha devem ser restritas à página empresarial OPSPECTA.
 - Não simular depoimentos, logos de clientes, resultados reais, ganhos financeiros, diagnósticos clínicos ou garantias.
 - Nenhum lead ou cadastro é criado automaticamente pela mera existência deste documento.
