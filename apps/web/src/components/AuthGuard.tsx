@@ -9,23 +9,29 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  useEffect(() => {
-    if (isLoading) return;
+  // Public marketing routes never require a login or wait for session validation.
+  const isPublicRoute =
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/diagnostic" ||
+    pathname === "/recursos" ||
+    pathname.startsWith("/recursos/");
 
-    if (!isAuthenticated && pathname !== "/login" && pathname !== "/") {
+  useEffect(() => {
+    if (isLoading || isPublicRoute) return;
+
+    if (!isAuthenticated) {
       router.replace("/login");
     }
+  }, [isAuthenticated, isLoading, isPublicRoute, router]);
 
-  }, [isAuthenticated, isLoading, pathname, router]);
-
-  // Public pages must render even while session validation is pending.
-  if (pathname === "/" || pathname === "/login") return <>{children}</>;
+  if (isPublicRoute) return <>{children}</>;
 
   if (isLoading) {
     return <div className="app-theme app-viewport grid place-items-center p-6 text-sm text-gray-500">Carregando sessão...</div>;
   }
 
-  if (!isAuthenticated && pathname !== "/login" && pathname !== "/") {
+  if (!isAuthenticated) {
     return <div className="app-theme app-viewport grid place-items-center p-6 text-sm text-gray-500">Redirecionando para login...</div>;
   }
 
