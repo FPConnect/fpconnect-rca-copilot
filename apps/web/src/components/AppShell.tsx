@@ -8,7 +8,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   // Marketing and educational routes render without the authenticated app shell.
-  if (pathname === "/" || pathname === "/diagnostic" || pathname === "/recursos" || pathname.startsWith("/recursos/")) {
+  if (pathname === "/" || pathname === "/diagnostic" || pathname === "/recursos" ||
+    pathname === "/solucoes" || pathname.startsWith("/recursos/")) {
     return <>{children}</>;
   }
 
