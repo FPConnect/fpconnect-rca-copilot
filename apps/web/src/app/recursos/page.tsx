@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ClipboardCheck, FileSearch, ShieldCheck } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
+import OSQualitySelfAssessment from "@/components/OSQualitySelfAssessment";
 
 export const metadata: Metadata = {
   title: "Checklist de qualidade de ordens de serviço | OPSPECTA",
@@ -101,6 +102,8 @@ export default function RecursosPage() {
           ))}
         </ol>
       </section>
+
+      <OSQualitySelfAssessment />
 
       <section className="border-y border-slate-200 bg-white px-5 py-12 sm:px-8">
         <div className="mx-auto max-w-[1080px]">
