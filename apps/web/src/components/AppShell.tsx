@@ -7,7 +7,8 @@ import Header from "@/components/Header";
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  if (pathname === "/") {
+  // Marketing and educational routes render without the authenticated app shell.
+  if (pathname === "/" || pathname === "/diagnostic" || pathname === "/recursos" || pathname.startsWith("/recursos/")) {
     return <>{children}</>;
   }
 
