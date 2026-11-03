@@ -44,6 +44,7 @@ const copy = {
     resourceHeading: "Antes de medir, qualifique os registros.",
     resourceDescription: "Use oito perguntas práticas para identificar lacunas em históricos de manutenção, sem expor dados sensíveis.",
     resourceLink: "Ver checklist gratuito",
+    solutionsLink: "Conhecer soluções",
     pilotReference: "Referência do piloto de indicadores",
     kpis: [
       { label: "Ordens de serviço", value: "Até 300", icon: Server },
@@ -129,6 +130,7 @@ const copy = {
     resourceHeading: "Check your records before measuring.",
     resourceDescription: "Eight practical questions to uncover service-record gaps before analytics. The resource is currently in Portuguese.",
     resourceLink: "Open free checklist (PT)",
+    solutionsLink: "Explore solutions",
     pilotReference: "Metrics pilot reference",
     kpis: [
       { label: "Service orders", value: "Up to 300", icon: Server },
@@ -407,9 +409,14 @@ export default function LandingPage() {
             <h2 id="resources-heading" className="mt-3 text-3xl font-black">{t.resourceHeading}</h2>
             <p className="mt-3 leading-7 text-slate-700">{t.resourceDescription}</p>
           </div>
-          <Link href="/recursos" className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-lg bg-[#071a3d] px-5 py-3 font-bold text-white hover:bg-[#0a7f86]">
-            {t.resourceLink}<ArrowRight size={17} aria-hidden="true" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/recursos" className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-lg bg-[#071a3d] px-5 py-3 font-bold text-white hover:bg-[#0a7f86]">
+              {t.resourceLink}<ArrowRight size={17} aria-hidden="true" />
+            </Link>
+            <Link href="/solucoes" className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-lg border border-[#071a3d] px-5 py-3 font-bold text-[#071a3d] hover:bg-[#e8fbf9]">
+              {t.solutionsLink}<ArrowRight size={17} aria-hidden="true" />
+            </Link>
+          </div>
         </div>
       </section>
 
