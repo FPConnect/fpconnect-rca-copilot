@@ -11,6 +11,7 @@ import {
   Clock3,
   Languages,
   MessageCircle,
+  FileSearch,
   Server,
   ShieldCheck,
   Stethoscope,
@@ -39,6 +40,10 @@ const copy = {
       `${APP_NAME} organiza chamados, logs e histórico de equipamentos para apoiar triagem, revisão de hipóteses de causa raiz e acompanhamento de disponibilidade. A decisão técnica permanece com a equipe responsável.`,
     cta: "Conversar sobre o piloto",
     secondaryCta: "Acessar plataforma",
+    resourceCta: "Checklist gratuito de OS",
+    resourceHeading: "Antes de medir, qualifique os registros.",
+    resourceDescription: "Use oito perguntas práticas para identificar lacunas em históricos de manutenção, sem expor dados sensíveis.",
+    resourceLink: "Ver checklist gratuito",
     pilotReference: "Referência do piloto de indicadores",
     kpis: [
       { label: "Ordens de serviço", value: "Até 300", icon: Server },
@@ -120,6 +125,10 @@ const copy = {
       `${APP_NAME} organizes service records, logs and equipment history to support triage, root-cause hypothesis review and availability tracking. Technical decisions remain with the responsible team.`,
     cta: "Discuss the pilot",
     secondaryCta: "Access platform",
+    resourceCta: "Free work-order checklist (PT)",
+    resourceHeading: "Check your records before measuring.",
+    resourceDescription: "Eight practical questions to uncover service-record gaps before analytics. The resource is currently in Portuguese.",
+    resourceLink: "Open free checklist (PT)",
     pilotReference: "Metrics pilot reference",
     kpis: [
       { label: "Service orders", value: "Up to 300", icon: Server },
@@ -317,6 +326,13 @@ export default function LandingPage() {
                   {t.secondaryCta}
                   <ArrowRight size={18} aria-hidden="true" />
                 </Link>
+                <Link
+                  href="/recursos"
+                  className="motion-arrow motion-lift inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-[#0a7f86] bg-white/90 px-6 font-bold text-[#075c63] transition hover:bg-[#e8fbf9]"
+                >
+                  <FileSearch size={18} aria-hidden="true" />
+                  {t.resourceCta}
+                </Link>
               </div>
 
               <div data-motion className="mt-9 border-y border-slate-300 bg-white/80 py-4">
@@ -381,6 +397,19 @@ export default function LandingPage() {
               </article>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="border-y border-slate-200 bg-white py-14" aria-labelledby="resources-heading">
+        <div className="mx-auto flex max-w-[1280px] flex-col gap-5 px-5 sm:px-8 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-3xl">
+            <p className="text-sm font-black uppercase tracking-wide text-[#0a7f86]">{t.resourceCta}</p>
+            <h2 id="resources-heading" className="mt-3 text-3xl font-black">{t.resourceHeading}</h2>
+            <p className="mt-3 leading-7 text-slate-700">{t.resourceDescription}</p>
+          </div>
+          <Link href="/recursos" className="inline-flex min-h-12 shrink-0 items-center gap-2 rounded-lg bg-[#071a3d] px-5 py-3 font-bold text-white hover:bg-[#0a7f86]">
+            {t.resourceLink}<ArrowRight size={17} aria-hidden="true" />
+          </Link>
         </div>
       </section>
 
