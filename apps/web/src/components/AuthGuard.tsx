@@ -15,6 +15,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     pathname === "/login" ||
     pathname === "/diagnostic" ||
     pathname === "/recursos" ||
+    pathname === "/solucoes" ||
     pathname.startsWith("/recursos/");
 
   useEffect(() => {
