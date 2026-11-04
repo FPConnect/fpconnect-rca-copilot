@@ -53,7 +53,7 @@ const checks = [
 
 export default function DemonstracaoPage() {
   return (
-    <main className="min-h-screen bg-[#f5f8fa] text-[#071a3d]">
+    <main id="conteudo-principal" className="min-h-screen bg-[#f5f8fa] text-[#071a3d]">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
           <Link href="/" aria-label="OPSPECTA início"><BrandLogo /></Link>
