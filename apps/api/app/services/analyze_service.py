@@ -6,6 +6,8 @@ from typing import List
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
+
 from app.models.ticket import Ticket
 from app.schemas.ticket import AnalyzeTicketRequest, RCASuggestionResponse
 
@@ -64,10 +66,17 @@ def analyze_ticket(
             )
         ]
 
-    try:
-        rows = get_root_cause_analysis(db, description)
-    except Exception:
+    # This KB currently has no organization/tenant scope. Never retrieve its
+    # contents until an owner confirms that every article is shared, public or
+    # otherwise explicitly authorized for every user of this deployment.
+    # Do not run the embedding model or query the database in the default mode.
+    if not settings.shared_kb_cleared_for_use:
         rows = []
+    else:
+        try:
+            rows = get_root_cause_analysis(db, description)
+        except Exception:
+            rows = []
 
     if not rows:
         english = request.language == "en-US"
@@ -80,9 +89,9 @@ def analyze_ticket(
                 ),
                 confidence=0.0,  # No KB match: do not invent confidence.
                 resolution=(
-                    "Escalate to level 2 support and include logs to improve the knowledge base."
+                    "Request qualified technical review using an authorized, secure evidence channel."
                     if english
-                    else "Escalone para N2 e inclua logs para enriquecer a base."
+                    else "Solicite revisão técnica qualificada e compartilhe evidências somente por um canal autorizado e seguro."
                 ),
                 similar_incidents=[],
             )
