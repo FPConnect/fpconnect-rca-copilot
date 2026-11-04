@@ -151,6 +151,9 @@ export default function SolucoesPage() {
               Não envie pacientes identificáveis, credenciais nem logs confidenciais em formulários públicos.
               Antes de analisar dados reais, definimos autorização, minimização, transferência segura, retenção e revisão humana.
               Serviços analíticos de manutenção não substituem avaliação regulatória de software destinado a fins médicos.
+              <Link href="/ia-responsavel" className="mt-3 inline-flex items-center gap-2 font-bold text-[#075c63] underline underline-offset-4">
+                Conheça nosso compromisso com IA responsável <ArrowRight size={16} aria-hidden="true" />
+              </Link>
             </p>
           </div>
         </div>
