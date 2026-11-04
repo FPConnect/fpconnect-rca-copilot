@@ -202,6 +202,20 @@ export interface AnalyzeResponse {
   confidence_is_probability?: false;
 }
 
+export interface ConfirmIncidentAnalysisPayload {
+  root_cause: string;
+  recommendation: string;
+  evidence_refs: string[];
+  confirmed: true;
+}
+
+export interface ConfirmIncidentAnalysisResponse {
+  ticket_id: number;
+  status: "human_confirmed";
+  reviewer_id: number;
+  review_required: false;
+}
+
 export interface SmsResponse {
   status: string;
   to: string;
@@ -395,6 +409,17 @@ async function analyzeIncident(ticketId: number, context?: string): Promise<Anal
   );
 }
 
+async function confirmIncidentAnalysis(
+  ticketId: number,
+  data: ConfirmIncidentAnalysisPayload,
+): Promise<ConfirmIncidentAnalysisResponse> {
+  // Human confirmation never uses preview fallback: only server approval counts.
+  return request<ConfirmIncidentAnalysisResponse>(
+    `/analyze/${encodeURIComponent(ticketId)}/confirm`,
+    { method: "POST", body: JSON.stringify(data) },
+  );
+}
+
 async function createTicket(data: CreateTicketPayload): Promise<Ticket> {
   return withFallback(
     () => request<Ticket>("/tickets", { method: "POST", body: JSON.stringify(data) }),
@@ -439,6 +464,7 @@ export const api = {
   clearLegacyPreviewCredentials,
   sendSmsNotification,
   analyzeIncident,
+  confirmIncidentAnalysis,
   getPlaybooks: () => withFallback(() => request<Playbook[]>("/playbooks/"), () => FALLBACK_PLAYBOOKS),
   createPlaybook,
   getContracts: () => withFallback(() => request<SLAContract[]>("/contracts/"), () => FALLBACK_CONTRACTS),
