@@ -80,6 +80,9 @@ export default function SolucoesPage() {
             ou decisões técnicas dos profissionais responsáveis.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/demonstracao" className="inline-flex min-h-12 items-center gap-2 rounded-lg border border-[#18c8c0] px-5 py-3 font-bold text-[#66efe5] hover:bg-white/10">
+              Ver exemplo fictício <ArrowRight size={18} aria-hidden="true" />
+            </Link>
             <Link href="/diagnostic" className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#18c8c0] px-5 py-3 font-black text-[#071a3d] hover:bg-[#43e0d9]">
               Explorar diagnóstico <ArrowRight size={18} aria-hidden="true" />
             </Link>
