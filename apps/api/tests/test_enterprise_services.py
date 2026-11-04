@@ -20,7 +20,29 @@ def test_predictive_risk_scores_critical_for_stale_high_failure_equipment():
     assert result["equipment_id"] == "VENT-01"
     assert result["score"] == 100
     assert result["level"] == "critical"
-    assert result["predicted_failure_days"] == 7
+    assert result["predicted_failure_days"] is None
+    assert result["is_failure_probability"] is False
+    assert result["review_required"] is True
+    assert result["score_type"] == "unvalidated_heuristic_priority_index"
+    assert "not a validated failure probability" in result["limitations"]
+
+
+def test_priority_score_rejects_invalid_inputs():
+    import pytest
+
+    now = datetime.now(timezone.utc)
+    base = {
+        "equipment_id": "QA-01",
+        "last_maintenance": (now - timedelta(days=3)).isoformat(),
+        "history": [],
+        "uptime_hours": 30,
+    }
+    with pytest.raises(ValueError, match="future"):
+        calculate_risk({**base, "last_maintenance": (now + timedelta(days=7)).isoformat()})
+    with pytest.raises(ValueError, match="nonnegative"):
+        calculate_risk({**base, "uptime_hours": float("nan")})
+    with pytest.raises(ValueError, match="history"):
+        calculate_risk({**base, "history": "not-a-list"})
 
 
 def test_calibration_schedule_and_validation():
