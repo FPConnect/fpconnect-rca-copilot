@@ -84,6 +84,7 @@ function KBPageContent() {
   const [workspaceName, setWorkspaceName] = useState("");
   const [membershipWorkspace, setMembershipWorkspace] = useState("");
   const [membershipUser, setMembershipUser] = useState("");
+  const [workspaceMembers, setWorkspaceMembers] = useState<Array<{user_id:number; membership_role:string}>>([]);
   const [memberRole, setMemberRole] = useState<"member" | "manager">("member");
   const [legacyOwner, setLegacyOwner] = useState("");
   const [legacyCategory, setLegacyCategory] = useState<KnowledgeCategory>("documentation");
@@ -188,13 +189,36 @@ function KBPageContent() {
     if (saved) { setWorkspaceName(""); setWorkspaceSlug(""); }
   }
 
+  async function inspectMembers() {
+    if (!membershipWorkspace) return;
+    setError("");
+    try {
+      setWorkspaceMembers(await api.getKnowledgeMembers(Number(membershipWorkspace)));
+    } catch (err) {
+      setError(friendlyError(err));
+    }
+  }
+
+  async function revokeMember(userId: number) {
+    if (!membershipWorkspace) return;
+    if (!window.confirm(`Revogar o acesso do usuário ID ${userId} a esta organização?`)) return;
+    const revoked = await runAction(
+      () => api.removeKnowledgeMember(Number(membershipWorkspace), userId),
+      "A associação foi revogada e os artigos deste espaço não estão mais disponíveis para esse usuário.",
+    );
+    if (revoked) await inspectMembers();
+  }
+
   async function addWorkspaceMember(event: FormEvent) {
     event.preventDefault();
     const added = await runAction(
       () => api.addKnowledgeMember(Number(membershipWorkspace), Number(membershipUser), memberRole),
       "Acesso ao espaço de trabalho concedido ao usuário selecionado.",
     );
-    if (added) setMembershipUser("");
+    if (added) {
+      setMembershipUser("");
+      await inspectMembers();
+    }
   }
 
   const field = (key: keyof typeof emptyFilters, label: string) => (
@@ -473,7 +497,7 @@ function KBPageContent() {
             <form onSubmit={addWorkspaceMember} className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <h3 className="text-lg font-black">Conceder acesso explícito</h3>
               <label className="mt-4 block text-sm font-bold">Organização
-                <select required value={membershipWorkspace} onChange={(e) => setMembershipWorkspace(e.target.value)}
+                <select required value={membershipWorkspace} onChange={(e) => { setMembershipWorkspace(e.target.value); setWorkspaceMembers([]); }}
                   className="mt-2 w-full rounded-lg border border-slate-300 p-3">
                   <option value="">Selecione</option>
                   {workspaces.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
@@ -490,6 +514,25 @@ function KBPageContent() {
                 </select>
               </label>
               <button disabled={busy} className="mt-5 min-h-11 rounded-lg bg-[#071a3d] px-5 py-2 font-bold text-white disabled:opacity-40">Adicionar membro</button>
+              <div className="mt-6 border-t border-slate-200 pt-5">
+                <button type="button" disabled={busy || !membershipWorkspace} onClick={() => void inspectMembers()}
+                  className="min-h-10 rounded-lg border border-[#0a7f86] px-4 py-2 text-sm font-bold text-[#075c63] disabled:opacity-40">
+                  Consultar membros
+                </button>
+                {workspaceMembers.length > 0 && (
+                  <ul className="mt-3 space-y-2" aria-label="Membros da organização">
+                    {workspaceMembers.map((member) => (
+                      <li key={member.user_id} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 p-3 text-sm">
+                        <span>Usuário ID {member.user_id} · {member.membership_role === "manager" ? "Gerente" : "Membro"}</span>
+                        <button type="button" disabled={busy} onClick={() => void revokeMember(member.user_id)}
+                          className="rounded-lg border border-red-300 px-3 py-2 font-bold text-red-800 disabled:opacity-40">
+                          Revogar
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </form>
           </div>
 
