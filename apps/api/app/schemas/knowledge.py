@@ -123,3 +123,6 @@ class KnowledgeLegacyClassify(BaseModel):
 
 class KnowledgeReviewAction(BaseModel):
     decision: Literal["approve", "reject"]
+    # A human reviewer must attest that applicable sharing permissions,
+    # confidentiality and evidentiary limits were independently checked.
+    sharing_authorized: Literal[True]
