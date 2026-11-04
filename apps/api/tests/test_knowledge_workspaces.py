@@ -276,7 +276,7 @@ def test_legacy_records_quarantined_until_explicit_admin_classification():
 
 
 def test_approved_semantic_reference_is_scoped_to_access_authorized_to_server():
-    alice, bob, admin = headers("alice"), headers("bob"), headers("admin")
+    alice, admin = headers("alice"), headers("admin")
     wid = create_workspace(admin)
     add_member(admin, wid, "alice")
     aid = client.post("/knowledge/articles", headers=alice,
