@@ -112,7 +112,7 @@ export default function DiagnosticPage() {
     );
 
   return (
-    <main className="brand-surface app-viewport bg-white text-[#071a3d]" data-no-translate>
+    <main id="conteudo-principal" className="brand-surface app-viewport bg-white text-[#071a3d]" data-no-translate>
       <section className="border-b border-slate-200 bg-[#f4f8fa]">
         <div className="mx-auto max-w-[1180px] px-5 py-5 sm:px-8">
           <nav className="flex items-center justify-between gap-4">
