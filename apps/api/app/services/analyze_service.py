@@ -57,7 +57,7 @@ def get_root_cause_analysis(db: Session, description: str, requester_id: int):
         params[key] = f"%{word}%"
     query = text(
         """
-        SELECT kb.title, kb.content, 0.0 AS similarity
+        SELECT kb.title, 0.0 AS similarity
         FROM kb_articles AS kb
         WHERE kb.review_status = 'approved'
           AND (
