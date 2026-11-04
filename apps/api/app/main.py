@@ -25,7 +25,7 @@ from app.core.base import Base
 from app.core.database import SessionLocal, engine
 from app.core.security import limiter
 from app.core.test_accounts import reset_test_accounts
-from app.models import machine, playbook, ticket, user  # noqa: F401
+from app.models import knowledge, machine, playbook, ticket, user  # noqa: F401
 
 structlog.configure(
     processors=[
