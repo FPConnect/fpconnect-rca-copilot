@@ -49,3 +49,16 @@ class KnowledgeAudit(Base):
     event_type = Column(String(32), nullable=False)
     version = Column(Integer, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+class KnowledgeMembershipAudit(Base):
+    """Immutable metadata for membership grant/revocation accountability."""
+
+    __tablename__ = "knowledge_membership_audit"
+
+    id = Column(Integer, primary_key=True)
+    workspace_id = Column(Integer, ForeignKey("knowledge_workspaces.id"), nullable=False, index=True)
+    affected_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    actor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    action = Column(String(16), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
