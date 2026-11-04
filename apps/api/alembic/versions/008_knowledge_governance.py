@@ -47,6 +47,17 @@ def upgrade() -> None:
                                name="ck_kb_membership_role"),
         )
 
+    if "knowledge_audit" not in tables:
+        op.create_table(
+            "knowledge_audit",
+            sa.Column("id", sa.Integer(), primary_key=True),
+            sa.Column("article_id", sa.Integer(), sa.ForeignKey("kb_articles.id"), nullable=False),
+            sa.Column("actor_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
+            sa.Column("event_type", sa.String(32), nullable=False),
+            sa.Column("version", sa.Integer(), nullable=False),
+            sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        )
+
     columns = {column["name"] for column in sa.inspect(bind).get_columns("kb_articles")}
     # These safe defaults ensure no pre-migration article is ever globally visible.
     additions = [
