@@ -129,7 +129,7 @@ def analyze_existing_ticket(
 ):
     """Run RCA analysis on a ticket and return suggestions."""
     ticket = _authorized_ticket(db, ticket_id, current_user)
-    suggestions = analyze_ticket(db, ticket, request)
+    suggestions = analyze_ticket(db, ticket, request, requester_id=current_user.id)
     return AnalyzeTicketResponse(ticket_id=ticket_id, suggestions=suggestions)
 
 
