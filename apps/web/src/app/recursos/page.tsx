@@ -130,7 +130,7 @@ export default function RecursosPage() {
         </div>
       </section>
       <footer className="mx-auto max-w-[1080px] px-5 py-8 text-sm text-slate-600 sm:px-8">
-        © {new Date().getFullYear()} OPSPECTA · Inteligência operacional para a saúde.
+        © {new Date().getFullYear()} OPSPECTA · Inteligência operacional para a saúde. <Link href="/privacidade" className="ml-3 text-[#075c63] underline underline-offset-4">Privacidade e dados</Link>
       </footer>
     </main>
   );
