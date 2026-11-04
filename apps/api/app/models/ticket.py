@@ -88,7 +88,11 @@ class RCASuggestion(Base):
 
 
 class KBArticle(Base):
-    """Knowledge base article for known issues and resolutions."""
+    """Governed KB article with explicit authorship and visibility.
+
+    Existing unclassified records are kept in legacy_quarantine and cannot
+    be retrieved in semantic search until a human has safely classified them.
+    """
 
     __tablename__ = "kb_articles"
 
@@ -98,3 +102,17 @@ class KBArticle(Base):
     tags = Column(String, nullable=True)
     embedding = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), nullable=True)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    workspace_id = Column(Integer, ForeignKey("knowledge_workspaces.id"), nullable=True, index=True)
+    visibility = Column(String(16), server_default="private", default="private", nullable=False)
+    review_status = Column(String(24), server_default="legacy_quarantine", nullable=False)
+    category = Column(String(40), server_default="unclassified", default="unclassified", nullable=False)
+    equipment_family = Column(String(100), nullable=True)
+    manufacturer = Column(String(100), nullable=True)
+    model_code = Column(String(100), nullable=True)
+    failure_code = Column(String(100), nullable=True)
+    source_ref = Column(String(240), nullable=True)
+    reviewed_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
+    version = Column(Integer, server_default="1", default=1, nullable=False)
