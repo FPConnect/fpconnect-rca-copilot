@@ -43,7 +43,7 @@ def setup_db(monkeypatch):
     monkeypatch.setattr(
         analyze_routes,
         "analyze_ticket",
-        lambda db, ticket, request: [
+        lambda db, ticket, request, requester_id=None: [
             SimpleNamespace(
                 cause="Sensor SpO2 com cabo intermitente",
                 confidence=0.91,
@@ -212,7 +212,7 @@ def test_analyze_fallback_honors_english_language(monkeypatch):
         AnalyzeTicketRequest(context="Synthetic QA context", language="en-US"),
     )
 
-    assert suggestions[0].cause == "No similar cause was found in the knowledge base"
+    assert suggestions[0].cause == "No approved and authorized related article found"
     assert suggestions[0].resolution.startswith("Escalate to level 2 support")
 
 
