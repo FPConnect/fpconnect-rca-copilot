@@ -3,19 +3,18 @@
 import { usePathname } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import { isPublicMarketingRoute } from "@/lib/publicRoutes";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // Marketing and educational routes render without the authenticated app shell.
-  if (pathname === "/" || pathname === "/diagnostic" || pathname === "/recursos" ||
-    pathname === "/solucoes" ||
-    pathname === "/demonstracao" || pathname.startsWith("/recursos/")) {
-    return <>{children}</>;
-  }
-
+  // Public marketing pages skip the private app sidebar; login keeps its neutral shell.
   if (pathname === "/login") {
     return <main className="app-theme app-viewport app-main min-w-0 bg-gray-50 p-4 sm:p-6">{children}</main>;
+  }
+
+  if (isPublicMarketingRoute(pathname)) {
+    return <>{children}</>;
   }
 
   return (
