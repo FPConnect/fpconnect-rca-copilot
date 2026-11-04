@@ -79,6 +79,7 @@ function KBPageContent() {
   const [reviewQueue, setReviewQueue] = useState<KnowledgeArticle[]>([]);
   const [legacy, setLegacy] = useState<KnowledgeLegacy[]>([]);
   const [draft, setDraft] = useState<KnowledgeArticleDraft>(emptyDraft);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [tagsInput, setTagsInput] = useState("");
   const [workspaceSlug, setWorkspaceSlug] = useState("");
   const [workspaceName, setWorkspaceName] = useState("");
@@ -170,12 +171,15 @@ function KBPageContent() {
     event.preventDefault();
     const tags = tagsInput.split(/[,;]+/).map((x) => x.trim()).filter(Boolean);
     const saved = await runAction(
-      () => api.createKnowledgeArticle({ ...draft, tags }),
-      "Artigo salvo como rascunho e ainda não publicado.",
+      () => editingId === null
+        ? api.createKnowledgeArticle({ ...draft, tags })
+        : api.updateKnowledgeArticle(editingId, { ...draft, tags }),
+      "Artigo salvo como rascunho. Qualquer aprovação anterior precisa ser refeita.",
     );
     if (saved) {
       setView("acervo");
       setDraft(emptyDraft);
+      setEditingId(null);
       setTagsInput("");
     }
   }
@@ -258,7 +262,14 @@ function KBPageContent() {
           ["novo", "Novo artigo"],
           ...(isAdmin ? ([["revisao", "Fila de revisão"], ["administracao", "Organizações e legado"]] as const) : []),
         ] as const).map(([key, title]) => (
-          <button key={key} type="button" onClick={() => setView(key)}
+          <button key={key} type="button" onClick={() => {
+            if (key === "novo") {
+              setEditingId(null);
+              setDraft(emptyDraft);
+              setTagsInput("");
+            }
+            setView(key);
+          }}
             aria-current={view === key ? "page" : undefined}
             className={`min-h-11 rounded-lg px-4 py-2 text-sm font-bold ${view === key
               ? "bg-[#071a3d] text-white"
@@ -360,6 +371,29 @@ function KBPageContent() {
                   <p className="mt-4 whitespace-pre-wrap text-sm leading-7">{article.content}</p>
                   {article.source_ref && <p className="mt-3 text-xs text-slate-600">Referência declarada: {article.source_ref}</p>}
                 </details>
+                {article.owner_id === user?.id && article.review_status !== "archived" && (
+                  <button type="button" disabled={busy} onClick={() => {
+                    setEditingId(article.id);
+                    setDraft({
+                      title: article.title,
+                      content: article.content,
+                      category: article.category,
+                      tags: article.tags,
+                      visibility: article.visibility,
+                      workspace_id: article.workspace_id,
+                      manufacturer: article.manufacturer ?? "",
+                      equipment_family: article.equipment_family ?? "",
+                      model_code: article.model_code ?? "",
+                      failure_code: article.failure_code ?? "",
+                      source_ref: article.source_ref ?? "",
+                    });
+                    setTagsInput(article.tags.join(", "));
+                    setMessage("A edição invalida a aprovação anterior. O artigo deverá passar novamente por revisão.");
+                    setView("novo");
+                  }} className="mt-4 mr-3 min-h-10 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-[#071a3d] disabled:opacity-40">
+                    Editar artigo
+                  </button>
+                )}
                 {article.owner_id === user?.id && ["draft", "rejected"].includes(article.review_status) && (
                   <button type="button" disabled={busy} onClick={() => {
                     void runAction(() => api.submitKnowledgeArticle(article.id), "Artigo submetido para avaliação independente.");
@@ -375,7 +409,7 @@ function KBPageContent() {
 
       {view === "novo" && (
         <form onSubmit={saveDraft} className="space-y-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="flex items-center gap-2 text-2xl font-black"><FilePlus2 size={22}/> Registrar conhecimento</h2>
+          <h2 className="flex items-center gap-2 text-2xl font-black"><FilePlus2 size={22}/> {editingId === null ? "Registrar conhecimento" : `Editar artigo #${editingId}`}</h2>
           <p className="text-sm leading-6 text-slate-700">Todo novo artigo nasce como rascunho. Qualquer compartilhamento exige revisão independente e autorização.</p>
           <label className="block text-sm font-bold">Título
             <input required minLength={5} maxLength={220} value={draft.title} onChange={(e) => setDraft((x) => ({...x, title:e.target.value}))}
@@ -432,7 +466,7 @@ function KBPageContent() {
             </label>
           </div>
           <button disabled={busy} type="submit" className="min-h-12 rounded-lg bg-[#071a3d] px-6 py-3 font-bold text-white disabled:opacity-50">
-            Salvar rascunho
+            {editingId === null ? "Salvar rascunho" : "Salvar alterações e submeter novamente"}
           </button>
         </form>
       )}
