@@ -252,6 +252,14 @@ export default function DiagnosticPage() {
           <p className="mt-6 border-t border-slate-200 pt-5 text-sm leading-6 text-slate-500">{t.note}</p>
         </div>
       </section>
+      <footer className="border-t border-slate-200 bg-white px-5 py-8 text-sm text-slate-600 sm:px-8">
+        <div className="mx-auto max-w-[1120px]">
+          OPSPECTA · Inteligência operacional para a saúde ·
+          <Link href="/privacidade" className="ml-2 font-bold text-[#075c63] underline underline-offset-4">
+            Privacidade e dados
+          </Link>
+        </div>
+      </footer>
     </main>
   );
 }
