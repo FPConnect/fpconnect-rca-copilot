@@ -15,7 +15,9 @@ from sqlalchemy.orm import Session
 from app.api.deps import AuthenticatedUser, get_current_user, require_access_level
 from app.core.database import get_db
 from app.crud.user import get_user_by_id
-from app.models.knowledge import KnowledgeAudit, KnowledgeMembership, KnowledgeWorkspace
+from app.models.knowledge import (
+    KnowledgeAudit, KnowledgeMembership, KnowledgeMembershipAudit, KnowledgeWorkspace,
+)
 from app.models.ticket import KBArticle
 from app.schemas.knowledge import (
     Category, KnowledgeArticleCreate, KnowledgeArticleOut, KnowledgeArticleUpdate,
@@ -183,6 +185,10 @@ def create_workspace(
             workspace_id=space.id, user_id=user.id,
             membership_role="manager", created_by=user.id,
         ))
+        db.add(KnowledgeMembershipAudit(
+            workspace_id=space.id, affected_user_id=user.id,
+            actor_id=user.id, action="granted",
+        ))
         db.commit()
     except IntegrityError as exc:
         db.rollback()
@@ -211,6 +217,10 @@ def add_member(
     )
     try:
         db.add(membership)
+        db.add(KnowledgeMembershipAudit(
+            workspace_id=workspace_id, affected_user_id=payload.user_id,
+            actor_id=admin.id, action="granted",
+        ))
         db.commit()
     except IntegrityError as exc:
         db.rollback()
@@ -254,6 +264,10 @@ def remove_member(
         if managers <= 1:
             raise HTTPException(status_code=409, detail="Cannot remove last workspace manager")
     db.delete(membership)
+    db.add(KnowledgeMembershipAudit(
+        workspace_id=workspace_id, affected_user_id=user_id,
+        actor_id=admin.id, action="revoked",
+    ))
     db.commit()
 
 
@@ -416,8 +430,16 @@ def review_queue(
     db: Session = Depends(get_db),
     admin: AuthenticatedUser = Depends(require_access_level(4)),
 ):
+    manager_workspaces = select(KnowledgeMembership.workspace_id).where(
+        KnowledgeMembership.user_id == admin.id,
+        KnowledgeMembership.membership_role == "manager",
+    )
     return [_serialize(article) for article in db.query(KBArticle).filter(
-        KBArticle.review_status == "in_review"
+        KBArticle.review_status == "in_review",
+        or_(
+            KBArticle.visibility != "workspace",
+            KBArticle.workspace_id.in_(manager_workspaces),
+        ),
     ).order_by(KBArticle.id).limit(100).all()]
 
 
