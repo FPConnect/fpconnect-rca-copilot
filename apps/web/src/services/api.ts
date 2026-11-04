@@ -196,6 +196,10 @@ export interface AnalyzeResponse {
   root_cause: string;
   explanation: string;
   recommendation: string;
+  review_required?: boolean;
+  review_status?: "pending";
+  analysis_kind?: "technical_hypothesis";
+  confidence_is_probability?: false;
 }
 
 export interface SmsResponse {
@@ -380,9 +384,13 @@ async function analyzeIncident(ticketId: number, context?: string): Promise<Anal
       }),
     () => ({
       ticket_id: ticketId,
-      root_cause: "Falha intermitente em sensor ou conexão do equipamento",
-      explanation: "Diagnóstico em modo preview baseado nos chamados clínicos locais. Valide cabos, sensores, histórico de alarmes e condições de uso antes de liberar o equipamento.",
-      recommendation: "Isolar o equipamento, executar checklist funcional, substituir acessórios suspeitos e registrar evidências no chamado.",
+      root_cause: "Hipótese ilustrativa sem confirmação",
+      explanation: "Modo de demonstração com dados fictícios; não há diagnóstico, evidência real nem probabilidade validada. Nenhuma causa raiz foi confirmada.",
+      recommendation: "Encaminhar os registros à equipe técnica responsável e seguir os procedimentos autorizados pelo fabricante.",
+      review_required: true,
+      review_status: "pending",
+      analysis_kind: "technical_hypothesis",
+      confidence_is_probability: false,
     }),
   );
 }
