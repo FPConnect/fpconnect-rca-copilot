@@ -559,6 +559,26 @@ async function addKnowledgeMember(id: number, user_id: number, membership_role: 
   });
 }
 
+async function getKnowledgeMembers(workspaceId: number): Promise<Array<{ user_id: number; membership_role: string }>> {
+  return request<Array<{ user_id: number; membership_role: string }>>(
+    `/knowledge/workspaces/${workspaceId}/members`,
+  );
+}
+
+async function removeKnowledgeMember(workspaceId: number, userId: number): Promise<void> {
+  // Deletions intentionally have no JSON body on 204 responses.
+  const token = getAuthToken();
+  const response = await fetch(
+    `${API_URL}/knowledge/workspaces/${workspaceId}/members/${userId}`, {
+      method: "DELETE",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    },
+  );
+  if (!response.ok) {
+    throw new ApiError(response.status, await response.text());
+  }
+}
+
 async function getLegacyKnowledge(): Promise<KnowledgeLegacy[]> {
   return request<KnowledgeLegacy[]>("/knowledge/legacy");
 }
@@ -599,6 +619,8 @@ export const api = {
   reviewKnowledgeArticle,
   createKnowledgeWorkspace,
   addKnowledgeMember,
+  getKnowledgeMembers,
+  removeKnowledgeMember,
   getLegacyKnowledge,
   classifyLegacyKnowledge,
   getKnowledgeReviewQueue,
