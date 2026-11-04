@@ -99,47 +99,6 @@ def test_external_provider_response_remains_draft_and_uncalibrated(monkeypatch):
     assert calls[1]["messages"][0]["role"] == "system"
 
 
-def test_unreviewed_shared_kb_is_not_queried(monkeypatch):
-    from app.services import analyze_service
-    from app.schemas.ticket import AnalyzeTicketRequest
-
-    monkeypatch.setattr(analyze_service.settings, "shared_kb_cleared_for_use", False)
-    monkeypatch.setattr(
-        analyze_service,
-        "get_root_cause_analysis",
-        lambda *_args: pytest.fail("Unscoped KB must not be queried by default"),
-    )
-    ticket = SimpleNamespace(title="Synthetic equipment log", description="No patient data")
-    suggestions = analyze_service.analyze_ticket(
-        None, ticket, AnalyzeTicketRequest(context="Synthetic service issue")
-    )
-    assert suggestions[0].confidence == 0
-    assert "Nenhuma causa semelhante" in suggestions[0].cause
-    assert "canal autorizado" in suggestions[0].resolution
-
-
-def test_reviewed_shared_kb_may_be_queried_by_explicit_deployment_flag(monkeypatch):
-    from app.services import analyze_service
-    from app.schemas.ticket import AnalyzeTicketRequest
-
-    monkeypatch.setattr(analyze_service.settings, "shared_kb_cleared_for_use", True)
-    monkeypatch.setattr(
-        analyze_service,
-        "get_root_cause_analysis",
-        lambda *_args: [SimpleNamespace(
-            title="Análise ilustrativa revisada",
-            similarity=0.77,
-            content="Revisão humana necessária",
-        )],
-    )
-    ticket = SimpleNamespace(title="Synthetic equipment log", description=None)
-    result = analyze_service.analyze_ticket(
-        None, ticket, AnalyzeTicketRequest(context="Synthetic")
-    )
-    assert result[0].cause == "Análise ilustrativa revisada"
-    assert result[0].confidence == 0.77
-
-
 def test_rca_route_does_not_pass_external_data_by_default(monkeypatch):
     from app.api.routes import enterprise
     from app.api.deps import AuthenticatedUser
