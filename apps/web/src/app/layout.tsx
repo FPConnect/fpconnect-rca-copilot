@@ -12,7 +12,7 @@ import LanguageRuntime from "@/components/LanguageRuntime";
 import ThemeBootstrap from "@/components/ThemeBootstrap";
 import { APP_NAME } from "@/lib/brand";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fpconnect.tec.br";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.fpconnect.tec.br";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
