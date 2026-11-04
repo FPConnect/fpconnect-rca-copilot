@@ -534,6 +534,15 @@ async function createKnowledgeArticle(payload: KnowledgeArticleDraft): Promise<K
   });
 }
 
+async function updateKnowledgeArticle(
+  id: number, payload: Partial<KnowledgeArticleDraft>,
+): Promise<KnowledgeArticle> {
+  return request<KnowledgeArticle>(`/knowledge/articles/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
 async function submitKnowledgeArticle(articleId: number): Promise<KnowledgeArticle> {
   return request<KnowledgeArticle>(`/knowledge/articles/${articleId}/submit`, { method: "POST" });
 }
@@ -615,6 +624,7 @@ export const api = {
   getKnowledgeFilters,
   getKnowledgeWorkspaces,
   createKnowledgeArticle,
+  updateKnowledgeArticle,
   submitKnowledgeArticle,
   reviewKnowledgeArticle,
   createKnowledgeWorkspace,
