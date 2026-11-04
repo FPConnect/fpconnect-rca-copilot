@@ -18,6 +18,8 @@ jest.mock("@/services/api", () => ({
     getTickets: jest.fn(),
     createTicket: jest.fn(),
     analyzeIncident: jest.fn(),
+    confirmIncidentAnalysis: jest.fn(),
+    getMe: jest.fn(),
   },
 }));
 
@@ -50,10 +52,22 @@ describe("clinical engineering web pages", () => {
       status: "open",
       ...payload,
     }));
+    mockedApi.getMe.mockResolvedValue({
+      id: 1,
+      email: "reviewer@example.org",
+      role: "user",
+      access_level: 2,
+    });
+    mockedApi.confirmIncidentAnalysis.mockResolvedValue({
+      ticket_id: 101,
+      status: "human_confirmed",
+      reviewer_id: 1,
+      review_required: false,
+    });
     mockedApi.analyzeIncident.mockResolvedValue({
       ticket_id: 101,
       root_cause: "Sensor SpO2 com cabo intermitente",
-      recommendation: "Trocar cabo e validar curva.",
+      recommendation: "Encaminhar à equipe técnica para revisão.",
       explanation: "Comparação com histórico de falhas recorrentes.",
     });
   });
@@ -79,12 +93,13 @@ describe("clinical engineering web pages", () => {
     expect(await screen.findByText("Falha no monitor da UTI")).toBeInTheDocument();
   });
 
-  it("shows root cause and next steps on the diagnosis page", async () => {
+  it("labels technical suggestions as unconfirmed and requiring review", async () => {
     render(<AnalyzePage />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Analisar falha" }));
+    fireEvent.click(screen.getByRole("button", { name: "Gerar hipótese (não confirmada)" }));
 
     expect(await screen.findByText("Sensor SpO2 com cabo intermitente")).toBeInTheDocument();
-    expect(screen.getByText("Trocar cabo e validar curva.")).toBeInTheDocument();
+    expect(screen.getByText("Encaminhar à equipe técnica para revisão.")).toBeInTheDocument();
+    expect(screen.getByText("Hipótese não confirmada")).toBeInTheDocument();
   });
 });
