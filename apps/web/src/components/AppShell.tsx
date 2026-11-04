@@ -9,7 +9,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   // Marketing and educational routes render without the authenticated app shell.
   if (pathname === "/" || pathname === "/diagnostic" || pathname === "/recursos" ||
-    pathname === "/solucoes" || pathname.startsWith("/recursos/")) {
+    pathname === "/solucoes" ||
+    pathname === "/demonstracao" || pathname.startsWith("/recursos/")) {
     return <>{children}</>;
   }
 
