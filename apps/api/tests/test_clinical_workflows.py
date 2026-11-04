@@ -213,7 +213,7 @@ def test_analyze_fallback_honors_english_language(monkeypatch):
     )
 
     assert suggestions[0].cause == "No approved and authorized related article found"
-    assert suggestions[0].resolution.startswith("Escalate to level 2 support")
+    assert suggestions[0].resolution.startswith("Request qualified technical review")
 
 
 def test_playbook_crud():
