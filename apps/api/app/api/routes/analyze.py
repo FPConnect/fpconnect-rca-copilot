@@ -47,6 +47,7 @@ def analyze_incident(
         db,
         ticket,
         AnalyzeTicketRequest(context=request.context, language=request.language),
+        requester_id=current_user.id,
     )
     primary = suggestions[0] if suggestions else None
     english = request.language == "en-US"
