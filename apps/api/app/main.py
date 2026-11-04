@@ -15,6 +15,7 @@ from app.api.routes import (
     contracts,
     enterprise,
     machines,
+    knowledge,
     notifications,
     playbooks,
     tickets,
@@ -99,6 +100,7 @@ app.add_middleware(
 # Routers
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(tickets.router, prefix="/tickets", tags=["tickets"])
+app.include_router(knowledge.router, prefix="/knowledge", tags=["knowledge"])
 app.include_router(machines.router, prefix="/machines", tags=["machines"])
 app.include_router(
     notifications.router, prefix="/notifications", tags=["notifications"]
