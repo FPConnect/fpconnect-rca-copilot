@@ -78,7 +78,7 @@ def analyze_ticket(
                     if english
                     else "Nenhuma causa semelhante encontrada na base de conhecimento"
                 ),
-                confidence=0.5,
+                confidence=0.0,  # No KB match: do not invent confidence.
                 resolution=(
                     "Escalate to level 2 support and include logs to improve the knowledge base."
                     if english
