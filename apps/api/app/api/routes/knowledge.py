@@ -6,9 +6,8 @@ No client-provided user/workspace ID can grant access to an article.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import and_, func, literal, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -296,7 +295,6 @@ def list_articles(
             KBArticle.tags.ilike(needle),
         ))
     if tag:
-        import re
         from app.schemas.knowledge import normalize_tags
         try:
             token = normalize_tags([tag])[0]
