@@ -11,7 +11,7 @@ from app.core.database import Base, get_db
 from app.core.security import hash_password
 from app.main import app
 from app.models.ticket import KBArticle
-from app.models.knowledge import KnowledgeAudit
+from app.models.knowledge import KnowledgeAudit, KnowledgeMembershipAudit
 from app.models.user import User
 from app.services.analyze_service import get_root_cause_analysis
 
@@ -336,3 +336,35 @@ def test_workspace_article_cannot_be_approved_after_author_access_revoked():
         json={"decision": "approve", "sharing_authorized": True}
     )
     assert denied.status_code == 409
+
+
+def test_review_queue_does_not_show_other_workspaces_to_unassigned_admin():
+    alice, admin, reviewer = headers("alice"), headers("admin"), headers("reviewer")
+    workspace_id = create_workspace(admin, "confidential-clinic")
+    add_member(admin, workspace_id, "alice")
+    aid = client.post(
+        "/knowledge/articles", headers=alice,
+        json=article_payload(visibility="workspace", workspace_id=workspace_id),
+    ).json()["id"]
+    assert client.post(f"/knowledge/articles/{aid}/submit", headers=alice).status_code == 200
+    assert len(client.get("/knowledge/review-queue", headers=admin).json()) == 1
+    assert client.get("/knowledge/review-queue", headers=reviewer).json() == []
+
+
+def test_membership_grants_and_revocations_have_audit_records():
+    admin = headers("admin")
+    workspace_id = create_workspace(admin, "audited-clinic")
+    add_member(admin, workspace_id, "alice")
+    revoked = client.delete(
+        f"/knowledge/workspaces/{workspace_id}/members/{user_id('alice')}",
+        headers=admin,
+    )
+    assert revoked.status_code == 204
+    with Session() as db:
+        rows = db.query(KnowledgeMembershipAudit).filter(
+            KnowledgeMembershipAudit.workspace_id == workspace_id,
+        ).order_by(KnowledgeMembershipAudit.id).all()
+        assert [row.action for row in rows] == ["granted", "granted", "revoked"]
+        assert rows[1].affected_user_id == user_id("alice")
+        assert rows[2].affected_user_id == user_id("alice")
+        assert all(row.actor_id == user_id("admin") for row in rows)
