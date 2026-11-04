@@ -27,6 +27,24 @@ def test_predictive_risk_scores_critical_for_stale_high_failure_equipment():
     assert "not a validated failure probability" in result["limitations"]
 
 
+def test_priority_score_ignores_unsafe_personal_demographics():
+    base = {
+        "equipment_id": "QA-02",
+        "last_maintenance": (datetime.now(timezone.utc) - timedelta(days=7)).isoformat(),
+        "history": [{"type": "synthetic"}],
+        "uptime_hours": 20,
+    }
+    original = calculate_risk(base)
+    with_personal_fields = calculate_risk({
+        **base,
+        "technician_gender": "not-for-scoring",
+        "technician_age": 54,
+        "patient_age": 85,
+    })
+    assert with_personal_fields["score"] == original["score"]
+    assert with_personal_fields["level"] == original["level"]
+
+
 def test_priority_score_rejects_invalid_inputs():
     import pytest
 
