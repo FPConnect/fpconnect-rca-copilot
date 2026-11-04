@@ -292,3 +292,47 @@ def test_approved_semantic_reference_is_scoped_to_access_authorized_to_server():
     assert len(alice_rows) == 1
     assert alice_rows[0].similarity == 0
     assert bob_rows == []
+
+
+def test_workspace_content_cannot_be_moved_to_global_or_another_org():
+    alice, admin = headers("alice"), headers("admin")
+    source = create_workspace(admin, "origin-clinic")
+    target = create_workspace(admin, "target-clinic")
+    add_member(admin, source, "alice")
+    add_member(admin, target, "alice")
+    aid = client.post("/knowledge/articles", headers=alice,
+                      json=article_payload(visibility="workspace",
+                                           workspace_id=source)).json()["id"]
+    for payload in [
+        {"visibility": "global", "workspace_id": None},
+        {"visibility": "workspace", "workspace_id": target},
+        {"visibility": "private", "workspace_id": None},
+    ]:
+        response = client.patch(
+            f"/knowledge/articles/{aid}", headers=alice, json=payload
+        )
+        assert response.status_code == 403
+    article = client.get(f"/knowledge/articles/{aid}", headers=alice).json()
+    assert article["visibility"] == "workspace"
+    assert article["workspace_id"] == source
+
+
+def test_workspace_article_cannot_be_approved_after_author_access_revoked():
+    alice, admin = headers("alice"), headers("admin")
+    workspace_id = create_workspace(admin)
+    add_member(admin, workspace_id, "alice")
+    aid = client.post("/knowledge/articles", headers=alice,
+                      json=article_payload(visibility="workspace",
+                                           workspace_id=workspace_id)).json()["id"]
+    assert client.post(
+        f"/knowledge/articles/{aid}/submit", headers=alice
+    ).status_code == 200
+    assert client.delete(
+        f"/knowledge/workspaces/{workspace_id}/members/{user_id('alice')}",
+        headers=admin
+    ).status_code == 204
+    denied = client.post(
+        f"/knowledge/articles/{aid}/review", headers=admin,
+        json={"decision": "approve", "sharing_authorized": True}
+    )
+    assert denied.status_code == 409
