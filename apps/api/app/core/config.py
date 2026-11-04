@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     # Explicit deployment-level authorization required in addition to each
     # individual request's opt-in; defaults to disabled for healthcare data.
     ai_external_processing_enabled: bool = False
+    # A shared knowledge base without tenant scoping must be reviewed for
+    # permitted, non-confidential content before it is queried.
+    shared_kb_cleared_for_use: bool = False
 
     s3_endpoint_url: str = Field(
         default="http://localhost:9000",
