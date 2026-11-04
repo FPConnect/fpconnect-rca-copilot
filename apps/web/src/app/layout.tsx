@@ -40,6 +40,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body>
+        <a href="#conteudo-principal" className="skip-to-content">Pular para o conteúdo principal</a>
         <ThemeBootstrap />
         <AuthProvider>
           <AuthGuard>
