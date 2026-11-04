@@ -127,6 +127,7 @@ def confirm_incident_analysis(
         ticket,
         root_cause=payload.root_cause,
         recommendation=payload.recommendation,
+        commit=False,  # Audit event and reviewed conclusion must be atomic.
     )
     db.add(TicketLog(
         ticket_id=ticket.id,
