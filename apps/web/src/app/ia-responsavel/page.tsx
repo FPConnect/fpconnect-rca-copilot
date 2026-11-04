@@ -127,6 +127,7 @@ export default function ResponsibleAiPage() {
             <li><a href="https://www.microsoft.com/en-us/ai/principles-and-approach" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-4">Microsoft — Responsible AI principles</a></li>
             <li><a href="https://airc.nist.gov/airmf-resources/playbook/" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-4">NIST — AI Risk Management Framework Playbook</a></li>
           </ul>
+          <p className="mt-6 text-sm leading-7 text-slate-700">Consulte também a nossa <Link href="/privacidade" className="font-bold text-[#075c63] underline underline-offset-4">página de privacidade</Link>.</p>
           <Link href="/solucoes" className="mt-8 inline-flex min-h-12 items-center gap-2 rounded-lg bg-[#071a3d] px-5 py-3 font-bold text-white hover:bg-[#0a7f86]">
             Conhecer soluções OPSPECTA <ArrowRight size={17} aria-hidden="true" />
           </Link>
