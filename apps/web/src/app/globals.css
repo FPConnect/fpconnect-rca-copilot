@@ -228,3 +228,41 @@ html.dark .app-theme textarea::placeholder {
     transform: translateX(3px);
   }
 }
+
+/* WCAG-oriented keyboard navigation: visible focus and bypass of repetitive nav. */
+.skip-to-content {
+  position: fixed;
+  z-index: 10000;
+  left: 1rem;
+  top: 0;
+  transform: translateY(-140%);
+  border-radius: 0 0 0.5rem 0.5rem;
+  background: #071a3d;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.skip-to-content:focus {
+  transform: translateY(0);
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid #0a7f86;
+  outline-offset: 3px;
+}
+
+/* Motion is optional; no content is hidden for motion-sensitive visitors. */
+@media (prefers-reduced-motion: reduce) {
+  html.motion-enabled [data-motion] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .motion-lift,
+  .motion-arrow svg {
+    transform: none !important;
+    transition: none !important;
+  }
+}
