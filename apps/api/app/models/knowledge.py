@@ -5,7 +5,7 @@ claim of tenant isolation for tickets, attachments or other app resources.
 """
 from sqlalchemy import (
     CheckConstraint, Column, DateTime, ForeignKey, Integer, String,
-    Text, UniqueConstraint, func,
+    UniqueConstraint, func,
 )
 
 from app.core.base import Base
