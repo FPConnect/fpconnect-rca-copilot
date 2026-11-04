@@ -3,21 +3,15 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { isPublicMarketingRoute } from "@/lib/publicRoutes";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
-  // Public marketing routes never require a login or wait for session validation.
-  const isPublicRoute =
-    pathname === "/" ||
-    pathname === "/login" ||
-    pathname === "/diagnostic" ||
-    pathname === "/recursos" ||
-    pathname === "/solucoes" ||
-    pathname === "/demonstracao" ||
-    pathname.startsWith("/recursos/");
+  // Public routes are explicitly allowlisted; authenticated app routes stay private.
+  const isPublicRoute = isPublicMarketingRoute(pathname);
 
   useEffect(() => {
     if (isLoading || isPublicRoute) return;
