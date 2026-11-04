@@ -58,6 +58,17 @@ def upgrade() -> None:
             sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         )
 
+    if "knowledge_membership_audit" not in tables:
+        op.create_table(
+            "knowledge_membership_audit",
+            sa.Column("id", sa.Integer(), primary_key=True),
+            sa.Column("workspace_id", sa.Integer(), sa.ForeignKey("knowledge_workspaces.id"), nullable=False),
+            sa.Column("affected_user_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
+            sa.Column("actor_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
+            sa.Column("action", sa.String(16), nullable=False),
+            sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+        )
+
     columns = {column["name"] for column in sa.inspect(bind).get_columns("kb_articles")}
     # These safe defaults ensure no pre-migration article is ever globally visible.
     additions = [
@@ -99,6 +110,7 @@ def upgrade() -> None:
         ("knowledge_workspaces", "ix_knowledge_workspaces_slug", ["slug"]),
         ("knowledge_memberships", "ix_knowledge_memberships_workspace_id", ["workspace_id"]),
         ("knowledge_memberships", "ix_knowledge_memberships_user_id", ["user_id"]),
+        ("knowledge_membership_audit", "ix_knowledge_membership_audit_workspace_id", ["workspace_id"]),
         ("kb_articles", "ix_kb_articles_owner_id", ["owner_id"]),
         ("kb_articles", "ix_kb_articles_workspace_id", ["workspace_id"]),
         ("kb_articles", "ix_kb_articles_filters", ["review_status", "visibility", "category"]),
