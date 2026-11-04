@@ -36,3 +36,16 @@ class KnowledgeMembership(Base):
         UniqueConstraint("workspace_id", "user_id", name="uq_kb_workspace_membership"),
         CheckConstraint("membership_role IN ('member', 'manager')", name="ck_kb_membership_role"),
     )
+
+
+class KnowledgeAudit(Base):
+    """Metadata-only trail of article classification and access decisions."""
+
+    __tablename__ = "knowledge_audit"
+
+    id = Column(Integer, primary_key=True)
+    article_id = Column(Integer, ForeignKey("kb_articles.id"), nullable=False, index=True)
+    actor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    event_type = Column(String(32), nullable=False)
+    version = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
