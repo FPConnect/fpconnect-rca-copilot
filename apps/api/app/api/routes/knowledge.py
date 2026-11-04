@@ -369,6 +369,13 @@ def edit_article(
     new_scope = data.get("visibility", article.visibility)
     new_workspace = data.get("workspace_id", article.workspace_id)
     _validate_scope(db, user.id, new_scope, new_workspace)
+    if article.visibility == "workspace" and (
+        new_scope != "workspace" or new_workspace != article.workspace_id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Knowledge belonging to an organization cannot be transferred to a different scope",
+        )
     if "tags" in data:
         data["tags"] = ",".join(data["tags"] or [])
     for key, value in data.items():
@@ -427,6 +434,12 @@ def review_article(
     if article.owner_id == reviewer.id:
         raise HTTPException(status_code=403, detail="Independent reviewer required")
     if article.visibility == "workspace":
+        # The author must still belong to that organization when approved.
+        if not _is_member(db, article.workspace_id, article.owner_id):
+            raise HTTPException(
+                status_code=409,
+                detail="Workspace author membership was revoked; restore access before review",
+            )
         # An explicit workspace manager must review workspace content.
         manager = db.query(KnowledgeMembership.id).filter(
             KnowledgeMembership.workspace_id == article.workspace_id,
