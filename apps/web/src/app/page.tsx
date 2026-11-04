@@ -251,7 +251,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <main className="brand-surface app-viewport bg-white text-[#071a3d]" data-no-translate>
+    <main id="conteudo-principal" className="brand-surface app-viewport bg-white text-[#071a3d]" data-no-translate>
       <section className="relative min-h-[680px] overflow-hidden border-b border-slate-200 bg-white">
         <Image
           src="/brand/opspecta-hero.png"
