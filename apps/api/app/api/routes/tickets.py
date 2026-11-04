@@ -90,8 +90,14 @@ def update_existing_ticket(
     db: Session = Depends(get_db),
     current_user: AuthenticatedUser = Depends(require_access_level(2)),
 ):
-    """Update an existing ticket's fields."""
+    """Update ordinary ticket fields; confirmed analysis requires human sign-off."""
     _authorized_ticket(db, ticket_id, current_user)
+    # Do not permit users to bypass review with a generic PATCH, including nulls.
+    if {"root_cause", "recommendation", "analysis_completed"} & ticket_data.model_fields_set:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Use the human confirmation workflow for technical conclusions",
+        )
     ticket = update_ticket(db, ticket_id, ticket_data)
     if not ticket:
         raise HTTPException(

@@ -68,12 +68,36 @@ class AnalyzeIncidentRequest(BaseModel):
 
 
 class AnalyzeIncidentResponse(BaseModel):
-    """Clinical diagnosis response focused on root cause and next action."""
+    """Unconfirmed technical hypothesis; never automatically approved."""
 
     ticket_id: int
     root_cause: str
     recommendation: str
     explanation: str
+    review_required: bool = True
+    review_status: Literal["pending"] = "pending"
+    analysis_kind: Literal["technical_hypothesis"] = "technical_hypothesis"
+    confidence_is_probability: bool = False
+
+
+class ConfirmIncidentAnalysisRequest(BaseModel):
+    """A human reviewer attests to independent technical evidence.
+
+    This action, unlike automated analysis, is allowed to persist a verified
+    conclusion. No patient data or raw logs should be placed in evidence_refs.
+    """
+
+    root_cause: str = Field(min_length=5, max_length=1200)
+    recommendation: str = Field(min_length=5, max_length=2500)
+    evidence_refs: List[str] = Field(min_length=1, max_length=10)
+    confirmed: Literal[True]
+
+
+class ConfirmIncidentAnalysisResponse(BaseModel):
+    ticket_id: int
+    status: Literal["human_confirmed"] = "human_confirmed"
+    reviewer_id: int
+    review_required: bool = False
 
 
 class AnalyzeTicketRequest(BaseModel):

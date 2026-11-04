@@ -196,6 +196,24 @@ export interface AnalyzeResponse {
   root_cause: string;
   explanation: string;
   recommendation: string;
+  review_required?: boolean;
+  review_status?: "pending";
+  analysis_kind?: "technical_hypothesis";
+  confidence_is_probability?: false;
+}
+
+export interface ConfirmIncidentAnalysisPayload {
+  root_cause: string;
+  recommendation: string;
+  evidence_refs: string[];
+  confirmed: true;
+}
+
+export interface ConfirmIncidentAnalysisResponse {
+  ticket_id: number;
+  status: "human_confirmed";
+  reviewer_id: number;
+  review_required: false;
 }
 
 export interface SmsResponse {
@@ -380,10 +398,25 @@ async function analyzeIncident(ticketId: number, context?: string): Promise<Anal
       }),
     () => ({
       ticket_id: ticketId,
-      root_cause: "Falha intermitente em sensor ou conexão do equipamento",
-      explanation: "Diagnóstico em modo preview baseado nos chamados clínicos locais. Valide cabos, sensores, histórico de alarmes e condições de uso antes de liberar o equipamento.",
-      recommendation: "Isolar o equipamento, executar checklist funcional, substituir acessórios suspeitos e registrar evidências no chamado.",
+      root_cause: "Hipótese ilustrativa sem confirmação",
+      explanation: "Modo de demonstração com dados fictícios; não há diagnóstico, evidência real nem probabilidade validada. Nenhuma causa raiz foi confirmada.",
+      recommendation: "Encaminhar os registros à equipe técnica responsável e seguir os procedimentos autorizados pelo fabricante.",
+      review_required: true,
+      review_status: "pending",
+      analysis_kind: "technical_hypothesis",
+      confidence_is_probability: false,
     }),
+  );
+}
+
+async function confirmIncidentAnalysis(
+  ticketId: number,
+  data: ConfirmIncidentAnalysisPayload,
+): Promise<ConfirmIncidentAnalysisResponse> {
+  // Human confirmation never uses preview fallback: only server approval counts.
+  return request<ConfirmIncidentAnalysisResponse>(
+    `/analyze/${encodeURIComponent(ticketId)}/confirm`,
+    { method: "POST", body: JSON.stringify(data) },
   );
 }
 
@@ -431,6 +464,7 @@ export const api = {
   clearLegacyPreviewCredentials,
   sendSmsNotification,
   analyzeIncident,
+  confirmIncidentAnalysis,
   getPlaybooks: () => withFallback(() => request<Playbook[]>("/playbooks/"), () => FALLBACK_PLAYBOOKS),
   createPlaybook,
   getContracts: () => withFallback(() => request<SLAContract[]>("/contracts/"), () => FALLBACK_CONTRACTS),

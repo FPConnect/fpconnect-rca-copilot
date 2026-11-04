@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     openai_api_key: str = "sk-placeholder"
+    # Explicit deployment-level authorization required in addition to each
+    # individual request's opt-in; defaults to disabled for healthcare data.
+    ai_external_processing_enabled: bool = False
 
     s3_endpoint_url: str = Field(
         default="http://localhost:9000",

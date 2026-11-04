@@ -103,13 +103,21 @@ def complete_ticket_analysis(
     *,
     root_cause: str,
     recommendation: str,
+    commit: bool = True,
 ) -> Ticket:
-    """Persist root-cause analysis results for an incident."""
+    """Persist a human-reviewed result, optionally within a caller transaction.
+
+    With commit=False, the caller must commit the audit event and result
+    atomically. This prevents confirmed conclusions without an audit record.
+    """
     from datetime import datetime, timezone
 
     ticket.root_cause = root_cause
     ticket.recommendation = recommendation
     ticket.analysis_completed = datetime.now(timezone.utc)
-    db.commit()
-    db.refresh(ticket)
+    if commit:
+        db.commit()
+        db.refresh(ticket)
+    else:
+        db.flush()
     return ticket

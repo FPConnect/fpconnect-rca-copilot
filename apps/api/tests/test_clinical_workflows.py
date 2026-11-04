@@ -92,7 +92,7 @@ def create_incident(headers: dict[str, str]) -> int:
     return response.json()["id"]
 
 
-def test_analyze_endpoint_persists_root_cause():
+def test_analyze_returns_unconfirmed_hypothesis_without_persisting_root_cause():
     headers = auth_headers()
     ticket_id = create_incident(headers)
 
@@ -101,14 +101,103 @@ def test_analyze_endpoint_persists_root_cause():
     assert response.status_code == 200
     data = response.json()
     assert data["root_cause"] == "Sensor SpO2 com cabo intermitente"
-    assert (
-        data["recommendation"]
-        == "Trocar cabo, validar curva e registrar teste funcional."
-    )
+    assert data["review_required"] is True
+    assert data["review_status"] == "pending"
+    assert data["analysis_kind"] == "technical_hypothesis"
+    assert data["confidence_is_probability"] is False
+    assert "não são confiança calibrada" in data["explanation"]
 
     ticket_response = client.get(f"/tickets/{ticket_id}", headers=headers)
-    assert ticket_response.json()["root_cause"] == "Sensor SpO2 com cabo intermitente"
-    assert ticket_response.json()["analysis_completed"] is not None
+    assert ticket_response.json()["root_cause"] is None
+    assert ticket_response.json()["recommendation"] is None
+    assert ticket_response.json()["analysis_completed"] is None
+
+    from app.models.ticket import TicketLog
+
+    db = TestingSessionLocal()
+    try:
+        entries = db.query(TicketLog).filter(TicketLog.ticket_id == ticket_id).all()
+        assert len(entries) == 1
+        assert entries[0].action == "analysis_hypothesis_requested"
+        assert entries[0].user_id is not None
+        assert "SpO2" not in (entries[0].detail or "")
+    finally:
+        db.close()
+
+
+def test_only_explicit_human_confirmation_persists_root_cause_and_logs_reviewer():
+    headers = auth_headers()
+    ticket_id = create_incident(headers)
+    payload = {
+        "root_cause": "Causa revisada e confirmada pela equipe",
+        "recommendation": "Seguir procedimento autorizado pelo fabricante",
+        "evidence_refs": ["OS-001", "TEST-22"],
+        "confirmed": True,
+    }
+
+    response = client.post(f"/analyze/{ticket_id}/confirm", headers=headers, json=payload)
+    assert response.status_code == 200
+    assert response.json()["status"] == "human_confirmed"
+    assert response.json()["review_required"] is False
+
+    ticket = client.get(f"/tickets/{ticket_id}", headers=headers).json()
+    assert ticket["root_cause"] == payload["root_cause"]
+    assert ticket["recommendation"] == payload["recommendation"]
+    assert ticket["analysis_completed"] is not None
+
+    from app.models.ticket import TicketLog
+
+    db = TestingSessionLocal()
+    try:
+        review = db.query(TicketLog).filter(
+            TicketLog.ticket_id == ticket_id,
+            TicketLog.action == "analysis_human_confirmed",
+        ).first()
+        assert review is not None
+        assert review.user_id == response.json()["reviewer_id"]
+        assert "OS-001" not in (review.detail or "")
+    finally:
+        db.close()
+
+
+def test_unverified_ticket_patch_cannot_claim_confirmed_analysis():
+    headers = auth_headers()
+    ticket_id = create_incident(headers)
+
+    response = client.patch(
+        f"/tickets/{ticket_id}",
+        headers=headers,
+        json={"root_cause": "Invented confirmed cause"},
+    )
+    assert response.status_code == 403
+
+    response = client.patch(
+        f"/tickets/{ticket_id}",
+        headers=headers,
+        json={"analysis_completed": None},
+    )
+    assert response.status_code == 403
+
+
+def test_confirmation_rejects_absent_attestation_or_sensitive_evidence_reference():
+    headers = auth_headers()
+    ticket_id = create_incident(headers)
+    base = {
+        "root_cause": "Causa que exige validação humana",
+        "recommendation": "Revisão pelo procedimento autorizado",
+        "evidence_refs": ["OS-001"],
+    }
+
+    assert client.post(f"/analyze/{ticket_id}/confirm", headers=headers, json=base).status_code == 422
+    assert client.post(
+        f"/analyze/{ticket_id}/confirm",
+        headers=headers,
+        json={**base, "confirmed": True, "evidence_refs": ["patient@example.com"]},
+    ).status_code == 422
+    assert client.post(
+        f"/analyze/{ticket_id}/confirm",
+        json={**base, "confirmed": True},
+    ).status_code == 401
 
 
 def test_analyze_fallback_honors_english_language(monkeypatch):
