@@ -11,6 +11,7 @@ export const PUBLIC_MARKETING_ROUTES = new Set([
   "/recursos",
   "/solucoes",
   "/demonstracao",
+  "/ia-responsavel",
 ]);
 
 export function isPublicMarketingRoute(pathname: string): boolean {
