@@ -135,7 +135,7 @@ function KBPageContent() {
     await Promise.all([loadMeta(), loadArticles(filters), ...(isAdmin ? [loadAdmin()] : [])]);
   }
 
-  async function runAction(operation: () => Promise<unknown>, success: string) {
+  async function runAction(operation: () => Promise<unknown>, success: string): Promise<boolean> {
     setBusy(true);
     setError("");
     setMessage("");
@@ -143,8 +143,10 @@ function KBPageContent() {
       await operation();
       await refresh();
       setMessage(success);
+      return true;
     } catch (err) {
       setError(friendlyError(err));
+      return false;
     } finally {
       setBusy(false);
     }
@@ -166,32 +168,33 @@ function KBPageContent() {
   async function saveDraft(event: FormEvent) {
     event.preventDefault();
     const tags = tagsInput.split(/[,;]+/).map((x) => x.trim()).filter(Boolean);
-    await runAction(
+    const saved = await runAction(
       () => api.createKnowledgeArticle({ ...draft, tags }),
-      "Artigo salvo como rascunho privado até sua revisão. Nenhuma publicação foi automática.",
+      "Artigo salvo como rascunho e ainda não publicado.",
     );
-    setView("acervo");
-    setDraft(emptyDraft);
-    setTagsInput("");
+    if (saved) {
+      setView("acervo");
+      setDraft(emptyDraft);
+      setTagsInput("");
+    }
   }
 
   async function manageWorkspace(event: FormEvent) {
     event.preventDefault();
-    await runAction(
+    const saved = await runAction(
       () => api.createKnowledgeWorkspace({ name: workspaceName.trim(), slug: workspaceSlug.trim() }),
       "Espaço de trabalho criado com acesso administrativo explícito.",
     );
-    setWorkspaceName("");
-    setWorkspaceSlug("");
+    if (saved) { setWorkspaceName(""); setWorkspaceSlug(""); }
   }
 
   async function addWorkspaceMember(event: FormEvent) {
     event.preventDefault();
-    await runAction(
+    const added = await runAction(
       () => api.addKnowledgeMember(Number(membershipWorkspace), Number(membershipUser), memberRole),
       "Acesso ao espaço de trabalho concedido ao usuário selecionado.",
     );
-    setMembershipUser("");
+    if (added) setMembershipUser("");
   }
 
   const field = (key: keyof typeof emptyFilters, label: string) => (
@@ -289,7 +292,11 @@ function KBPageContent() {
               </button>
               <button type="button" onClick={() => {
                 setFilters(emptyFilters);
-                void runAction(() => loadArticles(emptyFilters), "Filtros limpos.");
+                setBusy(true);
+                setError("");
+                void loadArticles(emptyFilters)
+                  .catch((err) => setError(friendlyError(err)))
+                  .finally(() => setBusy(false));
               }} className="min-h-11 rounded-lg border border-slate-300 px-5 py-2 font-bold">Limpar filtros</button>
             </div>
           </form>
