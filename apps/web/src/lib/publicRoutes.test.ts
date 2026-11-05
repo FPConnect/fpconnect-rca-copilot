@@ -9,6 +9,7 @@ describe("OPSPECTA public marketing routes", () => {
     "/solucoes",
     "/demonstracao",
     "/ia-responsavel",
+    "/privacidade",
     "/recursos/",
   ])("makes only explicitly allowed public routes accessible: %s", (path) => {
     expect(isPublicMarketingRoute(path)).toBe(true);

@@ -58,7 +58,7 @@ const exploring = [
 
 export default function SolucoesPage() {
   return (
-    <main className="min-h-screen bg-[#f5f8fa] text-[#071a3d]">
+    <main id="conteudo-principal" className="min-h-screen bg-[#f5f8fa] text-[#071a3d]">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
           <Link href="/" aria-label="Página inicial da OPSPECTA"><BrandLogo /></Link>
@@ -166,7 +166,7 @@ export default function SolucoesPage() {
         </div>
       </section>
       <footer className="border-t border-slate-200 bg-white px-5 py-8 text-sm text-slate-600 sm:px-8">
-        <div className="mx-auto max-w-[1120px]">© {new Date().getFullYear()} OPSPECTA · Inteligência operacional para a saúde.</div>
+        <div className="mx-auto max-w-[1120px]">© {new Date().getFullYear()} OPSPECTA · Inteligência operacional para a saúde. <Link href="/privacidade" className="ml-3 font-bold text-[#075c63] underline underline-offset-4">Privacidade e dados</Link></div>
       </footer>
     </main>
   );

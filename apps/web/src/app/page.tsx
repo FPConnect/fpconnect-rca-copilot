@@ -251,7 +251,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <main className="brand-surface app-viewport bg-white text-[#071a3d]" data-no-translate>
+    <main id="conteudo-principal" className="brand-surface app-viewport bg-white text-[#071a3d]" data-no-translate>
       <section className="relative min-h-[680px] overflow-hidden border-b border-slate-200 bg-white">
         <Image
           src="/brand/opspecta-hero.png"
@@ -484,6 +484,7 @@ export default function LandingPage() {
       <footer className="bg-white py-10">
         <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-6 px-5 sm:px-8">
           <BrandLogo />
+          <Link href="/privacidade" className="text-sm font-semibold text-[#075c63] underline underline-offset-4">Privacidade e dados</Link>
           <p className="text-sm text-slate-500">© {new Date().getFullYear()} {APP_NAME}. {t.brandTagline}.</p>
         </div>
       </footer>

@@ -10,7 +10,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   // Public marketing pages skip the private app sidebar; login keeps its neutral shell.
   if (pathname === "/login") {
-    return <main className="app-theme app-viewport app-main min-w-0 bg-gray-50 p-4 sm:p-6">{children}</main>;
+    return <main id="conteudo-principal" className="app-theme app-viewport app-main min-w-0 bg-gray-50 p-4 sm:p-6">{children}</main>;
   }
 
   if (isPublicMarketingRoute(pathname)) {
@@ -22,7 +22,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Header />
-        <main className="app-main w-full min-w-0 flex-1 p-4 sm:p-6">{children}</main>
+        <main id="conteudo-principal" className="app-main w-full min-w-0 flex-1 p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

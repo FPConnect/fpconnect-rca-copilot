@@ -31,6 +31,7 @@ const navItems = [
   { href: "/metrics", label: "Métricas", icon: BarChart2 },
   { href: "/maintenance", label: "Manutenção", icon: Wrench },
   { href: "/playbooks", label: "Playbooks", icon: BookOpenCheck },
+  { href: "/knowledge", label: "Base de Conhecimento", icon: BookOpenCheck },
   { href: "/contracts", label: "Contratos e SLA", icon: FileCheck2 },
   { href: "/history", label: "Histórico", icon: History },
 ];

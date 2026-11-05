@@ -123,6 +123,67 @@ export interface VerificationCodeResponse {
   verification_code?: string | null;
 }
 
+export type KnowledgeVisibility = "private" | "workspace" | "global";
+export type KnowledgeCategory =
+  | "operations" | "equipment" | "connectivity"
+  | "software" | "quality" | "documentation" | "other";
+
+export interface KnowledgeWorkspace {
+  id: number;
+  slug: string;
+  name: string;
+  membership_role?: string | null;
+}
+
+export interface KnowledgeArticle {
+  id: number;
+  title: string;
+  content: string;
+  category: KnowledgeCategory;
+  tags: string[];
+  visibility: KnowledgeVisibility;
+  review_status: string;
+  owner_id: number | null;
+  workspace_id: number | null;
+  equipment_family: string | null;
+  manufacturer: string | null;
+  model_code: string | null;
+  failure_code: string | null;
+  source_ref: string | null;
+  reviewed_by: number | null;
+  reviewed_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  version: number;
+}
+
+export interface KnowledgeArticleDraft {
+  title: string;
+  content: string;
+  category: KnowledgeCategory;
+  tags: string[];
+  visibility: KnowledgeVisibility;
+  workspace_id: number | null;
+  equipment_family?: string | null;
+  manufacturer?: string | null;
+  model_code?: string | null;
+  failure_code?: string | null;
+  source_ref?: string | null;
+}
+
+export interface KnowledgeFilters {
+  categories: KnowledgeCategory[];
+  visibilities: KnowledgeVisibility[];
+  review_statuses: string[];
+  workspaces: KnowledgeWorkspace[];
+}
+
+export interface KnowledgeLegacy {
+  id: number;
+  title: string;
+  created_at: string | null;
+}
+
 export interface UserProfile {
   id: number;
   email: string;
@@ -450,6 +511,100 @@ async function getEquipmentReport(
   );
 }
 
+// Authenticated knowledge functions intentionally never fall back to demo data.
+async function getKnowledgeArticles(params: Record<string, string>): Promise<KnowledgeArticle[]> {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([, value]) => value.trim() !== ""),
+  );
+  return request<KnowledgeArticle[]>(`/knowledge/articles?${query.toString()}`);
+}
+
+async function getKnowledgeFilters(): Promise<KnowledgeFilters> {
+  return request<KnowledgeFilters>("/knowledge/filters");
+}
+
+async function getKnowledgeWorkspaces(): Promise<KnowledgeWorkspace[]> {
+  return request<KnowledgeWorkspace[]>("/knowledge/workspaces");
+}
+
+async function createKnowledgeArticle(payload: KnowledgeArticleDraft): Promise<KnowledgeArticle> {
+  return request<KnowledgeArticle>("/knowledge/articles", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+async function updateKnowledgeArticle(
+  id: number, payload: Partial<KnowledgeArticleDraft>,
+): Promise<KnowledgeArticle> {
+  return request<KnowledgeArticle>(`/knowledge/articles/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+async function submitKnowledgeArticle(articleId: number): Promise<KnowledgeArticle> {
+  return request<KnowledgeArticle>(`/knowledge/articles/${articleId}/submit`, { method: "POST" });
+}
+
+async function reviewKnowledgeArticle(id: number, decision: "approve" | "reject"): Promise<KnowledgeArticle> {
+  return request<KnowledgeArticle>(`/knowledge/articles/${id}/review`, {
+    method: "POST",
+    body: JSON.stringify({ decision, sharing_authorized: true }),
+  });
+}
+
+async function createKnowledgeWorkspace(payload: { name: string; slug: string }): Promise<KnowledgeWorkspace> {
+  return request<KnowledgeWorkspace>("/knowledge/workspaces", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+async function addKnowledgeMember(id: number, user_id: number, membership_role: "member" | "manager") {
+  return request<unknown>(`/knowledge/workspaces/${id}/members`, {
+    method: "POST",
+    body: JSON.stringify({ user_id, membership_role }),
+  });
+}
+
+async function getKnowledgeMembers(workspaceId: number): Promise<Array<{ user_id: number; membership_role: string }>> {
+  return request<Array<{ user_id: number; membership_role: string }>>(
+    `/knowledge/workspaces/${workspaceId}/members`,
+  );
+}
+
+async function removeKnowledgeMember(workspaceId: number, userId: number): Promise<void> {
+  // Deletions intentionally have no JSON body on 204 responses.
+  const token = getAuthToken();
+  const response = await fetch(
+    `${API_URL}/knowledge/workspaces/${workspaceId}/members/${userId}`, {
+      method: "DELETE",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    },
+  );
+  if (!response.ok) {
+    throw new ApiError(response.status, await response.text());
+  }
+}
+
+async function getLegacyKnowledge(): Promise<KnowledgeLegacy[]> {
+  return request<KnowledgeLegacy[]>("/knowledge/legacy");
+}
+
+async function classifyLegacyKnowledge(
+  id: number, payload: { owner_id: number; category: KnowledgeCategory; workspace_id: number | null },
+): Promise<KnowledgeArticle> {
+  return request<KnowledgeArticle>(`/knowledge/legacy/${id}/classify`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+async function getKnowledgeReviewQueue(): Promise<KnowledgeArticle[]> {
+  return request<KnowledgeArticle[]>("/knowledge/review-queue");
+}
+
 export const api = {
   health: () => withFallback(() => request<HealthStatus>("/health"), () => ({ status: "ok", version: "preview" })),
   login,
@@ -465,6 +620,20 @@ export const api = {
   sendSmsNotification,
   analyzeIncident,
   confirmIncidentAnalysis,
+  getKnowledgeArticles,
+  getKnowledgeFilters,
+  getKnowledgeWorkspaces,
+  createKnowledgeArticle,
+  updateKnowledgeArticle,
+  submitKnowledgeArticle,
+  reviewKnowledgeArticle,
+  createKnowledgeWorkspace,
+  addKnowledgeMember,
+  getKnowledgeMembers,
+  removeKnowledgeMember,
+  getLegacyKnowledge,
+  classifyLegacyKnowledge,
+  getKnowledgeReviewQueue,
   getPlaybooks: () => withFallback(() => request<Playbook[]>("/playbooks/"), () => FALLBACK_PLAYBOOKS),
   createPlaybook,
   getContracts: () => withFallback(() => request<SLAContract[]>("/contracts/"), () => FALLBACK_CONTRACTS),

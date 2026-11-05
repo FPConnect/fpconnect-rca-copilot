@@ -28,9 +28,13 @@ router = APIRouter()
 
 
 class RCARequest(BaseModel):
-    problem: str = Field(..., min_length=3)
-    context: str = ""
+    problem: str = Field(..., min_length=3, max_length=2000)
+    context: str = Field(default="", max_length=4000)
     method: Literal["5whys", "fishbone", "fault_tree"] = "5whys"
+    # External processing is denied by default, even if the environment
+    # enables a provider. Request-level informed attestation is still required.
+    allow_external_processing: bool = False
+    data_deidentified: bool = False
 
 
 class PredictiveRiskRequest(BaseModel):
@@ -64,7 +68,13 @@ def create_advanced_rca(
 ) -> dict[str, Any]:
     """Generate methodical RCA output for regulated clinical engineering workflows."""
     try:
-        return generate_rca(payload.problem, payload.context, payload.method)
+        return generate_rca(
+            payload.problem,
+            payload.context,
+            payload.method,
+            allow_external_processing=payload.allow_external_processing,
+            data_deidentified=payload.data_deidentified,
+        )
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)

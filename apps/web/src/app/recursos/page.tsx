@@ -53,7 +53,7 @@ const checklist = [
 
 export default function RecursosPage() {
   return (
-    <main className="min-h-screen bg-[#f4f8fa] text-[#071a3d]">
+    <main id="conteudo-principal" className="min-h-screen bg-[#f4f8fa] text-[#071a3d]">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1080px] flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
           <Link href="/" aria-label="Voltar à página inicial da OPSPECTA">
@@ -130,7 +130,7 @@ export default function RecursosPage() {
         </div>
       </section>
       <footer className="mx-auto max-w-[1080px] px-5 py-8 text-sm text-slate-600 sm:px-8">
-        © {new Date().getFullYear()} OPSPECTA · Inteligência operacional para a saúde.
+        © {new Date().getFullYear()} OPSPECTA · Inteligência operacional para a saúde. <Link href="/privacidade" className="ml-3 text-[#075c63] underline underline-offset-4">Privacidade e dados</Link>
       </footer>
     </main>
   );

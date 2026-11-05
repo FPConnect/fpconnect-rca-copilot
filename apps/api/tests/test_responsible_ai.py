@@ -97,3 +97,45 @@ def test_external_provider_response_remains_draft_and_uncalibrated(monkeypatch):
     assert result["confidence_is_probability"] is False
     assert len(calls) == 2
     assert calls[1]["messages"][0]["role"] == "system"
+
+
+def test_rca_route_does_not_pass_external_data_by_default(monkeypatch):
+    from app.api.routes import enterprise
+    from app.api.deps import AuthenticatedUser
+
+    captured = {}
+
+    def stub_generate(problem, context, method, **kwargs):
+        captured.update(kwargs)
+        return {"review_required": True}
+
+    monkeypatch.setattr(enterprise, "generate_rca", stub_generate)
+    req = enterprise.RCARequest(problem="Problema sintético")
+    result = enterprise.create_advanced_rca(
+        req, AuthenticatedUser(id=1, role="manager", access_level=3)
+    )
+    assert result["review_required"] is True
+    assert captured == {
+        "allow_external_processing": False,
+        "data_deidentified": False,
+    }
+
+
+def test_rca_route_requires_explicit_dual_attestation(monkeypatch):
+    from app.api.routes import enterprise
+    from app.api.deps import AuthenticatedUser
+
+    received = {}
+    monkeypatch.setattr(
+        enterprise,
+        "generate_rca",
+        lambda problem, context, method, **flags: received.update(flags) or {"review_required": True},
+    )
+    req = enterprise.RCARequest(
+        problem="Problema sintético",
+        allow_external_processing=True,
+        data_deidentified=True,
+    )
+    enterprise.create_advanced_rca(req, AuthenticatedUser(id=1, role="manager", access_level=3))
+    assert received["allow_external_processing"] is True
+    assert received["data_deidentified"] is True
