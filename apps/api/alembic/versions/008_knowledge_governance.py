@@ -90,8 +90,16 @@ def upgrade() -> None:
         sa.Column("reviewed_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
     ]
-    for column in additions:
-        if column.name not in columns:
+    # SQLite cannot add foreign-key constraints with a plain ALTER TABLE.
+    # Alembic batch mode uses a safe copy-and-move reconstruction; PostgreSQL
+    # retains its native in-place ALTER TABLE operations.
+    pending = [column for column in additions if column.name not in columns]
+    if bind.dialect.name == "sqlite" and pending:
+        with op.batch_alter_table("kb_articles", recreate="always") as batch_op:
+            for column in pending:
+                batch_op.add_column(column)
+    else:
+        for column in pending:
             op.add_column("kb_articles", column)
 
     # Reconcile any older rows explicitly instead of inferring permissions.
