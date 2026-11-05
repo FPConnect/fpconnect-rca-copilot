@@ -28,7 +28,7 @@ def upgrade() -> None:
             sa.Column("name", sa.String(160), nullable=False),
             sa.Column("created_by", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
             sa.Column("created_at", sa.DateTime(timezone=True),
-                      server_default=sa.text("now()"), nullable=False),
+                      server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False),
         )
     if "knowledge_memberships" not in tables:
         op.create_table(
@@ -41,7 +41,7 @@ def upgrade() -> None:
                       server_default="member"),
             sa.Column("created_by", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
             sa.Column("created_at", sa.DateTime(timezone=True),
-                      server_default=sa.text("now()"), nullable=False),
+                      server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False),
             sa.UniqueConstraint("workspace_id", "user_id", name="uq_kb_workspace_membership"),
             sa.CheckConstraint("membership_role IN ('member','manager')",
                                name="ck_kb_membership_role"),
@@ -55,7 +55,7 @@ def upgrade() -> None:
             sa.Column("actor_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
             sa.Column("event_type", sa.String(32), nullable=False),
             sa.Column("version", sa.Integer(), nullable=False),
-            sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+            sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False),
         )
 
     if "knowledge_membership_audit" not in tables:
@@ -66,7 +66,7 @@ def upgrade() -> None:
             sa.Column("affected_user_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
             sa.Column("actor_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
             sa.Column("action", sa.String(16), nullable=False),
-            sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
+            sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("CURRENT_TIMESTAMP"), nullable=False),
         )
 
     columns = {column["name"] for column in sa.inspect(bind).get_columns("kb_articles")}
