@@ -184,6 +184,21 @@ jobs:
           psycopg2-binary==2.9.9
           uv==0.13.1
 
+      - name: Enforce verified database recovery gate
+        shell: bash
+        env:
+          KB_PROD_DB_BACKUP_VERIFIED: ${{ vars.KB_PROD_DB_BACKUP_VERIFIED }}
+          KB_PROD_DB_RESTORE_TEST_VERIFIED: ${{ vars.KB_PROD_DB_RESTORE_TEST_VERIFIED }}
+          KB_PROD_PG_MIGRATION_REHEARSAL_VERIFIED: ${{ vars.KB_PROD_PG_MIGRATION_REHEARSAL_VERIFIED }}
+        run: |
+          set -euo pipefail
+          for name in KB_PROD_DB_BACKUP_VERIFIED KB_PROD_DB_RESTORE_TEST_VERIFIED KB_PROD_PG_MIGRATION_REHEARSAL_VERIFIED; do
+            if [[ "${!name:-}" != "true" ]]; then
+              echo "::error title=Production migration blocked::$name must be 'true' after documented backup, restore, and PostgreSQL rehearsal evidence."
+              exit 1
+            fi
+          done
+
       - name: Reconcile production schema
         run: vercel env run --environment=production --scope=fpconnects-projects -- python apps/api/scripts/migrate_auth_schema.py --reconcile-alembic
         env:
