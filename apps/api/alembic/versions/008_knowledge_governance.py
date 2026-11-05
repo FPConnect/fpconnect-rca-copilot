@@ -73,9 +73,9 @@ def upgrade() -> None:
     # These safe defaults ensure no pre-migration article is ever globally visible.
     additions = [
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
-        sa.Column("owner_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=True),
+        sa.Column("owner_id", sa.Integer(), sa.ForeignKey("users.id", name="fk_kb_articles_owner_id_users"), nullable=True),
         sa.Column("workspace_id", sa.Integer(),
-                  sa.ForeignKey("knowledge_workspaces.id"), nullable=True),
+                  sa.ForeignKey("knowledge_workspaces.id", name="fk_kb_articles_workspace_id_workspaces"), nullable=True),
         sa.Column("visibility", sa.String(16), nullable=False, server_default="private"),
         sa.Column("review_status", sa.String(24), nullable=False,
                   server_default="legacy_quarantine"),
@@ -86,7 +86,7 @@ def upgrade() -> None:
         sa.Column("model_code", sa.String(100), nullable=True),
         sa.Column("failure_code", sa.String(100), nullable=True),
         sa.Column("source_ref", sa.String(240), nullable=True),
-        sa.Column("reviewed_by", sa.Integer(), sa.ForeignKey("users.id"), nullable=True),
+        sa.Column("reviewed_by", sa.Integer(), sa.ForeignKey("users.id", name="fk_kb_articles_reviewed_by_users"), nullable=True),
         sa.Column("reviewed_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
     ]
