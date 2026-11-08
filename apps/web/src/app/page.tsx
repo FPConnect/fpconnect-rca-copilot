@@ -207,6 +207,9 @@ const copy = {
 export default function LandingPage() {
   const languagePreference = useLanguagePreference();
   const locale: Locale = languagePreference === "en-US" ? "en" : "pt";
+  const brandBannerSrc = locale === "en"
+    ? "/brand/opspecta-brand-banner-en.png"
+    : "/brand/opspecta-brand-banner.jpg";
   const [activePlan, setActivePlan] = useState<PlanKey>("premium");
   const t = copy[locale];
   const active = useMemo(() => t.plans[activePlan], [activePlan, t.plans]);
@@ -303,7 +306,7 @@ export default function LandingPage() {
                 data-motion="scale"
               >
                 <Image
-                  src="/brand/opspecta-brand-banner.jpg"
+                  src={brandBannerSrc}
                   alt={`${APP_NAME} - ${t.brandTagline}`}
                   fill
                   priority
