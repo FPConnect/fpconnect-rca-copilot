@@ -1,8 +1,8 @@
 # OPSPECTA — governança de IA responsável e controles técnicos
-**Versão:** 0.1 (03/11/2026)  
+**Versão:** 0.2 (08/11/2026)
 **Escopo:** software de apoio à investigação de dados operacionais MedTech. **Não** equivale a diagnóstico clínico, dispositivo médico certificado, aconselhamento de manutenção, ou garantia de conformidade.
 **Referencial de princípios:** Microsoft Responsible AI (Fairness, Reliability and Safety, Privacy and Security, Inclusiveness, Transparency, Accountability), usado como orientação sem afiliação com a Microsoft. NIST AI RMF (Govern, Map, Measure, Manage), implementação voluntária e progressiva.  
-**Situação:** controles propostos em PR; promoção depende de CI, testes e aprovação de responsáveis. Um checklist não é certificação.
+**Situação:** controles de software incorporados à `main` em 03/11/2026 (commit `78813da`); CI de API/frontend e workflow de deploy concluíram com sucesso. Isso não substitui verificação funcional em produção, aprovação dos responsáveis ou os checkpoints abaixo. Um checklist não é certificação.
 
 ## 1. Mapeamento verificável dos seis princípios
 
@@ -73,4 +73,4 @@
 - NIST, AI RMF Playbook: https://airc.nist.gov/airmf-resources/playbook/
 - Requisitos regulatórios brasileiros: verificar caso a caso com assessoria jurídica/regulatória e diretrizes da ANPD/Anvisa atualizadas. Não presumir certificação de IA da OPSPECTA.
 
-**Última revisão:** implementação em desenvolvimento, sujeita a CI e revisão. Não afirmar em produção até o merge e verificação da implantação.
+**Última revisão:** 08/11/2026. Código integrado à `main`; testes locais de API/frontend, lint e build passaram. Verificação funcional em produção, auditoria de acessibilidade, revisão de privacidade/isolamento e aprovação formal para uso com dados reais permanecem pendentes.
