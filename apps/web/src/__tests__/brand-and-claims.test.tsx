@@ -37,6 +37,8 @@ describe("display name and commercial claims", () => {
     });
     expect(screen.getByRole("heading", { level: 1, name: "Transforme ordens de serviço em prioridades de ação" })).toBeInTheDocument();
     expect(document.querySelector("[data-brand-banner]")).toBeInTheDocument();
+    expect(document.querySelector("[data-brand-banner] img"))
+      .toHaveAttribute("src", expect.stringContaining("opspecta-brand-banner.jpg"));
   });
 
   it("shows the source-aligned offers in Portuguese and English", () => {
@@ -61,6 +63,10 @@ describe("display name and commercial claims", () => {
     expect(screen.getByText("Metrics pilot reference")).toBeInTheDocument();
     expect(screen.getByText("Up to 300")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Metrics pilot Recommended offer$/ })).toBeInTheDocument();
+    expect(document.querySelector("[data-brand-banner] img"))
+      .toHaveAttribute("src", expect.stringContaining("opspecta-brand-banner-en.png"));
+    expect(screen.getByAltText("OPSPECTA - Operational intelligence for healthcare"))
+      .toBeInTheDocument();
     expect(screen.queryByText(/per month/i)).not.toBeInTheDocument();
   });
 
