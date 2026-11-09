@@ -1,4 +1,49 @@
+<div align="center">
+
 # OPSPECTA
+### Evidence-led service intelligence for healthcare technology
+
+**Transforming fragmented technical service records into traceable operational insights — with humans in control.**
+
+[Product scope](#what-we-build) · [Reproducible research](docs/research/2026-11-python-synthetic-service-orders/README.md) · [Responsible AI](docs/security/OPSPECTA_RESPONSIBLE_AI_2026.md) · [Trust & disclosure](docs/HEALTHTECH_TRUST.md) · [Architecture](docs/ARCHITECTURE.md)
+
+</div>
+
+> **Maturity disclosure (November 2026):** Early-stage project; validation and product hardening in progress. Synthetic demonstrations are not clinical studies, customer deployments, regulatory clearance, measured uptime improvements or validated predictive-maintenance performance. Do not upload patient records or confidential manufacturer logs without an appropriate agreement and technical safeguards.
+
+## What we build
+
+OPSPECTA explores **operational intelligence for technical maintenance and service workflows** in the medical-technology ecosystem. The focus is different from controlling equipment remotely: work-order quality, incident history, potential recurrence, escalation patterns and human-reviewed root-cause hypotheses based on records already held by authorized service teams.
+
+| Operational question | Approach | Evidence / limitation |
+| --- | --- | --- |
+| Are work orders sufficiently documented? | Check missing/ambiguous service fields | Method demonstration only; customer validation pending |
+| Which incidents may be related? | Trace candidate recurrence by asset/category/time | Candidate pairs are **not** proof of identical root causes |
+| Where might handoffs be delayed? | Reconstruct timestamps and recorded waiting periods | Only possible when source timestamps and definitions are reliable |
+| Which RCA hypotheses deserve human review? | Assistive retrieval and evidence references | An authorized reviewer must confirm; scores are not probabilities |
+| Can analyses be audited and reproduced? | Versioned scripts, synthetic data, method and limitations | [Open methodology](docs/research/2026-11-python-synthetic-service-orders/README.md) |
+
+### Research showcase: Python + synthetic service orders
+
+A [reproducible notebook-style technical note](docs/research/2026-11-python-synthetic-service-orders/README.md) uses a deterministic Python script and **100 entirely synthetic work orders** to illustrate data-quality analysis, recorded resolution intervals and candidate recurrence. Run `python docs/research/2026-11-python-synthetic-service-orders/analise_logs_sinteticos.py` to regenerate the CSV and print the metrics. The published example is **not** a study of real medical devices or clinical care.
+
+### Engineering approach
+
+- **Repository:** FastAPI API, Next.js web app and Expo mobile prototype in a monorepo.
+- **Security first:** authenticate and authorize at the API; treat tenant isolation, retained data, document uploads and knowledge-base scope as release gates, not marketing claims.
+- **AI as assistance:** label hypotheses, separate evidence from inference, avoid uncalibrated confidence and require competent human sign-off.
+- **Privacy by design:** use synthetic data for public demonstrations; restrict sensitive logs, patient information, secrets and unauthorized datasets.
+- **Buyer-ready evidence:** measure only with a real authorized pilot, documented sample, defined baseline and explicit permission to disclose.
+
+**Explore:** [Project technical overview](docs/HEALTHTECH_TRUST.md) · [Validation notes](docs/business/OPSPECTA_SERVICE_VALIDATION_2026-11.md) · [Current repository documentation](#technical-documentation)
+
+## Technical documentation
+
+The original setup and operations documentation follows below. The README contains historical FPConnect compatibility paths because renaming runtime identifiers without migration can break integrations.
+
+---
+
+## Existing project guide
 Assistive data organization for MedTech technical service operations
 
 OPSPECTA is the working display name under validation. FPConnect remains the
