@@ -21,7 +21,7 @@ This does **not** establish production readiness as a multi-customer SaaS. The A
 | Attachments | S3-compatible upload and expiring download URL helpers exist. | Implemented; tenant authorization and live provider operations require further validation |
 | Knowledge retrieval | Optional local sentence-transformer embeddings, top-three KB retrieval and a similarity threshold are present. External LLM processing is disabled by default. | Prototype/limited; no validated retrieval-quality benchmark or tenant-scoped corpus |
 | Predictive scoring | An explainable weighted triage heuristic exists and explicitly says it is not calibrated or a failure probability. | Exploratory only; not predictive maintenance |
-| Mobile | Expo app, local ticket queue and token-aware synchronization exist. Dashboard/equipment views are hard-coded; no complete sign-in lifecycle or automated behavioral tests were found. | Prototype; not a production-ready fleet client |
+| Mobile | Expo app and local ticket queue exist; the sync service accepts an optional token, but the screen never supplies one. Dashboard/equipment views are hard-coded; no sign-in lifecycle or behavioral tests were found. | Prototype; not a production-ready fleet client |
 | Observability | Structured request logging and a `/health` endpoint exist. `/health` returns a static `ok`; comprehensive readiness, tracing, metrics, alerting and recovery evidence were not found. | Basic |
 | CI/CD | GitHub workflows test web/API/mobile and deploy API/web through Vercel from `main`. PR #91's merge deployment completed successfully. | Implemented; a green pipeline does not prove customer-data isolation or database recovery |
 | External services | S3-compatible storage, Redis and OpenAI-related configuration/dependencies exist; notifications include a development mock and external AI has explicit gates. | Some adapters/configuration exist; each provider's production delivery and operational controls need proof |
@@ -33,6 +33,7 @@ This does **not** establish production readiness as a multi-customer SaaS. The A
 - ML dependencies are optional in `apps/api/requirements-ml.txt`; the standard API requirements omit `sentence-transformers`.
 - The baseline API suite passed **65** tests during audit; after the first safe fix on this branch, **67** API tests passed and Ruff passed.
 - Mobile `npm run typecheck` passed. `npm test` printed `No tests yet` and exited 0; this is not evidence of mobile behavioral tests.
+- A focused mobile audit found the ticket-sync path does not pass a token although the API create route requires authentication; see [mobile audit](../mobile/OPSPECTA_MOBILE_AUDIT_2026.md). `npm audit --omit=dev` reported high/moderate advisories that are not blocked by the current CI threshold.
 - The production deploy workflow for commit `21fb5f5` completed successfully on 2026-11-09; its Test Web, Test API, Deploy API and Deploy Web jobs succeeded.
 - The audit worktree's first change is not yet merged or deployed.
 
