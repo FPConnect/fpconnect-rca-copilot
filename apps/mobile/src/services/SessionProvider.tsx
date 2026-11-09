@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { ActivityIndicator, Button, Platform, ScrollView, Text, TextInput, View } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import { User } from "./api";
-import { restoreSession, signInAndStore, SessionRemovalError, SessionClient, RequestClient, Organization, discoverOrganizations, selectOrganization, requireNativeSessionStorage, restoreErrorMessage } from "./session";
+import { restoreSession, signInAndStore, SessionRemovalError, SessionClient, RequestClient, Organization, SelectedMembership, discoverOrganizations, selectOrganization, requireNativeSessionStorage, restoreErrorMessage } from "./session";
 import { ApiError } from "./api";
 import { createSessionStore, openSessionStore } from "./secureSessionStorage";
 
@@ -11,7 +11,7 @@ const secureStorage = {
   setItem: SecureStore.setItemAsync,
   removeItem: SecureStore.deleteItemAsync,
 };
-type Session = { client: RequestClient; user: User; organization: Organization; switchOrganization: () => void; signOut: () => Promise<void>; expire: () => Promise<void> };
+type Session = { client: RequestClient; user: User; organization: Organization; membership: SelectedMembership; switchOrganization: () => void; signOut: () => Promise<void>; expire: () => Promise<void> };
 const Context = createContext<Session | null>(null);
 
 export function useSession(): Session {
@@ -30,7 +30,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [clearing, setClearing] = useState(false);
   const [clearFailed, setClearFailed] = useState(false);
   const currentClient = useRef<SessionClient | null>(null);
-  const [selected, setSelected] = useState<{ org: Organization; client: RequestClient } | null>(null);
+  const [selected, setSelected] = useState<{ org: Organization; client: RequestClient; membership: SelectedMembership } | null>(null);
   const [organizations, setOrganizations] = useState<Organization[] | null>(null);
   const [orgBusy, setOrgBusy] = useState(false);
   const [orgError, setOrgError] = useState("");
@@ -100,7 +100,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setOrgError("");
     try {
       const scoped = await selectOrganization(client, org.id);
-      if (currentClient.current === client) setSelected({ org, client: scoped });
+      if (currentClient.current === client) setSelected({ org, ...scoped });
     } catch (e) {
       if (currentClient.current !== client) return;
       if (e instanceof ApiError && e.status === 401) await signOut(client);
@@ -147,7 +147,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     <Button title="Sign out" disabled={clearing} onPress={() => void signOut()} />
   </ScrollView>;
   return <Context.Provider key={`${selected.org.id}`} value={{
-    client: selected.client, user: session.user, organization: selected.org,
+    client: selected.client, user: session.user, organization: selected.org, membership: selected.membership,
     switchOrganization: () => { setOrganizations(null); setSelected(null); },
     signOut: () => signOut(), expire: () => signOut(session.client),
   }}>{children}</Context.Provider>;

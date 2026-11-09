@@ -8,7 +8,7 @@ export default function DashboardScreen() {
   const { data, error, loading, reload } = useApiList<Ticket>("/tickets/?limit=100", isTicket);
   return <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }}>
     <Text style={{ fontSize: 24, fontWeight: "700" }}>Dashboard</Text>
-    <Text>Tenant isolation is under development. Do not use customer or patient data. Ticket metrics are unavailable while the backend blocks ticket access.</Text>
+    <Text>Tenant isolation is under review. Do not use customer or patient data until release gates are complete.</Text>
     <Text>Counts below cover only the first 100 tickets visible to this account, not the complete fleet.</Text>
     <Button title="Refresh" disabled={loading} onPress={() => void reload()} />
     {loading ? <ActivityIndicator /> : null}

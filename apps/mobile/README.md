@@ -2,11 +2,10 @@
 
 ## Prototype limitations and setup
 
-This app is not approved for customer or patient information. The baseline API
-does not implement tenant isolation; the separate tenant-foundation branch scopes
-machines and disables other customer operations pending further work. Regulatory,
-backup/restore and device/release validation gates remain open. Stored equipment
-status is not verified live telemetry.
+This app is not approved for customer or patient information. The integrated
+tenant foundation requires independent review and PostgreSQL, storage and
+migration rehearsal. Regulatory, backup/restore and device/release validation
+gates remain open. Stored equipment status is not verified live telemetry.
 
 Set `EXPO_PUBLIC_API_URL` to the HTTPS origin of a reachable test API **before**
 starting Expo (for example `$env:EXPO_PUBLIC_API_URL="https://test.example"` in
@@ -34,8 +33,9 @@ The tenant-foundation backend exposes `GET /auth/organizations` and
 an active organization; switching revalidates the new selection. Every
 organization-scoped request includes `X-Organization-Id`, including after
 refresh. A 403 does not automatically retry with another organization.
-The separate backend branch is still under development; most customer endpoints,
-including tickets, return 503 until secured. The app disables ticket creation.
+Selection returns a membership role and access level; the server checks live
+membership on every operation, and `/auth/me` is not used for tenant authority.
+The app keeps ticket creation disabled pending review and operational gates.
 Do not treat this client as evidence of isolation or use customer data. If
 secure-token removal fails, retry it from the sign-in screen; do not clear app
 data as a workaround if legacy drafts must be preserved.
@@ -58,7 +58,12 @@ before offline functionality can return. Do not clear application data if those
 drafts are needed. The dashboard covers only the first 100 visible tickets.
 
 `npm test` executes service tests and fails if the test file is absent. It does
-not replace device, UI, secure-storage or end-to-end testing. On 2026-11-09,
+not replace device, UI, secure-storage or end-to-end testing. To test the
+mobile service against the integrated FastAPI application using a disposable
+in-memory SQLite database, install the API dependencies, set `MOBILE_TEST_PYTHON`
+to the absolute path of that Python executable, then run `npm run test:integration`
+from `apps/mobile`. This runs FastAPI's in-process test
+client, not a network/TLS or PostgreSQL test. On 2026-11-09,
 `npm audit --omit=dev` with Expo 54.0.38 and expo-router 6.0.24 reported
 6 high, 16 moderate and 1 low advisories.
 The existing CI critical-only threshold does not block high findings; SDK-major

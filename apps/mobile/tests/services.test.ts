@@ -34,15 +34,17 @@ test("discover and validate organizations and use immutable selection on protect
     }
     if (calls === 2 || calls === 3) {
       assert.ok(String(input).endsWith("/auth/select-organization"));
-      return response({ organization_id: Number(orgHeader(init)) });
+      return response({ organization_id: Number(orgHeader(init)), role: Number(orgHeader(init)) === 2 ? "user" : "visitor", access_level: Number(orgHeader(init)) === 2 ? 2 : 1 });
     }
     return response({ selector: orgHeader(init) });
   };
   assert.equal((await discoverOrganizations(c)).length, 2);
   const first = await selectOrganization(c, 2);
   const second = await selectOrganization(c, 3);
-  assert.deepEqual(await first.request("/machines/"), { selector: "2" });
-  assert.deepEqual(await second.request("/machines/"), { selector: "3" });
+  assert.deepEqual(first.membership, { role: "user", accessLevel: 2 });
+  assert.deepEqual(second.membership, { role: "visitor", accessLevel: 1 });
+  assert.deepEqual(await first.client.request("/machines/"), { selector: "2" });
+  assert.deepEqual(await second.client.request("/machines/"), { selector: "3" });
 });
 
 test("membership discovery and selection fail closed", async () => {
@@ -55,6 +57,10 @@ test("membership discovery and selection fail closed", async () => {
   await assert.rejects(selectOrganization(c, 5), (e: unknown) => e instanceof ApiError && e.status === 403);
   globalThis.fetch = async () => response({ organization_id: 6 });
   await assert.rejects(selectOrganization(c, 5), /invalid organization selection/);
+  globalThis.fetch = async () => response({ organization_id: 5, role: "admin", access_level: 2 });
+  await assert.rejects(selectOrganization(c, 5), /invalid organization selection/);
+  globalThis.fetch = async () => response({ organization_id: 5, role: "constructor", access_level: 1 });
+  await assert.rejects(selectOrganization(c, 5), /invalid organization selection/);
   await assert.rejects(selectOrganization(c, 0), /Invalid organization selection/);
 });
 
@@ -62,7 +68,7 @@ test("refresh retains selected organization header but never sends it to refresh
   const c = client(); let calls = 0;
   globalThis.fetch = async (input, init) => {
     calls++;
-    if (calls === 1) return response({ organization_id: 2 });
+    if (calls === 1) return response({ organization_id: 2, role: "user", access_level: 2 });
     if (calls === 2) { assert.equal(orgHeader(init), "2"); return response({}, 401); }
     if (calls === 3) {
       assert.ok(String(input).endsWith("/auth/refresh"));
@@ -73,7 +79,7 @@ test("refresh retains selected organization header but never sends it to refresh
     return response([]);
   };
   const scoped = await selectOrganization(c, 2);
-  assert.deepEqual(await scoped.request("/machines/"), []);
+  assert.deepEqual(await scoped.client.request("/machines/"), []);
   assert.equal(calls, 4);
 });
 

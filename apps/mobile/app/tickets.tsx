@@ -49,7 +49,7 @@ export default function TicketsScreen() {
   );
   return (
     <ScrollView contentContainerStyle={{ padding: 20, gap: 14 }}>
-      <Text>Ticket access is disabled on the tenant-foundation backend until isolation is complete. Older offline drafts are not displayed, synchronized or deleted.</Text>
+      <Text>Tickets are scoped by the selected organization. Older offline drafts are not displayed, synchronized or deleted. Do not use customer data before release gates are complete.</Text>
       <Button title="Refresh tickets" onPress={() => void reload()} disabled={loading} />
       {loading ? <ActivityIndicator /> : null}
       {error ? <Text accessibilityRole="alert">{error}</Text> : null}

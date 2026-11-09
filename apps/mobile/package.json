@@ -10,6 +10,7 @@
     "ios": "npx expo start --ios",
     "web": "npx expo start --web",
     "test": "tsx --test tests/services.test.ts",
+    "test:integration": "tsx --test tests/integration.test.ts",
     "typecheck": "tsc --noEmit",
     "doctor": "expo-doctor",
     "reinstall": "npm run clean && npm cache clean --force && npm install",

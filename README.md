@@ -113,8 +113,8 @@ enable it outside a disposable local development database.
 ## Mobile App (React Native / Expo)
 
 The Expo app under `apps/mobile` is a prototype, not approved for customer or
-patient data. The API does not provide tenant isolation; regulatory and
-backup/restore gates also remain open. See [mobile limitations](apps/mobile/README.md).
+patient data. Tenant isolation changes require independent review and PostgreSQL
+rehearsal; regulatory and backup/restore gates remain open. See [mobile limitations](apps/mobile/README.md).
 
 ### Prerequisites
 
@@ -148,9 +148,9 @@ npm run web       # preview only; secure sign-in is unavailable on web
 
 | Screen | Description |
 |---|---|
-| Dashboard | Ticket counts unavailable while the tenant backend blocks ticket access |
+| Dashboard | Counts from the first 100 tickets visible to the selected membership |
 | Machines | Organization-scoped on the in-progress tenant backend; not live telemetry |
-| Tickets | Unavailable on the tenant backend pending isolation; no offline sync |
+| Tickets | Scoped server list; creation remains disabled pending release review |
 | Settings | Read-only account, organization switch and sign-out |
 
 ## Environment Variables

@@ -11,6 +11,7 @@ export interface SecureSessionStore {
 interface TokenPair { access: string; refresh: string | null }
 export interface AuthenticatedSession { client: SessionClient; user: User }
 export interface Organization { id: number; slug: string; name: string }
+export interface SelectedMembership { role: string; accessLevel: number }
 export interface RequestClient {
   request<T>(path: string, options?: { method?: string; body?: unknown }): Promise<T>;
 }
@@ -134,13 +135,18 @@ export async function discoverOrganizations(client: SessionClient): Promise<Orga
   return result as Organization[];
 }
 
-export async function selectOrganization(client: SessionClient, id: number): Promise<RequestClient> {
+export async function selectOrganization(client: SessionClient, id: number): Promise<{ client: RequestClient; membership: SelectedMembership }> {
   if (!Number.isSafeInteger(id) || id <= 0) throw new ApiError("validation", "Invalid organization selection.");
-  const result = await client.request<{ organization_id: number }>("/auth/select-organization", { method: "POST", organizationId: id });
-  if (!result || result.organization_id !== id) throw new ApiError("server", "API returned an invalid organization selection.");
+  const result = await client.request<{ organization_id: number; role: string; access_level: number }>("/auth/select-organization", { method: "POST", organizationId: id });
+  const roles: Record<string, number> = { visitor: 1, user: 2, manager: 3, admin: 4, master: 5 };
+  if (!result || result.organization_id !== id || !Object.prototype.hasOwnProperty.call(roles, result.role) ||
+      roles[result.role] !== result.access_level) throw new ApiError("server", "API returned an invalid organization selection.");
   // Capture an immutable selector so in-flight requests never switch organizations.
-  return { request: <T,>(path: string, options: { method?: string; body?: unknown } = {}) =>
-    client.request<T>(path, { ...options, organizationId: id }) };
+  return {
+    membership: { role: result.role, accessLevel: result.access_level },
+    client: { request: <T,>(path: string, options: { method?: string; body?: unknown } = {}) =>
+      client.request<T>(path, { ...options, organizationId: id }) },
+  };
 }
 
 export async function signInAndStore(store: SecureSessionStore, email: string, password: string): Promise<AuthenticatedSession> {
