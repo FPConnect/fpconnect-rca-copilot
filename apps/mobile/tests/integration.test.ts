@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ApiError } from "../src/services/api";
 import { discoverOrganizations, selectOrganization, signInAndStore } from "../src/services/session";
+import { createTicket, hasUnconfirmedTicket } from "../src/services/ticketCreate";
 
 test("mobile client uses real disposable FastAPI membership and ticket boundaries", async () => {
   const python = process.env.MOBILE_TEST_PYTHON;
@@ -41,6 +42,21 @@ test("mobile client uses real disposable FastAPI membership and ticket boundarie
     const ticketsB = await second.client.request<Array<{ title: string }>>("/tickets/");
     assert.deepEqual(ticketsA.map(t => t.title), ["One ticket"]);
     assert.deepEqual(ticketsB.map(t => t.title), ["Two ticket"]);
+    const markers = new Map<string, string>();
+    const markerStore = {
+      async getItem(key: string) { return markers.get(key) ?? null; },
+      async setItem(key: string, value: string) { markers.set(key, value); },
+      async removeItem(key: string) { markers.delete(key); },
+    };
+    const created = await createTicket(markerStore, first.client, "Synthetic new ticket", "high");
+    assert.ok(created.id > 0);
+    assert.equal(created.title, "Synthetic new ticket");
+    assert.equal(created.priority, "high");
+    assert.equal(await hasUnconfirmedTicket(markerStore), true);
+    const afterA = await first.client.request<Array<{ id: number }>>("/tickets/");
+    const afterB = await second.client.request<Array<{ id: number }>>("/tickets/");
+    assert.ok(afterA.some(ticket => ticket.id === created.id));
+    assert.ok(!afterB.some(ticket => ticket.id === created.id));
     await assert.rejects(second.client.request("/tickets/", { method: "POST", body: { title: "Not allowed" } }),
       (error: unknown) => error instanceof ApiError && error.status === 403);
     await assert.rejects(session.client.request("/machines/"),

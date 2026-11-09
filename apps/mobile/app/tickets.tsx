@@ -8,7 +8,7 @@ import { acknowledgeUnconfirmedTicket, createTicket, hasUnconfirmedTicket } from
 import { useApiList } from "../src/services/useApiList";
 
 export default function TicketsScreen() {
-  const { client, expire } = useSession();
+  const { client, membership, expire } = useSession();
   const { data, error, loading, reload } = useApiList<Ticket>("/tickets/?limit=100", isTicket);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high" | "critical">("medium");
@@ -22,7 +22,7 @@ export default function TicketsScreen() {
   }, []);
 
   const submit = async () => {
-    if (busy || unconfirmed || !title.trim()) return;
+    if (membership.accessLevel < 2 || busy || unconfirmed || !title.trim()) return;
     setBusy(true);
     setSubmitError("");
     try {
@@ -42,7 +42,7 @@ export default function TicketsScreen() {
   };
   const reconcile = () => Alert.alert(
     "Verify the previous submission",
-    "Check the server ticket list or ask an administrator before continuing. The previous request may have created a ticket. Continue only after verifying.",
+    "Check the ticket list for the organization used in the previous submission, or ask its administrator. Switch organizations if necessary. The previous request may have created a ticket. Continue only after verifying.",
     [{ text: "Cancel", style: "cancel" }, { text: "I verified", onPress: () => {
       void acknowledgeUnconfirmedTicket(AsyncStorage).then(() => setUnconfirmed(false)).catch(() => setSubmitError("Could not clear the guard."));
     } }],
@@ -60,15 +60,17 @@ export default function TicketsScreen() {
         <Text>{ticket.status} · {ticket.priority}</Text>
       </View>)}
       <Text style={{ fontWeight: "700", fontSize: 18 }}>Create ticket</Text>
-      <Text>Creation is disabled until the backend ticket tenant boundary is implemented and reviewed. Do not enter customer or patient data.</Text>
+      <Text>Online creation only. Do not enter customer or patient data. Server permissions are checked on each request.</Text>
       {unconfirmed ? <View><Text accessibilityRole="alert">A previous submission needs review. Its outcome may be unknown. Do not retry until it is reconciled.</Text><Button title="Review submission" onPress={reconcile} /></View> : null}
+      {membership.accessLevel < 2 ? <Text>Ticket creation requires a user, manager, admin or master membership.</Text> : <>
       <TextInput accessibilityLabel="Ticket title" placeholder="Ticket title" value={title} onChangeText={setTitle} style={{ borderWidth: 1, padding: 12 }} />
       <Text>Priority: {priority}</Text>
       {(["low", "medium", "high", "critical"] as const).map(value =>
         <Button key={value} title={`${value === priority ? "Selected: " : ""}${value}`} onPress={() => setPriority(value)} disabled={busy} />,
       )}
       {submitError ? <Text accessibilityRole="alert">{submitError}</Text> : null}
-      <Button title={busy ? "Submitting..." : "Create ticket (unavailable)"} disabled onPress={() => void submit()} />
+      <Button title={busy ? "Submitting..." : "Create ticket"} disabled={busy || unconfirmed || !title.trim()} onPress={() => void submit()} />
+      </>}
     </ScrollView>
   );
 }

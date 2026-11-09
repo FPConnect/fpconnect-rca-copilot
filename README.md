@@ -150,7 +150,7 @@ npm run web       # preview only; secure sign-in is unavailable on web
 |---|---|
 | Dashboard | Counts from the first 100 tickets visible to the selected membership |
 | Machines | Organization-scoped on the in-progress tenant backend; not live telemetry |
-| Tickets | Scoped server list; creation remains disabled pending release review |
+| Tickets | Scoped server list and online creation for permitted memberships; no offline sync |
 | Settings | Read-only account, organization switch and sign-out |
 
 ## Environment Variables

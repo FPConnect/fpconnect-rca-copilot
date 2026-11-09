@@ -35,17 +35,21 @@ organization-scoped request includes `X-Organization-Id`, including after
 refresh. A 403 does not automatically retry with another organization.
 Selection returns a membership role and access level; the server checks live
 membership on every operation, and `/auth/me` is not used for tenant authority.
-The app keeps ticket creation disabled pending review and operational gates.
+Online ticket creation is available to selected memberships at access level 2
+or higher for test workflows; the API enforces the current membership on every
+request, including after a role change.
 Do not treat this client as evidence of isolation or use customer data. If
 secure-token removal fails, retry it from the sign-in screen; do not clear app
 data as a workaround if legacy drafts must be preserved.
 
-Ticket creation is currently disabled in the UI. The service intended for a
-future scoped backend is online-only and requires access level 2. A durable, non-sensitive
+Ticket creation is online-only and requires access level 2. This enables scoped
+test workflows, not customer or patient data use. A durable, non-sensitive
 local marker is written before submission and retained even after a successful
 response, so a crash before the user sees the result cannot invite a duplicate.
-After every submission, verify the server list and acknowledge the warning before
-creating another. A network failure, 5xx, invalid success response, interrupted
+After every submission, verify the server list for the organization used in that
+submission and acknowledge the warning before creating another. The guard does
+not record which organization submitted the request; switch back to the original
+organization or ask its administrator before acknowledging it. A network failure, 5xx, invalid success response, interrupted
 app, or other ambiguous response likewise leaves creation blocked; contact an
 administrator if necessary. A manual acknowledgement does not prove a ticket
 was or was not created.
