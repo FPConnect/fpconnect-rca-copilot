@@ -3,17 +3,32 @@
 from functools import lru_cache
 from typing import List
 
+import structlog
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.models.ticket import Ticket
 from app.schemas.ticket import AnalyzeTicketRequest, RCASuggestionResponse
 
+log = structlog.get_logger(__name__)
+
+
+class SemanticSearchUnavailableError(RuntimeError):
+    """Raised when optional local semantic-search dependencies are unavailable."""
+
 
 @lru_cache(maxsize=1)
 def get_model():
     """Load embedding model once per process."""
-    from sentence_transformers import SentenceTransformer
+    try:
+        from sentence_transformers import SentenceTransformer
+    except ModuleNotFoundError as exc:
+        if exc.name != "sentence_transformers":
+            raise
+        log.warning("semantic_search_unavailable", reason="optional_dependency_missing")
+        raise SemanticSearchUnavailableError(
+            "Optional semantic-search dependencies are not installed"
+        ) from exc
 
     return SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
@@ -64,10 +79,7 @@ def analyze_ticket(
             )
         ]
 
-    try:
-        rows = get_root_cause_analysis(db, description)
-    except Exception:
-        rows = []
+    rows = get_root_cause_analysis(db, description)
 
     if not rows:
         english = request.language == "en-US"

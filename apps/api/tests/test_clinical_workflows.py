@@ -216,6 +216,59 @@ def test_analyze_fallback_honors_english_language(monkeypatch):
     assert suggestions[0].resolution.startswith("Escalate to level 2 support")
 
 
+def test_analyze_does_not_hide_retrieval_failures(monkeypatch):
+    def fail_retrieval(db, description):
+        raise RuntimeError("database unavailable")
+
+    monkeypatch.setattr(analyze_service, "get_root_cause_analysis", fail_retrieval)
+    ticket = SimpleNamespace(title="Synthetic monitor fault", description=None)
+
+    with pytest.raises(RuntimeError, match="database unavailable"):
+        analyze_service.analyze_ticket(
+            None,
+            ticket,
+            AnalyzeTicketRequest(context="Synthetic QA context", language="en-US"),
+        )
+
+
+def test_analysis_endpoints_report_unavailable_semantic_search(monkeypatch):
+    headers = auth_headers()
+    ticket_id = create_incident(headers)
+
+    def missing_model_package():
+        raise analyze_service.SemanticSearchUnavailableError(
+            "Optional semantic-search dependencies are not installed"
+        )
+
+    monkeypatch.setattr(analyze_routes, "analyze_ticket", analyze_service.analyze_ticket)
+    monkeypatch.setattr(analyze_service, "get_model", missing_model_package)
+
+    incident_response = client.post(
+        "/analyze",
+        json={"ticket_id": ticket_id, "language": "en-US"},
+        headers=headers,
+    )
+    ticket_response = client.post(
+        f"/tickets/{ticket_id}/analyze",
+        json={"language": "pt-BR"},
+        headers=headers,
+    )
+
+    assert incident_response.status_code == 503
+    assert incident_response.json()["detail"] == "Semantic search is not configured in this deployment"
+    assert ticket_response.status_code == 503
+    assert ticket_response.json()["detail"] == "A busca semântica não está configurada nesta implantação"
+
+    from app.models.ticket import TicketLog
+
+    db = TestingSessionLocal()
+    try:
+        entries = db.query(TicketLog).filter(TicketLog.ticket_id == ticket_id).all()
+        assert entries == []
+    finally:
+        db.close()
+
+
 def test_playbook_crud():
     headers = auth_headers()
     payload = {

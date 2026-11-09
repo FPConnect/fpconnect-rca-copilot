@@ -52,10 +52,10 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Install `requirements-ml.txt` instead when local semantic-search embeddings are
-required. The Vercel runtime uses the smaller production dependency set and
-falls back to the documented non-semantic RCA response when that optional model
-is unavailable.
+Install `requirements-ml.txt` when local semantic-search embeddings are
+required. The Vercel runtime uses the smaller production dependency set; when
+the optional model is unavailable, analysis endpoints return HTTP 503 instead
+of reporting a misleading "no similar cause found" result.
 
 To seed demo data and development test users, explicitly set
 `SEED_TEST_ACCOUNTS=true` and a unique `TEST_ACCOUNT_PASSWORD` of at least 12
@@ -67,7 +67,11 @@ enable it outside a disposable local development database.
 
 ## Mobile App (React Native / Expo)
 
-The project includes a full React Native mobile app under `apps/mobile`.
+The project includes an Expo prototype under `apps/mobile`; it is not yet a
+production-ready customer client. The dashboard and equipment list use static
+sample data, and the mobile test script currently contains no behavioral tests.
+Do not treat displayed mobile metrics or equipment status as live operational
+data.
 
 ### Prerequisites
 
@@ -99,12 +103,12 @@ npm run web       # open in browser (Expo Web)
 
 ### Mobile screens
 
-| Screen | Description |
+| Screen | Current behavior |
 |---|---|
-| Dashboard | Summary metrics and recent activity feed |
-| Machines | Live list of medical equipment with status badges |
-| Tickets | Create and search maintenance tickets |
-| Settings | User profile, appearance, and notification preferences |
+| Dashboard | Static sample metrics and activity; not connected to the API |
+| Machines | Static sample equipment list with local search/filtering |
+| Tickets | Local offline queue with API sync path; requires a valid API token |
+| Settings | Preview/local UI settings; export is unavailable |
 
 ## Environment Variables
 

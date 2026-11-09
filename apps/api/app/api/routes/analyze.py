@@ -19,7 +19,10 @@ from app.schemas.ticket import (
     ConfirmIncidentAnalysisRequest,
     ConfirmIncidentAnalysisResponse,
 )
-from app.services.analyze_service import analyze_ticket
+from app.services.analyze_service import (
+    SemanticSearchUnavailableError,
+    analyze_ticket,
+)
 
 router = APIRouter()
 
@@ -43,11 +46,22 @@ def analyze_incident(
             status_code=status.HTTP_404_NOT_FOUND, detail="Incident not found"
         )
 
-    suggestions = analyze_ticket(
-        db,
-        ticket,
-        AnalyzeTicketRequest(context=request.context, language=request.language),
-    )
+    try:
+        suggestions = analyze_ticket(
+            db,
+            ticket,
+            AnalyzeTicketRequest(context=request.context, language=request.language),
+        )
+    except SemanticSearchUnavailableError as exc:
+        detail = (
+            "Semantic search is not configured in this deployment"
+            if request.language == "en-US"
+            else "A busca semântica não está configurada nesta implantação"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=detail,
+        ) from exc
     primary = suggestions[0] if suggestions else None
     english = request.language == "en-US"
     root_cause = (
