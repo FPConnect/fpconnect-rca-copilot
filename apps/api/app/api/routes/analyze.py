@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import AuthenticatedUser, require_access_level
+from app.api.tenant import TenantContext, get_tenant_context
 from app.core.database import get_db
 from app.crud.ticket import complete_ticket_analysis, get_ticket_by_id
 from app.models.ticket import TicketLog
@@ -29,13 +30,14 @@ def analyze_incident(
     request: AnalyzeIncidentRequest,
     db: Session = Depends(get_db),
     current_user: AuthenticatedUser = Depends(require_access_level(2)),
+    tenant: TenantContext = Depends(get_tenant_context),
 ):
     """Suggest a technical hypothesis without writing a confirmed root cause.
 
     Similarity scores from the knowledge base are NOT calibrated probabilities.
     An engineer must validate any recommendation and follow applicable procedures.
     """
-    ticket = get_ticket_by_id(db, request.ticket_id)
+    ticket = get_ticket_by_id(db, request.ticket_id, tenant.organization_id)
     if not ticket or (
         current_user.access_level < 3 and ticket.creator_id != current_user.id
     ):
@@ -80,6 +82,7 @@ def analyze_incident(
     # Metadata-only audit; never log raw context, descriptions, patient data or output.
     db.add(TicketLog(
         ticket_id=ticket.id,
+        organization_id=tenant.organization_id,
         user_id=current_user.id,
         action="analysis_hypothesis_requested",
         detail=json.dumps({"schema": "responsible-ai-v1", "review_status": "pending"}),
@@ -102,13 +105,14 @@ def confirm_incident_analysis(
     payload: ConfirmIncidentAnalysisRequest,
     db: Session = Depends(get_db),
     reviewer: AuthenticatedUser = Depends(require_access_level(3)),
+    tenant: TenantContext = Depends(get_tenant_context),
 ):
     """Persist a technical conclusion only after explicit qualified human sign-off.
 
     The reviewer attests that evidence references are available through the
     organization's authorized record system. Reference tokens aren't raw logs.
     """
-    ticket = get_ticket_by_id(db, ticket_id)
+    ticket = get_ticket_by_id(db, ticket_id, tenant.organization_id)
     if ticket is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Incident not found"
@@ -131,6 +135,7 @@ def confirm_incident_analysis(
     )
     db.add(TicketLog(
         ticket_id=ticket.id,
+        organization_id=tenant.organization_id,
         user_id=reviewer.id,
         action="analysis_human_confirmed",
         detail=json.dumps({

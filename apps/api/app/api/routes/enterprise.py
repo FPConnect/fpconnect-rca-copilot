@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.api.deps import AuthenticatedUser, get_current_user_id, require_access_level
+from app.api.tenant import TenantContext, get_tenant_context
 from app.core.database import get_db
 from app.core.security import limiter
 from app.models.machine import Machine
@@ -136,9 +137,12 @@ def create_equipment_report(
     demonstration: bool = Query(default=False),
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
+    tenant: TenantContext = Depends(get_tenant_context),
 ) -> Response:
     """Generate a PDF from persisted equipment data and the caller's tickets."""
-    machine = db.query(Machine).filter(Machine.code == equipment_code).first()
+    machine = db.query(Machine).filter(
+        Machine.code == equipment_code, Machine.organization_id == tenant.organization_id
+    ).first()
     if machine is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -150,6 +154,7 @@ def create_equipment_report(
         db.query(Ticket)
         .filter(
             Ticket.creator_id == user_id,
+            Ticket.organization_id == tenant.organization_id,
             Ticket.device_id == machine.code,
             Ticket.created_at >= start,
         )

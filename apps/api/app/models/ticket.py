@@ -21,6 +21,7 @@ class Ticket(Base):
     __tablename__ = "tickets"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True, index=True)
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     status = Column(
@@ -51,6 +52,7 @@ class TicketAttachment(Base):
     __tablename__ = "ticket_attachments"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True, index=True)
     ticket_id = Column(Integer, ForeignKey("tickets.id"), nullable=False)
     uploader_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     object_key = Column(String, nullable=False, unique=True)
@@ -66,6 +68,7 @@ class TicketLog(Base):
     __tablename__ = "ticket_logs"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True, index=True)
     ticket_id = Column(Integer, ForeignKey("tickets.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     action = Column(String, nullable=False)
@@ -79,6 +82,7 @@ class RCASuggestion(Base):
     __tablename__ = "rca_suggestions"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True, index=True)
     ticket_id = Column(Integer, ForeignKey("tickets.id"), nullable=False)
     cause = Column(Text, nullable=False)
     confidence = Column(Float, default=0.0)
@@ -93,6 +97,7 @@ class KBArticle(Base):
     __tablename__ = "kb_articles"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True, index=True)
     title = Column(String, nullable=False)
     content = Column(Text, nullable=False)
     tags = Column(String, nullable=True)

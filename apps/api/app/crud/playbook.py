@@ -14,8 +14,8 @@ from app.schemas.playbook import (
 )
 
 
-def get_playbooks(db: Session, search: Optional[str] = None) -> List[Playbook]:
-    query = db.query(Playbook)
+def get_playbooks(db: Session, organization_id: int, search: Optional[str] = None) -> List[Playbook]:
+    query = db.query(Playbook).filter(Playbook.organization_id == organization_id)
     if search:
         pattern = f"%{search}%"
         query = query.filter(
@@ -24,20 +24,20 @@ def get_playbooks(db: Session, search: Optional[str] = None) -> List[Playbook]:
     return query.order_by(Playbook.title.asc()).all()
 
 
-def get_playbook(db: Session, playbook_id: int) -> Optional[Playbook]:
-    return db.query(Playbook).filter(Playbook.id == playbook_id).first()
+def get_playbook(db: Session, playbook_id: int, organization_id: int) -> Optional[Playbook]:
+    return db.query(Playbook).filter(Playbook.id == playbook_id, Playbook.organization_id == organization_id).first()
 
 
-def create_playbook(db: Session, payload: PlaybookCreate) -> Playbook:
-    playbook = Playbook(**payload.model_dump())
+def create_playbook(db: Session, payload: PlaybookCreate, organization_id: int) -> Playbook:
+    playbook = Playbook(**payload.model_dump(), organization_id=organization_id)
     db.add(playbook)
     db.commit()
     db.refresh(playbook)
     return playbook
 
 
-def update_playbook(db: Session, playbook_id: int, payload: PlaybookUpdate) -> Optional[Playbook]:
-    playbook = get_playbook(db, playbook_id)
+def update_playbook(db: Session, playbook_id: int, payload: PlaybookUpdate, organization_id: int) -> Optional[Playbook]:
+    playbook = get_playbook(db, playbook_id, organization_id)
     if not playbook:
         return None
     for field, value in payload.model_dump(exclude_unset=True).items():
@@ -47,8 +47,8 @@ def update_playbook(db: Session, playbook_id: int, payload: PlaybookUpdate) -> O
     return playbook
 
 
-def delete_playbook(db: Session, playbook_id: int) -> bool:
-    playbook = get_playbook(db, playbook_id)
+def delete_playbook(db: Session, playbook_id: int, organization_id: int) -> bool:
+    playbook = get_playbook(db, playbook_id, organization_id)
     if not playbook:
         return False
     db.delete(playbook)
@@ -56,16 +56,16 @@ def delete_playbook(db: Session, playbook_id: int) -> bool:
     return True
 
 
-def get_contracts(db: Session) -> List[SLAContract]:
-    return db.query(SLAContract).order_by(SLAContract.expires_at.asc()).all()
+def get_contracts(db: Session, organization_id: int) -> List[SLAContract]:
+    return db.query(SLAContract).filter(SLAContract.organization_id == organization_id).order_by(SLAContract.expires_at.asc()).all()
 
 
-def get_contract(db: Session, contract_id: int) -> Optional[SLAContract]:
-    return db.query(SLAContract).filter(SLAContract.id == contract_id).first()
+def get_contract(db: Session, contract_id: int, organization_id: int) -> Optional[SLAContract]:
+    return db.query(SLAContract).filter(SLAContract.id == contract_id, SLAContract.organization_id == organization_id).first()
 
 
-def create_contract(db: Session, payload: SLAContractCreate) -> SLAContract:
-    contract = SLAContract(**payload.model_dump())
+def create_contract(db: Session, payload: SLAContractCreate, organization_id: int) -> SLAContract:
+    contract = SLAContract(**payload.model_dump(), organization_id=organization_id)
     db.add(contract)
     db.commit()
     db.refresh(contract)
@@ -73,9 +73,9 @@ def create_contract(db: Session, payload: SLAContractCreate) -> SLAContract:
 
 
 def update_contract(
-    db: Session, contract_id: int, payload: SLAContractUpdate
+    db: Session, contract_id: int, payload: SLAContractUpdate, organization_id: int
 ) -> Optional[SLAContract]:
-    contract = get_contract(db, contract_id)
+    contract = get_contract(db, contract_id, organization_id)
     if not contract:
         return None
     for field, value in payload.model_dump(exclude_unset=True).items():
@@ -85,8 +85,8 @@ def update_contract(
     return contract
 
 
-def delete_contract(db: Session, contract_id: int) -> bool:
-    contract = get_contract(db, contract_id)
+def delete_contract(db: Session, contract_id: int, organization_id: int) -> bool:
+    contract = get_contract(db, contract_id, organization_id)
     if not contract:
         return False
     db.delete(contract)

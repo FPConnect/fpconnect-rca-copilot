@@ -5,13 +5,18 @@ from pathlib import Path
 import re
 from typing import List
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
 from PIL import Image, UnidentifiedImageError
 from sqlalchemy.orm import Session
 
 from app.api.deps import AuthenticatedUser, get_current_user, require_access_level
+from app.api.tenant import TenantContext, get_tenant_context
 from app.core.config import settings
 from app.core.database import get_db
+from app.models.machine import Machine
+from app.models.organization import OrganizationMembership
+from app.models.ticket import RCASuggestion, TicketAttachment, TicketLog
+from app.models.user import User
 from app.crud.ticket import (
     create_ticket,
     create_ticket_attachment,
@@ -39,9 +44,9 @@ from app.services.object_storage import (
 router = APIRouter()
 
 
-def _authorized_ticket(db: Session, ticket_id: int, current_user: AuthenticatedUser):
+def _authorized_ticket(db: Session, ticket_id: int, current_user: AuthenticatedUser, organization_id: int):
     """Return a visible ticket without disclosing another user's ticket IDs."""
-    ticket = get_ticket_by_id(db, ticket_id)
+    ticket = get_ticket_by_id(db, ticket_id, organization_id)
     if not ticket or (
         current_user.access_level < 3 and ticket.creator_id != current_user.id
     ):
@@ -57,10 +62,11 @@ def list_tickets(
     limit: int = 100,
     db: Session = Depends(get_db),
     current_user: AuthenticatedUser = Depends(get_current_user),
+    tenant: TenantContext = Depends(get_tenant_context),
 ):
     """Return a paginated list of tickets."""
-    creator_id = None if current_user.access_level >= 3 else current_user.id
-    return get_tickets(db, skip=skip, limit=limit, creator_id=creator_id)
+    creator_id = None if tenant.user.access_level >= 3 else tenant.user.id
+    return get_tickets(db, tenant.organization_id, skip=skip, limit=limit, creator_id=creator_id)
 
 
 @router.get("/{ticket_id}", response_model=TicketResponse)
@@ -68,9 +74,10 @@ def get_ticket(
     ticket_id: int,
     db: Session = Depends(get_db),
     current_user: AuthenticatedUser = Depends(get_current_user),
+    tenant: TenantContext = Depends(get_tenant_context),
 ):
     """Return a single ticket by ID."""
-    return _authorized_ticket(db, ticket_id, current_user)
+    return _authorized_ticket(db, ticket_id, tenant.user, tenant.organization_id)
 
 
 @router.post("/", response_model=TicketResponse, status_code=status.HTTP_201_CREATED)
@@ -78,9 +85,15 @@ def create_new_ticket(
     ticket_data: TicketCreate,
     db: Session = Depends(get_db),
     current_user: AuthenticatedUser = Depends(require_access_level(2)),
+    tenant: TenantContext = Depends(get_tenant_context),
 ):
     """Create a new support ticket."""
-    return create_ticket(db, ticket_data, creator_id=current_user.id)
+    if ticket_data.device_id is not None and not db.query(Machine.id).filter(
+        Machine.code == ticket_data.device_id,
+        Machine.organization_id == tenant.organization_id,
+    ).first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Equipment not found")
+    return create_ticket(db, ticket_data, creator_id=current_user.id, organization_id=tenant.organization_id)
 
 
 @router.patch("/{ticket_id}", response_model=TicketResponse)
@@ -89,16 +102,28 @@ def update_existing_ticket(
     ticket_data: TicketUpdate,
     db: Session = Depends(get_db),
     current_user: AuthenticatedUser = Depends(require_access_level(2)),
+    tenant: TenantContext = Depends(get_tenant_context),
 ):
     """Update ordinary ticket fields; confirmed analysis requires human sign-off."""
-    _authorized_ticket(db, ticket_id, current_user)
+    _authorized_ticket(db, ticket_id, tenant.user, tenant.organization_id)
     # Do not permit users to bypass review with a generic PATCH, including nulls.
     if {"root_cause", "recommendation", "analysis_completed"} & ticket_data.model_fields_set:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Use the human confirmation workflow for technical conclusions",
         )
-    ticket = update_ticket(db, ticket_id, ticket_data)
+    if ticket_data.assignee_id is not None and not (
+        db.query(OrganizationMembership.id)
+        .join(User, User.id == OrganizationMembership.user_id)
+        .filter(
+            OrganizationMembership.user_id == ticket_data.assignee_id,
+            OrganizationMembership.organization_id == tenant.organization_id,
+            OrganizationMembership.is_active.is_(True),
+            User.is_active.is_(True),
+        ).first()
+    ):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Assignee not found")
+    ticket = update_ticket(db, ticket_id, ticket_data, tenant.organization_id)
     if not ticket:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found"
@@ -111,10 +136,19 @@ def remove_ticket(
     ticket_id: int,
     db: Session = Depends(get_db),
     current_user: AuthenticatedUser = Depends(require_access_level(2)),
+    tenant: TenantContext = Depends(get_tenant_context),
 ):
     """Delete a ticket by ID."""
-    _authorized_ticket(db, ticket_id, current_user)
-    if not delete_ticket(db, ticket_id):
+    _authorized_ticket(db, ticket_id, tenant.user, tenant.organization_id)
+    # Do not silently orphan blobs or erase audit history. Any child row,
+    # including quarantined legacy metadata, requires a retention workflow.
+    for model in (TicketAttachment, TicketLog, RCASuggestion):
+        if db.query(model.id).filter(model.ticket_id == ticket_id).first():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Ticket has dependent records; retention workflow required",
+            )
+    if not delete_ticket(db, ticket_id, tenant.organization_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found"
         )
@@ -126,9 +160,10 @@ def analyze_existing_ticket(
     request: AnalyzeTicketRequest,
     db: Session = Depends(get_db),
     current_user: AuthenticatedUser = Depends(require_access_level(2)),
+    tenant: TenantContext = Depends(get_tenant_context),
 ):
     """Run RCA analysis on a ticket and return suggestions."""
-    ticket = _authorized_ticket(db, ticket_id, current_user)
+    ticket = _authorized_ticket(db, ticket_id, current_user, tenant.organization_id)
     suggestions = analyze_ticket(db, ticket, request)
     return AnalyzeTicketResponse(ticket_id=ticket_id, suggestions=suggestions)
 
@@ -202,14 +237,17 @@ def _attachment_response(attachment) -> TicketAttachmentResponse:
 )
 def list_ticket_attachments(
     ticket_id: int,
+    response: Response,
     db: Session = Depends(get_db),
     current_user: AuthenticatedUser = Depends(get_current_user),
+    tenant: TenantContext = Depends(get_tenant_context),
 ):
     """Return image attachments for a ticket with temporary download URLs."""
-    _authorized_ticket(db, ticket_id, current_user)
+    response.headers["Cache-Control"] = "private, no-store"
+    _authorized_ticket(db, ticket_id, tenant.user, tenant.organization_id)
     return [
         _attachment_response(attachment)
-        for attachment in get_ticket_attachments(db, ticket_id)
+        for attachment in get_ticket_attachments(db, ticket_id, tenant.organization_id)
     ]
 
 
@@ -220,12 +258,15 @@ def list_ticket_attachments(
 )
 async def upload_ticket_image(
     ticket_id: int,
+    response: Response,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: AuthenticatedUser = Depends(require_access_level(2)),
+    tenant: TenantContext = Depends(get_tenant_context),
 ):
     """Upload a ticket image to MinIO/S3 and persist its metadata."""
-    _authorized_ticket(db, ticket_id, current_user)
+    response.headers["Cache-Control"] = "private, no-store"
+    _authorized_ticket(db, ticket_id, current_user, tenant.organization_id)
 
     content_type = file.content_type or "application/octet-stream"
     if content_type not in ALLOWED_IMAGE_CONTENT_TYPES:
@@ -248,11 +289,12 @@ async def upload_ticket_image(
     real_content_type = await validate_image_real_type(body)
 
     filename = _sanitize_filename(file.filename)
-    object_key = build_ticket_attachment_key(ticket_id, filename)
+    object_key = build_ticket_attachment_key(tenant.organization_id, ticket_id, filename)
     upload_file_object(object_key=object_key, body=body, content_type=real_content_type)
     attachment = create_ticket_attachment(
         db,
         ticket_id=ticket_id,
+        organization_id=tenant.organization_id,
         uploader_id=current_user.id,
         object_key=object_key,
         filename=filename,
