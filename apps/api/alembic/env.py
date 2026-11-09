@@ -9,7 +9,7 @@ from sqlalchemy import engine_from_config, pool
 from app.core.base import Base
 
 # Import all models so Alembic can detect them
-from app.models import user, ticket  # noqa: F401
+from app.models import machine, organization, playbook, ticket, user  # noqa: F401
 
 config = context.config
 database_url = os.environ.get("DATABASE_URL")

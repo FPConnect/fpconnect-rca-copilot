@@ -8,6 +8,8 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 from app.core.database import Base, get_db
 from app.main import app
+from app.models.organization import Organization, OrganizationMembership
+from app.models.user import User
 
 TEST_DB_URL = "sqlite:///./test_notifications.db"
 
@@ -31,7 +33,11 @@ def setup_db():
     previous_override = app.dependency_overrides.get(get_db)
     app.dependency_overrides[get_db] = override_get_db
     Base.metadata.create_all(bind=engine)
+    with TestingSessionLocal.begin() as db:
+        db.add(Organization(id=1, slug="test", name="Test"))
+    client.headers["X-Organization-Id"] = "1"
     yield
+    client.headers.pop("X-Organization-Id", None)
     Base.metadata.drop_all(bind=engine)
     if previous_override is None:
         app.dependency_overrides.pop(get_db, None)
@@ -47,6 +53,9 @@ def auth_headers(phone_number: str = "+55 47 99678-9861") -> dict[str, str]:
         "phone_number": phone_number,
     }
     client.post("/auth/register", json=credentials)
+    with TestingSessionLocal.begin() as db:
+        user = db.query(User).filter_by(email=credentials["email"]).one()
+        db.add(OrganizationMembership(user_id=user.id, organization_id=1, role="user"))
     response = client.post(
         "/auth/login",
         json={"email": credentials["email"], "password": credentials["password"]},

@@ -70,15 +70,16 @@ def get_current_user_id(
 
 
 def require_access_level(minimum: int):
-    """Build a dependency that enforces the signed RBAC access level."""
+    """Enforce the selected membership's current server-side access level."""
+    from app.api.tenant import TenantContext, get_tenant_context
 
     def dependency(
-        current_user: AuthenticatedUser = Depends(get_current_user),
+        tenant: TenantContext = Depends(get_tenant_context),
     ) -> AuthenticatedUser:
-        if current_user.access_level < minimum:
+        if tenant.user.access_level < minimum:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
             )
-        return current_user
+        return tenant.user
 
     return dependency

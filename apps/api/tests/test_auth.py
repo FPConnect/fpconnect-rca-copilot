@@ -13,6 +13,7 @@ from app.core.database import Base, get_db
 from app.core.security import hash_password, verify_password
 from app.main import app
 from app.models.user import User
+from app.models.organization import Organization, OrganizationMembership
 
 # Use an in-memory SQLite database for tests
 TEST_DB_URL = "sqlite:///./test.db"
@@ -35,7 +36,11 @@ app.dependency_overrides[get_db] = override_get_db
 @pytest.fixture(autouse=True)
 def setup_db():
     Base.metadata.create_all(bind=engine)
+    with TestingSessionLocal.begin() as db:
+        db.add(Organization(id=1, slug="test", name="Test"))
+    client.headers["X-Organization-Id"] = "1"
     yield
+    client.headers.pop("X-Organization-Id", None)
     Base.metadata.drop_all(bind=engine)
 
 
@@ -372,15 +377,16 @@ def test_register_with_invalid_verification_code_fails():
 def _create_privileged_user(email: str, role: str, access_level: int) -> str:
     password = "SecurePass123!"
     db = TestingSessionLocal()
-    db.add(
-        User(
+    user = User(
             email=email,
             hashed_password=hash_password(password),
             role=role,
             access_level=access_level,
             is_active=True,
-        )
     )
+    db.add(user)
+    db.flush()
+    db.add(OrganizationMembership(user_id=user.id, organization_id=1, role=role))
     db.commit()
     db.close()
     response = client.post("/auth/login", json={"email": email, "password": password})
@@ -462,7 +468,7 @@ def test_manager_cannot_access_user_administration_or_inject_access_level():
     assert injected.status_code == 422
 
 
-def test_deactivation_revokes_existing_tokens_and_blocks_login():
+def test_deactivation_revokes_membership_without_disabling_identity():
     master_token = _create_privileged_user("master@example.com", "master", 5)
     user_password = "UserSecure123!"
     created = client.post(
@@ -485,20 +491,20 @@ def test_deactivation_revokes_existing_tokens_and_blocks_login():
     assert deactivated.json()["is_active"] is False
     assert (
         client.get(
-            "/auth/me", headers={"Authorization": f"Bearer {user_token}"}
+            "/machines/", headers={"Authorization": f"Bearer {user_token}"}
         ).status_code
-        == 401
+        == 403
     )
     assert (
         client.post(
             "/auth/login",
             json={"email": "user@example.com", "password": user_password},
         ).status_code
-        == 401
+        == 200
     )
 
 
-def test_role_change_recalculates_level_and_revokes_old_token():
+def test_role_change_recalculates_level_for_existing_token():
     master_token = _create_privileged_user("master@example.com", "master", 5)
     admin_token = _create_privileged_user("admin@example.com", "admin", 4)
     db = TestingSessionLocal()
@@ -519,7 +525,7 @@ def test_role_change_recalculates_level_and_revokes_old_token():
         client.get(
             "/users", headers={"Authorization": f"Bearer {admin_token}"}
         ).status_code
-        == 401
+        == 403
     )
 
 

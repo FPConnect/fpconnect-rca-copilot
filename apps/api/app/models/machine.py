@@ -1,6 +1,6 @@
 """Machine ORM model."""
 
-from sqlalchemy import Column, DateTime, Enum, Integer, String, func
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String, func
 
 from app.core.base import Base
 
@@ -11,6 +11,8 @@ class Machine(Base):
     __tablename__ = "machines"
 
     id = Column(Integer, primary_key=True, index=True)
+    # NULL is quarantined: legacy ownership must be explicitly mapped.
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True, index=True)
     code = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
     location = Column(String, nullable=False)

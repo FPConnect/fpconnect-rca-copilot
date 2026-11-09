@@ -51,7 +51,7 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("S3_BUCKET_NAME", "MINIO_BUCKET"),
     )
     s3_region: str = "us-east-1"
-    s3_presigned_url_expire_seconds: int = 3600
+    s3_presigned_url_expire_seconds: int = Field(default=3600, ge=1, le=3600)
     max_upload_size_bytes: int = 5 * 1024 * 1024
 
     @model_validator(mode="after")

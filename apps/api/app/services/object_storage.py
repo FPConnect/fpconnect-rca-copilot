@@ -36,10 +36,10 @@ def ensure_bucket_exists() -> None:
         client.create_bucket(Bucket=settings.s3_bucket_name)
 
 
-def build_ticket_attachment_key(ticket_id: int, filename: str) -> str:
+def build_ticket_attachment_key(organization_id: int, ticket_id: int, filename: str) -> str:
     """Build a collision-resistant object key for a ticket attachment."""
     safe_filename = filename.replace("/", "_").replace("\\", "_") or "attachment"
-    return f"tickets/{ticket_id}/images/{uuid4().hex}-{safe_filename}"
+    return f"organizations/{organization_id}/tickets/{ticket_id}/images/{uuid4().hex}-{safe_filename}"
 
 
 def upload_file_object(*, object_key: str, body: bytes, content_type: str) -> str:
