@@ -70,11 +70,25 @@ const copy = {
         description: "Organize prioridades, playbooks e decisões sem substituir validações técnicas ou manutenção.",
       },
     ],
-    evidenceTitle: "Demonstração não é resultado medido.",
-    evidenceText:
-      "A demonstração usa dados ilustrativos. O piloto valida o uso com uma amostra autorizada da operação. Um resultado só é apresentado como medido quando período, amostra, cálculo e autorização estão documentados.",
-    privacyText:
-      "Não envie identificação de pacientes, credenciais ou informações confidenciais de terceiros. Canal, acesso e retenção são definidos antes de qualquer compartilhamento.",
+    pilotEyebrow: "Piloto de indicadores",
+    pilotTitle: "O que sua equipe pode aprender com uma amostra de OS",
+    pilotIntro:
+      "Com até 300 ordens de serviço de uma fonte, equipe ou linha, o piloto organiza os registros disponíveis em um dashboard e uma triagem estruturada para apoiar a revisão da operação.",
+    pilotOutcomes: [
+      {
+        title: "Volume, idade e fluxo",
+        description: "Observe como os registros se distribuem por período, fila e tempo de ciclo, quando esses campos estão disponíveis.",
+      },
+      {
+        title: "Qualidade do histórico",
+        description: "Identifique campos ausentes ou inconsistências que limitam a leitura dos indicadores na amostra.",
+      },
+      {
+        title: "Prioridades para revisão",
+        description: "Reúna recorrências e hipóteses com contexto para a equipe técnica confirmar próximos passos.",
+      },
+    ],
+    pilotCta: "Conhecer o diagnóstico de entrada",
     processTitle: "Do dado disponível à decisão revisada",
     process: [
       { number: "01", title: "Definir", text: "Confirmamos objetivo, fonte, amostra, acessos e critérios de aceite." },
@@ -156,11 +170,25 @@ const copy = {
         description: "Organize priorities, playbooks and decisions without replacing technical validation or maintenance.",
       },
     ],
-    evidenceTitle: "A demonstration is not a measured result.",
-    evidenceText:
-      "The demonstration uses illustrative data. A pilot validates use with an authorized operational sample. Results are only presented as measured when the period, sample, calculation and authorization are documented.",
-    privacyText:
-      "Do not send patient identifiers, credentials or third-party confidential information. Transfer channel, access and retention are defined before any data is shared.",
+    pilotEyebrow: "Metrics pilot",
+    pilotTitle: "What your team can learn from a service-order sample",
+    pilotIntro:
+      "Using up to 300 service orders from one source, team or line, the pilot organizes available records into a dashboard and structured triage to support operational review.",
+    pilotOutcomes: [
+      {
+        title: "Volume, age and flow",
+        description: "Review how records are distributed over time, across queues and by cycle time when those fields are available.",
+      },
+      {
+        title: "History quality",
+        description: "Identify missing fields or inconsistencies that limit how indicators in the sample can be interpreted.",
+      },
+      {
+        title: "Priorities for review",
+        description: "Bring recurring issues and contextualized hypotheses together for the technical team to validate next steps.",
+      },
+    ],
+    pilotCta: "Explore the entry diagnostic",
     processTitle: "From available data to reviewed decisions",
     process: [
       { number: "01", title: "Define", text: "We confirm the objective, source, sample, access and acceptance criteria." },
@@ -377,16 +405,29 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="bg-[#071a33] py-14 text-white">
-        <div className="mx-auto grid max-w-[1280px] gap-8 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
-          <div data-motion>
+      <section className="bg-[#071a33] py-14 text-white" aria-labelledby="pilot-learning-heading">
+        <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
+          <div data-motion className="max-w-3xl">
             <BarChart3 size={34} className="text-[#22d7cf]" aria-hidden="true" />
-            <h2 className="mt-5 text-3xl font-black leading-tight">{t.evidenceTitle}</h2>
+            <p className="mt-5 text-sm font-black uppercase tracking-wide text-[#66efe5]">{t.pilotEyebrow}</p>
+            <h2 id="pilot-learning-heading" className="mt-3 text-3xl font-black leading-tight">{t.pilotTitle}</h2>
+            <p className="mt-4 text-lg leading-8 text-slate-100">{t.pilotIntro}</p>
           </div>
-          <div data-motion className="border-l border-slate-600 pl-6">
-            <p className="text-lg leading-8 text-slate-100">{t.evidenceText}</p>
-            <p className="mt-4 text-sm leading-6 text-slate-300">{t.privacyText}</p>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {t.pilotOutcomes.map((outcome, index) => (
+              <article key={outcome.title} data-motion className="rounded-lg border border-slate-600 bg-white/5 p-6" style={{ transitionDelay: `${index * 80}ms` }}>
+                <h3 className="text-lg font-black text-white">{outcome.title}</h3>
+                <p className="mt-3 leading-7 text-slate-200">{outcome.description}</p>
+              </article>
+            ))}
           </div>
+          <Link
+            href="/diagnostic"
+            className="motion-arrow motion-lift mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#18c8c0] px-6 font-black text-[#071a3d] transition hover:bg-[#39ddd5]"
+          >
+            {t.pilotCta}
+            <ArrowRight size={18} aria-hidden="true" />
+          </Link>
         </div>
       </section>
 

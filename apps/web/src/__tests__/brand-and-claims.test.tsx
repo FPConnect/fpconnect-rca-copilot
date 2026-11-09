@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import LandingPage from "@/app/page";
+import DemonstracaoPage from "@/app/demonstracao/page";
 import { StrategicMoatsContent } from "@/app/strategic-moats/page";
 import { DashboardContent } from "@/app/dashboard/page";
 import MetricsPage from "@/app/metrics/page";
@@ -68,6 +69,36 @@ describe("display name and commercial claims", () => {
     expect(screen.getByAltText("OPSPECTA - Operational intelligence for healthcare"))
       .toBeInTheDocument();
     expect(screen.queryByText(/per month/i)).not.toBeInTheDocument();
+  });
+
+  it("explains pilot value in both locales and directs visitors to the diagnostic flow", () => {
+    render(<LandingPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Português" }));
+
+    expect(screen.getByRole("heading", {
+      level: 2,
+      name: "O que sua equipe pode aprender com uma amostra de OS",
+    })).toBeInTheDocument();
+    expect(screen.getByText(/dashboard e uma triagem estruturada/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Conhecer o diagnóstico de entrada" })).toHaveAttribute("href", "/diagnostic");
+    expect(screen.queryByText("Demonstração não é resultado medido.")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "English" }));
+
+    expect(screen.getByRole("heading", {
+      level: 2,
+      name: "What your team can learn from a service-order sample",
+    })).toBeInTheDocument();
+    expect(screen.getByText(/dashboard and structured triage/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Explore the entry diagnostic" })).toHaveAttribute("href", "/diagnostic");
+    expect(screen.queryByText("A demonstration is not a measured result.")).not.toBeInTheDocument();
+  });
+
+  it("keeps the illustrative-data and privacy caveats on the detailed demonstration page", () => {
+    render(<DemonstracaoPage />);
+
+    expect(screen.getByText(/Não representa dados reais, funcionalidade automatizada em produção nem resultado entregue a clientes/)).toBeInTheDocument();
+    expect(screen.getByText(/Não envie registros sensíveis por canais públicos/)).toBeInTheDocument();
   });
 
   it("calculates an illustrative scenario from explicit premises", () => {
