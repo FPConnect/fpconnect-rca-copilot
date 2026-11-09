@@ -1,5 +1,84 @@
 # Mobile App (Expo)
 
+## Prototype limitations and setup
+
+This app is not approved for customer or patient information. The baseline API
+does not implement tenant isolation; the separate tenant-foundation branch scopes
+machines and disables other customer operations pending further work. Regulatory,
+backup/restore and device/release validation gates remain open. Stored equipment
+status is not verified live telemetry.
+
+Set `EXPO_PUBLIC_API_URL` to the HTTPS origin of a reachable test API **before**
+starting Expo (for example `$env:EXPO_PUBLIC_API_URL="https://test.example"` in
+PowerShell). There is deliberately no localhost or HTTP fallback; use a trusted
+HTTPS development endpoint and test-only data. Expo public variables are bundled
+into the client, so never put secrets in them.
+
+Native sign-in calls `/auth/login`, verifies `/auth/me`, and stores the access and
+refresh token pair together in Expo SecureStore. On launch it verifies the saved
+session. A 401 triggers one refresh and at most one retry of the rejected
+request; concurrent refreshes share one exchange. A rejected/expired refresh
+requires sign-in again. Transient errors retain the saved session. Older
+access-only sessions can be used until their access token expires. Sessions use
+separate secure-storage slots: sign-out does not wait for a pending network
+refresh, and an obsolete refresh write cannot overwrite a subsequent session.
+Legacy offline draft keys are not changed during session migration or sign-out.
+
+The current backend issues a new refresh token but does **not** invalidate the
+old one during refresh; client replacement is not server-side replay protection.
+Sign-out removes local tokens but does not revoke them at the server. Web sign-in
+is disabled because this secure storage path is native-only.
+
+The tenant-foundation backend exposes `GET /auth/organizations` and
+`POST /auth/select-organization`. After sign-in or restart, explicitly select
+an active organization; switching revalidates the new selection. Every
+organization-scoped request includes `X-Organization-Id`, including after
+refresh. A 403 does not automatically retry with another organization.
+The separate backend branch is still under development; most customer endpoints,
+including tickets, return 503 until secured. The app disables ticket creation.
+Do not treat this client as evidence of isolation or use customer data. If
+secure-token removal fails, retry it from the sign-in screen; do not clear app
+data as a workaround if legacy drafts must be preserved.
+
+Ticket creation is currently disabled in the UI. The service intended for a
+future scoped backend is online-only and requires access level 2. A durable, non-sensitive
+local marker is written before submission and retained even after a successful
+response, so a crash before the user sees the result cannot invite a duplicate.
+After every submission, verify the server list and acknowledge the warning before
+creating another. A network failure, 5xx, invalid success response, interrupted
+app, or other ambiguous response likewise leaves creation blocked; contact an
+administrator if necessary. A manual acknowledgement does not prove a ticket
+was or was not created.
+There is no server idempotency key or automatic retry after ambiguous ticket
+failures; a 401 rejected by the backend authentication dependency may be retried
+once after refresh. Existing legacy offline
+drafts remain in their previous unencrypted AsyncStorage keys, are not displayed,
+sent or deleted, and require a separately designed secure recovery/migration
+before offline functionality can return. Do not clear application data if those
+drafts are needed. The dashboard covers only the first 100 visible tickets.
+
+`npm test` executes service tests and fails if the test file is absent. It does
+not replace device, UI, secure-storage or end-to-end testing. On 2026-11-09,
+`npm audit --omit=dev` with Expo 54.0.38 and expo-router 6.0.24 reported
+6 high, 16 moderate and 1 low advisories.
+The existing CI critical-only threshold does not block high findings; SDK-major
+upgrades require a separate compatibility and security review.
+
+On 2026-11-09 a non-forced `npm audit fix` was tested: production findings fell
+to 5 high, 15 moderate and 1 low, while Expo Doctor, typecheck and 24 service
+tests passed. The attempted lockfile changes were restored because high
+advisories remained and npm proposed breaking Expo changes for some of them.
+The restored lockfile again reports 6 high, 16 moderate and 1 low. The attempt
+updated `fast-uri` 3.1.8→3.1.9, `glob` 13.0.6→13.0.7 and `node-forge`
+1.4.0→1.4.3, and relocated Expo CLI dependencies with `semver` and `ws`
+updates; `package.json` was unchanged.
+
+Before release, review the affected dependency paths and runtime exposure, check
+for supported upstream patches, and plan an Expo SDK upgrade with device and
+release-build regression tests if needed. Resolve or formally accept remaining
+advisories under the project's security policy; do not treat the current
+critical-only CI threshold as clearance of high findings.
+
 ## Testing on a physical device (Android or iOS)
 
 ### Prerequisites
