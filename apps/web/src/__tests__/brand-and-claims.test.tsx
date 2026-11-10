@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import LandingPage from "@/app/page";
+import DiagnosticPage from "@/app/diagnostic/page";
 import DemonstracaoPage from "@/app/demonstracao/page";
 import { StrategicMoatsContent } from "@/app/strategic-moats/page";
 import { DashboardContent } from "@/app/dashboard/page";
@@ -40,6 +41,11 @@ describe("display name and commercial claims", () => {
     expect(document.querySelector("[data-brand-banner]")).toBeInTheDocument();
     expect(document.querySelector("[data-brand-banner] img"))
       .toHaveAttribute("src", expect.stringContaining("opspecta-brand-banner.jpg"));
+    const heroContent = screen.getByRole("heading", { level: 1 }).parentElement;
+    const heroImage = screen.getByAltText("Profissional de tecnologia em saúde analisando indicadores operacionais anonimizados").closest("[data-motion]");
+    expect(heroContent?.parentElement).toBe(heroImage?.parentElement);
+    expect(heroContent?.parentElement).toHaveClass("lg:grid-cols-[1.05fr_0.95fr]");
+    expect(screen.getByRole("link", { name: /Acessar plataforma/ })).toHaveAttribute("href", "/login");
   });
 
   it("shows the source-aligned offers in Portuguese and English", () => {
@@ -92,6 +98,17 @@ describe("display name and commercial claims", () => {
     expect(screen.getByText(/dashboard and structured triage/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Explore the entry diagnostic" })).toHaveAttribute("href", "/diagnostic");
     expect(screen.queryByText("A demonstration is not a measured result.")).not.toBeInTheDocument();
+  });
+
+  it("uses the same language preference for the diagnostic content and brand", () => {
+    render(<DiagnosticPage />);
+    fireEvent.click(screen.getByRole("button", { name: "EN" }));
+    expect(screen.getByRole("heading", { name: "Find failure patterns before spending more on maintenance." })).toBeInTheDocument();
+    expect(screen.getAllByLabelText("OPSPECTA - Operational intelligence for healthcare").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "EN" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: "PT" }));
+    expect(screen.getByRole("heading", { name: "Encontre padrões de falha antes de investir em mais manutenção." })).toBeInTheDocument();
+    expect(screen.getAllByLabelText("OPSPECTA - Inteligência operacional para a saúde").length).toBeGreaterThan(0);
   });
 
   it("keeps the illustrative-data and privacy caveats on the detailed demonstration page", () => {

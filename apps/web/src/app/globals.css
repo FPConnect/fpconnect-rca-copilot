@@ -48,6 +48,71 @@ body {
   overflow-x: hidden;
 }
 
+.landing-hero {
+  background-image: radial-gradient(ellipse at 82% 30%, #154c55 0%, #07172c 52%);
+}
+
+.landing-orbits span {
+  position: absolute;
+  top: -14rem;
+  right: -14rem;
+  width: 52rem;
+  height: 52rem;
+  border: 1px solid rgb(140 231 220 / 12%);
+  border-radius: 50%;
+}
+
+.landing-orbits span:nth-child(2) {
+  inset: -9rem -9rem auto auto;
+  width: 42rem;
+  height: 42rem;
+}
+
+.landing-orbits span:nth-child(3) {
+  inset: -4rem -4rem auto auto;
+  width: 32rem;
+  height: 32rem;
+}
+
+.landing-image {
+  box-shadow: 0 30px 90px rgb(0 0 0 / 24%);
+}
+
+.landing-pilot {
+  background-image: radial-gradient(ellipse at 100% 0%, #154c55 0%, #07172c 55%);
+}
+
+.marketing-page {
+  background-color: #f5f8f7;
+}
+
+.marketing-page > header {
+  border-color: #e0ebe8;
+}
+
+.marketing-hero {
+  background-image:
+    repeating-radial-gradient(circle at 88% 20%, transparent 0 70px, rgb(140 231 220 / 10%) 71px 72px),
+    radial-gradient(ellipse at 95% 0%, #155058, #07172c 60%);
+}
+
+.marketing-page .marketing-resource-hero {
+  background-image: radial-gradient(ellipse at 95% 0%, #def5ee, #ffffff 55%);
+}
+
+.marketing-page :where(h1, h2, h3) {
+  letter-spacing: -0.025em;
+}
+
+.marketing-page article {
+  border-radius: 1rem;
+}
+
+.brand-surface :where(a, button, input):focus-visible {
+  outline: 3px solid #0a827b;
+  outline-offset: 3px;
+}
+
 /* Dark-mode utilities are scoped to the authenticated product surface. */
 html.dark .app-theme {
   background-color: #1f2937;

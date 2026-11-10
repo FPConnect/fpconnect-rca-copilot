@@ -53,7 +53,7 @@ const checklist = [
 
 export default function RecursosPage() {
   return (
-    <main className="min-h-screen bg-[#f4f8fa] text-[#071a3d]">
+    <main className="brand-surface marketing-page min-h-screen bg-[#f4f8fa] text-[#071a3d]">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1080px] flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
           <Link href="/" aria-label="Voltar à página inicial da OPSPECTA">
@@ -66,7 +66,7 @@ export default function RecursosPage() {
         </div>
       </header>
 
-      <section className="bg-white px-5 py-14 sm:px-8">
+      <section className="marketing-resource-hero bg-white px-5 py-14 sm:px-8">
         <div className="mx-auto max-w-[1080px]">
           <div className="inline-flex items-center gap-2 rounded-full border border-[#18c8c0] bg-[#e8fbf9] px-4 py-2 text-sm font-bold text-[#075c63]">
             <ClipboardCheck size={17} aria-hidden="true" />
@@ -117,7 +117,7 @@ export default function RecursosPage() {
         </div>
       </section>
 
-      <section className="bg-[#071a3d] px-5 py-14 text-white sm:px-8">
+      <section className="marketing-hero bg-[#071a3d] px-5 py-14 text-white sm:px-8">
         <div className="mx-auto flex max-w-[1080px] flex-col items-start gap-5 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2 text-[#43e2d9]"><ShieldCheck size={19} aria-hidden="true" /><span className="text-sm font-bold uppercase">Próximo passo</span></div>
