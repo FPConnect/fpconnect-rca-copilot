@@ -97,6 +97,11 @@ npm test
 make test-mobile
 ```
 
+The current `npm test` script is a placeholder that prints `No tests yet` and
+exits successfully. It does not execute behavioral tests. See
+[`docs/mobile/OPSPECTA_MOBILE_AUDIT_2026.md`](../../docs/mobile/OPSPECTA_MOBILE_AUDIT_2026.md)
+for the audit findings and release-readiness gaps.
+
 ## Manual reset only
 
 ```bash

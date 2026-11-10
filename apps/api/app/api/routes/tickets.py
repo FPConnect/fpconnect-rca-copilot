@@ -29,7 +29,10 @@ from app.schemas.ticket import (
     TicketResponse,
     TicketUpdate,
 )
-from app.services.analyze_service import analyze_ticket
+from app.services.analyze_service import (
+    SemanticSearchUnavailableError,
+    analyze_ticket,
+)
 from app.services.object_storage import (
     build_ticket_attachment_key,
     create_presigned_get_url,
@@ -129,7 +132,18 @@ def analyze_existing_ticket(
 ):
     """Run RCA analysis on a ticket and return suggestions."""
     ticket = _authorized_ticket(db, ticket_id, current_user)
-    suggestions = analyze_ticket(db, ticket, request)
+    try:
+        suggestions = analyze_ticket(db, ticket, request)
+    except SemanticSearchUnavailableError as exc:
+        detail = (
+            "Semantic search is not configured in this deployment"
+            if request.language == "en-US"
+            else "A busca semântica não está configurada nesta implantação"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=detail,
+        ) from exc
     return AnalyzeTicketResponse(ticket_id=ticket_id, suggestions=suggestions)
 
 
