@@ -1,20 +1,15 @@
 import { Tabs } from "expo-router";
-import { TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { SessionProvider } from "../src/services/SessionProvider";
 
 export default function RootLayout() {
   return (
-    <Tabs
+    <SessionProvider><Tabs
       screenOptions={{
         headerShown: true,
         headerStyle: { backgroundColor: "#2563eb" },
         headerTintColor: "#ffffff",
         headerTitleStyle: { fontWeight: "700", fontSize: 17 },
-        headerRight: () => (
-          <TouchableOpacity style={{ marginRight: 16 }}>
-            <Ionicons name="notifications-outline" size={22} color="#ffffff" />
-          </TouchableOpacity>
-        ),
         tabBarStyle: {
           backgroundColor: "#ffffff",
           borderTopColor: "#e5e7eb",
@@ -62,6 +57,6 @@ export default function RootLayout() {
           ),
         }}
       />
-    </Tabs>
+    </Tabs></SessionProvider>
   );
 }

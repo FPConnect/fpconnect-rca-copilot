@@ -112,7 +112,9 @@ enable it outside a disposable local development database.
 
 ## Mobile App (React Native / Expo)
 
-The project includes a full React Native mobile app under `apps/mobile`.
+The Expo app under `apps/mobile` is a prototype, not approved for customer or
+patient data. Tenant isolation changes require independent review and PostgreSQL
+rehearsal; regulatory and backup/restore gates remain open. See [mobile limitations](apps/mobile/README.md).
 
 ### Prerequisites
 
@@ -139,17 +141,17 @@ To target a specific platform:
 ```bash
 npm run android   # open in Android emulator / connected device
 npm run ios       # open in iOS simulator (macOS only)
-npm run web       # open in browser (Expo Web)
+npm run web       # preview only; secure sign-in is unavailable on web
 ```
 
 ### Mobile screens
 
 | Screen | Description |
 |---|---|
-| Dashboard | Summary metrics and recent activity feed |
-| Machines | Live list of medical equipment with status badges |
-| Tickets | Create and search maintenance tickets |
-| Settings | User profile, appearance, and notification preferences |
+| Dashboard | Counts from the first 100 tickets visible to the selected membership |
+| Machines | Organization-scoped on the in-progress tenant backend; not live telemetry |
+| Tickets | Scoped server list and online creation for permitted memberships; no offline sync |
+| Settings | Read-only account, organization switch and sign-out |
 
 ## Environment Variables
 

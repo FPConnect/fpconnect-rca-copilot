@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -20,6 +20,7 @@ from app.api.routes import (
     tickets,
     users,
 )
+from app.api.tenant import get_tenant_context
 from app.core.config import settings
 from app.core.base import Base
 from app.core.database import SessionLocal, engine
@@ -93,7 +94,7 @@ app.add_middleware(
     allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "X-Organization-Id"],
 )
 
 # Routers
@@ -103,10 +104,15 @@ app.include_router(machines.router, prefix="/machines", tags=["machines"])
 app.include_router(
     notifications.router, prefix="/notifications", tags=["notifications"]
 )
-app.include_router(analyze.router, prefix="/analyze", tags=["clinical-diagnosis"])
+app.include_router(
+    analyze.router, prefix="/analyze", tags=["clinical-diagnosis"]
+)
 app.include_router(playbooks.router, prefix="/playbooks", tags=["playbooks"])
 app.include_router(contracts.router, prefix="/contracts", tags=["contracts"])
-app.include_router(enterprise.router, prefix="/enterprise", tags=["enterprise"])
+app.include_router(
+    enterprise.router, prefix="/enterprise", tags=["enterprise"],
+    dependencies=[Depends(get_tenant_context)],
+)
 app.include_router(users.router, prefix="/users", tags=["users"])
 
 

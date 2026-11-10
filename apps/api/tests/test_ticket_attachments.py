@@ -11,6 +11,8 @@ from sqlalchemy.orm import sessionmaker
 from app.api.routes import tickets as ticket_routes
 from app.core.database import Base, get_db
 from app.main import app
+from app.models.organization import Organization, OrganizationMembership
+from app.models.user import User
 
 TEST_DB_URL = "sqlite:///./test_attachments.db"
 
@@ -38,6 +40,9 @@ def setup_db(monkeypatch):
     previous_override = app.dependency_overrides.get(get_db)
     app.dependency_overrides[get_db] = override_get_db
     Base.metadata.create_all(bind=engine)
+    with TestingSessionLocal.begin() as db:
+        db.add(Organization(id=1, slug="test", name="Test"))
+    client.headers["X-Organization-Id"] = "1"
     monkeypatch.setattr(ticket_routes, "upload_file_object", lambda **kwargs: kwargs["object_key"])
     monkeypatch.setattr(
         ticket_routes,
@@ -45,6 +50,7 @@ def setup_db(monkeypatch):
         lambda object_key: f"https://storage.test/{object_key}",
     )
     yield
+    client.headers.pop("X-Organization-Id", None)
     Base.metadata.drop_all(bind=engine)
     if previous_override is None:
         app.dependency_overrides.pop(get_db, None)
@@ -55,6 +61,9 @@ def setup_db(monkeypatch):
 def auth_headers(email: str = "upload@example.com") -> dict[str, str]:
     credentials = {"email": email, "password": "SecurePass123!"}
     client.post("/auth/register", json=credentials)
+    with TestingSessionLocal.begin() as db:
+        user = db.query(User).filter_by(email=email).one()
+        db.add(OrganizationMembership(user_id=user.id, organization_id=1, role="user"))
     response = client.post("/auth/login", json=credentials)
     return {"Authorization": f"Bearer {response.json()['access_token']}"}
 
@@ -85,7 +94,7 @@ def test_upload_ticket_image_success():
     assert data["filename"] == "pump.png"
     assert data["content_type"] == "image/png"
     assert data["size_bytes"] == len(PNG_BYTES)
-    assert data["download_url"].startswith("https://storage.test/tickets/")
+    assert data["download_url"].startswith("https://storage.test/organizations/1/tickets/")
 
 
 def test_upload_ticket_image_rejects_non_image():

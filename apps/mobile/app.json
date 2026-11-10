@@ -31,7 +31,8 @@
       "expo-router",
       "expo-dev-client",
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      "expo-secure-store"
     ]
   }
 }

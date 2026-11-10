@@ -18,26 +18,29 @@ def get_model():
     return SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
 
-def get_root_cause_analysis(db: Session, description: str):
+def get_root_cause_analysis(db: Session, description: str, organization_id: int):
     """Return top matching KB articles by embedding similarity."""
     vector = get_model().encode(description).tolist()
     query = text(
         """
         SELECT title, content, 1 - (embedding <=> :v) as similarity
         FROM kb_articles
-        WHERE embedding IS NOT NULL
+        WHERE organization_id = :organization_id
+          AND embedding IS NOT NULL
           AND 1 - (embedding <=> :v) > 0.7
         ORDER BY similarity DESC
         LIMIT 3
     """
     )
-    return db.execute(query, {"v": str(vector)}).fetchall()
+    return db.execute(query, {"v": str(vector), "organization_id": organization_id}).fetchall()
 
 
 def analyze_ticket(
     db: Session, ticket: Ticket, request: AnalyzeTicketRequest
 ) -> List[RCASuggestionResponse]:
     """Generate RCA suggestions for a ticket using semantic KB search."""
+    if ticket.organization_id is None:
+        raise ValueError("Cannot analyze a ticket without an organization")
     description = " ".join(
         filter(
             None,
@@ -65,7 +68,13 @@ def analyze_ticket(
         ]
 
     try:
-        rows = get_root_cause_analysis(db, description)
+        if db is None:
+            rows = get_root_cause_analysis(db, description, ticket.organization_id)
+        else:
+            # A PostgreSQL query failure must not poison the caller's transaction,
+            # which may subsequently persist the analysis audit event.
+            with db.begin_nested():
+                rows = get_root_cause_analysis(db, description, ticket.organization_id)
     except Exception:
         rows = []
 

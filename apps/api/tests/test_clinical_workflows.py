@@ -12,6 +12,7 @@ from app.core.database import Base, get_db
 from app.main import app
 from app.models.machine import Machine
 from app.models.user import User
+from app.models.organization import Organization, OrganizationMembership
 from app.core.security import hash_password
 from app.services.clinical_metrics import calculate_equipment_criticality
 from app.services.equipment_report import normalize_criticality
@@ -40,6 +41,9 @@ def setup_db(monkeypatch):
     previous_override = app.dependency_overrides.get(get_db)
     app.dependency_overrides[get_db] = override_get_db
     Base.metadata.create_all(bind=engine)
+    with TestingSessionLocal.begin() as db:
+        db.add(Organization(id=1, slug="test", name="Test"))
+    client.headers["X-Organization-Id"] = "1"
     monkeypatch.setattr(
         analyze_routes,
         "analyze_ticket",
@@ -52,6 +56,7 @@ def setup_db(monkeypatch):
         ],
     )
     yield
+    client.headers.pop("X-Organization-Id", None)
     Base.metadata.drop_all(bind=engine)
     if previous_override is None:
         app.dependency_overrides.pop(get_db, None)
@@ -62,14 +67,15 @@ def setup_db(monkeypatch):
 def auth_headers() -> dict[str, str]:
     credentials = {"email": "clinical@example.com", "password": "SecurePass123!"}
     db = TestingSessionLocal()
-    db.add(
-        User(
+    user = User(
             email=credentials["email"],
             hashed_password=hash_password(credentials["password"]),
             role="manager",
             access_level=3,
-        )
     )
+    db.add(user)
+    db.flush()
+    db.add(OrganizationMembership(user_id=user.id, organization_id=1, role="manager"))
     db.commit()
     db.close()
     response = client.post("/auth/login", json=credentials)
@@ -77,6 +83,9 @@ def auth_headers() -> dict[str, str]:
 
 
 def create_incident(headers: dict[str, str]) -> int:
+    with TestingSessionLocal.begin() as db:
+        db.add(Machine(organization_id=1, code="ECG-02", name="ECG",
+                       location="UTI", type="monitoring"))
     response = client.post(
         "/tickets/",
         json={
@@ -202,9 +211,9 @@ def test_confirmation_rejects_absent_attestation_or_sensitive_evidence_reference
 
 def test_analyze_fallback_honors_english_language(monkeypatch):
     monkeypatch.setattr(
-        analyze_service, "get_root_cause_analysis", lambda db, description: []
+        analyze_service, "get_root_cause_analysis", lambda db, description, organization_id: []
     )
-    ticket = SimpleNamespace(title="Synthetic monitor fault", description=None)
+    ticket = SimpleNamespace(title="Synthetic monitor fault", description=None, organization_id=1)
 
     suggestions = analyze_service.analyze_ticket(
         None,
@@ -271,6 +280,7 @@ def test_machine_schema_includes_clinical_fields():
     db = TestingSessionLocal()
     db.add(
         Machine(
+            organization_id=1,
             code="AUTO-01",
             name="Autoclave",
             model="Steris 400",
@@ -297,6 +307,7 @@ def test_equipment_report_is_generated_from_persisted_records():
     db = TestingSessionLocal()
     db.add(
         Machine(
+            organization_id=1,
             code="REPORT-01",
             name="Ventilador <QA> & teste",
             model="QA 2026",

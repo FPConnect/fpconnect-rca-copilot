@@ -71,6 +71,10 @@ def ensure_seed_data(db: Session) -> None:
     db.commit()
 
 
-def get_machines(db: Session):
-    ensure_seed_data(db)
-    return db.query(Machine).order_by(Machine.code.asc()).all()
+def get_machines(db: Session, organization_id: int):
+    return (
+        db.query(Machine)
+        .filter(Machine.organization_id == organization_id)
+        .order_by(Machine.code.asc())
+        .all()
+    )

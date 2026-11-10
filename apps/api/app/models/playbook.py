@@ -1,6 +1,6 @@
 """Playbook and SLA/contract ORM models for clinical engineering workflows."""
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text, func
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text, func
 
 from app.core.base import Base
 
@@ -11,6 +11,7 @@ class Playbook(Base):
     __tablename__ = "playbooks"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True, index=True)
     title = Column(String, nullable=False)
     equipment = Column(String, nullable=False)
     steps = Column(Text, nullable=False)
@@ -25,6 +26,7 @@ class SLAContract(Base):
     __tablename__ = "sla_contracts"
 
     id = Column(Integer, primary_key=True, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id"), nullable=True, index=True)
     equipment = Column(String, nullable=False)
     vendor = Column(String, nullable=False)
     response_time_hours = Column(Integer, nullable=False)

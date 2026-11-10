@@ -10,23 +10,24 @@ from app.schemas.ticket import TicketCreate, TicketUpdate
 
 def get_tickets(
     db: Session,
+    organization_id: int,
     skip: int = 0,
     limit: int = 100,
     creator_id: int | None = None,
 ) -> List[Ticket]:
     """Retrieve a paginated list, optionally scoped to one creator."""
-    query = db.query(Ticket)
+    query = db.query(Ticket).filter(Ticket.organization_id == organization_id)
     if creator_id is not None:
         query = query.filter(Ticket.creator_id == creator_id)
     return query.offset(skip).limit(limit).all()
 
 
-def get_ticket_by_id(db: Session, ticket_id: int) -> Optional[Ticket]:
+def get_ticket_by_id(db: Session, ticket_id: int, organization_id: int) -> Optional[Ticket]:
     """Retrieve a single ticket by ID."""
-    return db.query(Ticket).filter(Ticket.id == ticket_id).first()
+    return db.query(Ticket).filter(Ticket.id == ticket_id, Ticket.organization_id == organization_id).first()
 
 
-def create_ticket(db: Session, ticket_data: TicketCreate, creator_id: int) -> Ticket:
+def create_ticket(db: Session, ticket_data: TicketCreate, creator_id: int, organization_id: int) -> Ticket:
     """Create a new ticket."""
     db_ticket = Ticket(
         title=ticket_data.title,
@@ -35,6 +36,7 @@ def create_ticket(db: Session, ticket_data: TicketCreate, creator_id: int) -> Ti
         device_id=ticket_data.device_id,
         location=ticket_data.location,
         creator_id=creator_id,
+        organization_id=organization_id,
     )
     db.add(db_ticket)
     db.commit()
@@ -43,10 +45,10 @@ def create_ticket(db: Session, ticket_data: TicketCreate, creator_id: int) -> Ti
 
 
 def update_ticket(
-    db: Session, ticket_id: int, ticket_data: TicketUpdate
+    db: Session, ticket_id: int, ticket_data: TicketUpdate, organization_id: int
 ) -> Optional[Ticket]:
     """Update an existing ticket."""
-    db_ticket = get_ticket_by_id(db, ticket_id)
+    db_ticket = get_ticket_by_id(db, ticket_id, organization_id)
     if not db_ticket:
         return None
     update_data = ticket_data.model_dump(exclude_unset=True)
@@ -57,9 +59,9 @@ def update_ticket(
     return db_ticket
 
 
-def delete_ticket(db: Session, ticket_id: int) -> bool:
+def delete_ticket(db: Session, ticket_id: int, organization_id: int) -> bool:
     """Delete a ticket by ID. Returns True if deleted, False if not found."""
-    db_ticket = get_ticket_by_id(db, ticket_id)
+    db_ticket = get_ticket_by_id(db, ticket_id, organization_id)
     if not db_ticket:
         return False
     db.delete(db_ticket)
@@ -71,6 +73,7 @@ def create_ticket_attachment(
     db: Session,
     *,
     ticket_id: int,
+    organization_id: int,
     uploader_id: int,
     object_key: str,
     filename: str,
@@ -80,6 +83,7 @@ def create_ticket_attachment(
     """Persist metadata for an uploaded ticket attachment."""
     db_attachment = TicketAttachment(
         ticket_id=ticket_id,
+        organization_id=organization_id,
         uploader_id=uploader_id,
         object_key=object_key,
         filename=filename,
@@ -92,9 +96,12 @@ def create_ticket_attachment(
     return db_attachment
 
 
-def get_ticket_attachments(db: Session, ticket_id: int) -> List[TicketAttachment]:
+def get_ticket_attachments(db: Session, ticket_id: int, organization_id: int) -> List[TicketAttachment]:
     """Retrieve all attachments for a ticket."""
-    return db.query(TicketAttachment).filter(TicketAttachment.ticket_id == ticket_id).all()
+    return db.query(TicketAttachment).filter(
+        TicketAttachment.ticket_id == ticket_id,
+        TicketAttachment.organization_id == organization_id,
+    ).all()
 
 
 def complete_ticket_analysis(

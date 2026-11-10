@@ -5,14 +5,16 @@ import hashlib
 import hmac
 import secrets
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from jwt import InvalidTokenError
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
-from app.api.deps import get_current_user_id
+from app.api.deps import AuthenticatedUser, get_current_user, get_current_user_id
+from app.api.tenant import TenantContext, get_tenant_context
+from app.models.organization import Organization, OrganizationMembership
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -49,6 +51,42 @@ REFRESH_RATE_LIMIT = "1000/minute" if settings.app_env == "development" else "20
 PASSWORD_CHANGE_RATE_LIMIT = (
     "1000/minute" if settings.app_env == "development" else "5/minute"
 )
+
+
+@router.get("/organizations")
+def list_my_organizations(
+    response: Response,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    """Discover only currently active memberships; no tenant selector needed."""
+    organizations = (
+        db.query(Organization)
+        .join(OrganizationMembership, OrganizationMembership.organization_id == Organization.id)
+        .filter(
+            OrganizationMembership.user_id == current_user.id,
+            OrganizationMembership.is_active.is_(True),
+            Organization.is_active.is_(True),
+        )
+        .order_by(Organization.name, Organization.id)
+        .all()
+    )
+    response.headers["Cache-Control"] = "private, no-store"
+    return [{"id": org.id, "slug": org.slug, "name": org.name} for org in organizations]
+
+
+@router.post("/select-organization")
+def select_organization(
+    response: Response,
+    tenant: TenantContext = Depends(get_tenant_context),
+) -> dict:
+    """Validate a selection; clients must send it again for every request."""
+    response.headers["Cache-Control"] = "private, no-store"
+    return {
+        "organization_id": tenant.organization_id,
+        "role": tenant.user.role,
+        "access_level": tenant.user.access_level,
+    }
 
 
 def _rate_limit_bucket(action: str, identifier: str) -> str:

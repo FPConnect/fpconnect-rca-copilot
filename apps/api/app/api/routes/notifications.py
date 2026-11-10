@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import AuthenticatedUser, require_access_level
+from app.api.tenant import TenantContext, get_tenant_context
 from app.core.config import settings
 from app.core.database import get_db
 from app.crud.user import get_user_by_id
@@ -22,6 +23,7 @@ def send_sms_notification(
     payload: SmsNotificationRequest,
     current_user: AuthenticatedUser = Depends(require_access_level(2)),
     db: Session = Depends(get_db),
+    tenant: TenantContext = Depends(get_tenant_context),
 ):
     """Return a preview response only when running in development."""
     if settings.app_env != "development":
