@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     siteName: APP_NAME,
     title: `${APP_NAME} | Performance de tecnologia em saúde`,
     description: "Inteligência operacional para equipes de engenharia clínica, assistência técnica e TI em saúde.",
-    images: [{ url: "/brand/opspecta-social-card.jpeg", width: 828, height: 459, alt: `${APP_NAME} - Performance de tecnologia em saúde` }],
+    images: [{ url: "/brand/opspecta-hero.png", width: 1672, height: 941, alt: `${APP_NAME} - Inteligência operacional para a saúde` }],
   },
   robots: { index: true, follow: true },
 };

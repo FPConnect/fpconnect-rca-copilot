@@ -64,7 +64,7 @@ const principles = [
 
 export default function ResponsibleAiPage() {
   return (
-    <main className="min-h-screen bg-[#f5f8fa] text-[#071a3d]">
+    <main className="brand-surface marketing-page min-h-screen bg-[#f5f8fa] text-[#071a3d]">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-5 px-5 py-5 sm:px-8">
           <Link href="/" aria-label="OPSPECTA página inicial"><BrandLogo /></Link>
@@ -75,7 +75,7 @@ export default function ResponsibleAiPage() {
           </nav>
         </div>
       </header>
-      <section className="bg-[#071a3d] px-5 py-16 text-white sm:px-8">
+      <section className="marketing-hero bg-[#071a3d] px-5 py-16 text-white sm:px-8">
         <div className="mx-auto max-w-[1120px]">
           <p className="text-sm font-black uppercase tracking-wide text-[#66efe5]">Princípios de desenvolvimento e governança</p>
           <h1 className="mt-5 max-w-4xl text-4xl font-black leading-tight sm:text-5xl">IA responsável na OPSPECTA</h1>

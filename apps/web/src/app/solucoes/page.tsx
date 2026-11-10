@@ -58,7 +58,7 @@ const exploring = [
 
 export default function SolucoesPage() {
   return (
-    <main className="min-h-screen bg-[#f5f8fa] text-[#071a3d]">
+    <main className="brand-surface marketing-page min-h-screen bg-[#f5f8fa] text-[#071a3d]">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
           <Link href="/" aria-label="Página inicial da OPSPECTA"><BrandLogo /></Link>
@@ -70,7 +70,7 @@ export default function SolucoesPage() {
         </div>
       </header>
 
-      <section className="bg-[#071a3d] px-5 py-16 text-white sm:px-8">
+      <section className="marketing-hero bg-[#071a3d] px-5 py-16 text-white sm:px-8">
         <div className="mx-auto max-w-[1120px]">
           <span className="rounded-full border border-[#18c8c0]/50 px-4 py-2 text-sm font-bold text-[#5ee9e0]">Soluções OPSPECTA · serviços analíticos B2B</span>
           <h1 className="mt-7 max-w-4xl text-4xl font-black leading-tight sm:text-5xl">Históricos técnicos que ajudam a priorizar decisões.</h1>

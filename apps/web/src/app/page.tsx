@@ -283,31 +283,24 @@ export default function LandingPage() {
 
   return (
     <main className="brand-surface app-viewport bg-white text-[#071a3d]" data-no-translate>
-      <section className="relative min-h-[680px] overflow-hidden border-b border-slate-200 bg-white">
-        <Image
-          src="/brand/opspecta-hero.png"
-          alt={t.heroAlt}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-y-0 left-0 w-full bg-white/95 md:w-[72%] md:bg-white/90 lg:w-[61%]" />
-
-        <div className="relative mx-auto flex min-h-[680px] w-full max-w-[1440px] flex-col px-5 sm:px-8 lg:px-10">
-          <nav data-motion="fade" className="flex min-h-20 items-center justify-between gap-4 border-b border-slate-200/80">
-            <BrandLogo compact className="sm:hidden" />
-            <BrandLogo className="hidden sm:inline-flex" />
+      <section className="landing-hero relative overflow-hidden bg-[#07172c] text-white">
+        <div className="landing-orbits pointer-events-none absolute inset-0" aria-hidden="true">
+          <span /><span /><span />
+        </div>
+        <div className="relative mx-auto flex w-full max-w-[1440px] flex-col px-5 sm:px-8 lg:px-12">
+          <nav data-motion="fade" className="flex min-h-24 items-center justify-between gap-4 border-b border-white/10">
+            <BrandLogo compact className="sm:hidden" inverse />
+            <BrandLogo inverse className="hidden sm:inline-flex" />
             <div
-              className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white p-1 text-sm font-bold shadow-sm"
+              className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 p-1 text-sm font-bold"
               aria-label={t.languageLabel}
             >
-              <Languages size={16} className="ml-2 hidden text-[#0a7f86] sm:block" aria-hidden="true" />
+              <Languages size={16} className="ml-2 hidden text-[#81dbd4] sm:block" aria-hidden="true" />
               <button
                 type="button"
                 aria-pressed={locale === "pt"}
                 onClick={() => handleLocaleChange("pt")}
-                className={`min-h-9 rounded-md px-2 sm:px-3 ${locale === "pt" ? "bg-[#071a3d] text-white" : "text-slate-600"}`}
+                className={`min-h-9 rounded-full px-3 sm:px-4 ${locale === "pt" ? "bg-white text-[#07172c]" : "text-slate-300 hover:text-white"}`}
               >
                 Português
               </button>
@@ -315,89 +308,83 @@ export default function LandingPage() {
                 type="button"
                 aria-pressed={locale === "en"}
                 onClick={() => handleLocaleChange("en")}
-                className={`min-h-9 rounded-md px-2 sm:px-3 ${locale === "en" ? "bg-[#071a3d] text-white" : "text-slate-600"}`}
+                className={`min-h-9 rounded-full px-3 sm:px-4 ${locale === "en" ? "bg-white text-[#07172c]" : "text-slate-300 hover:text-white"}`}
               >
                 English
               </button>
             </div>
           </nav>
 
-          <div className="flex flex-1 items-center py-10">
+          <div className="grid items-center gap-12 py-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-24">
             <div className="max-w-2xl">
-              <div data-motion className="inline-flex items-center gap-2 rounded-full border border-[#1bbdb6]/40 bg-white/85 px-4 py-2 text-sm font-bold text-[#075c63]">
-                <ShieldCheck size={16} aria-hidden="true" />
+              <div data-motion className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#8ce7dc]">
+                <span className="h-2 w-2 rounded-full bg-[#70e8da]" aria-hidden="true" />
                 {t.badge}
               </div>
-              <div
-                className="relative mt-7 aspect-[22/5] w-full max-w-2xl overflow-hidden bg-white"
-                data-brand-banner
-                data-motion="scale"
-              >
-                <Image
-                  src={brandBannerSrc}
-                  alt={`${APP_NAME} - ${t.brandTagline}`}
-                  fill
-                  priority
-                  sizes="(max-width: 768px) calc(100vw - 40px), 672px"
-                  className="object-cover object-center"
-                />
-              </div>
-              <h1 data-motion className="mt-5 max-w-xl text-3xl font-bold leading-tight text-[#0a7f86]">{t.headline}</h1>
-              <p data-motion className="mt-6 max-w-2xl text-lg leading-8 text-slate-700">{t.subtitle}</p>
+              <h1 data-motion className="mt-6 max-w-2xl text-[2.4rem] font-semibold leading-[1.12] tracking-[-0.035em] text-white sm:text-5xl lg:text-[3.6rem]">{t.headline}</h1>
+              <p data-motion className="mt-6 max-w-xl text-base leading-7 text-[#b8cbd3] sm:text-lg sm:leading-8">{t.subtitle}</p>
               <div data-motion className="mt-8 flex flex-wrap gap-3">
                 <Link
                   href={`https://wa.me/5547996789861?text=${encodeURIComponent(locale === "pt" ? "Olá! Quero conversar sobre o piloto de indicadores da OPSPECTA." : "Hello! I would like to discuss the OPSPECTA metrics pilot.")}`}
-                  className="motion-arrow motion-lift inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#071a3d] px-6 font-bold text-white shadow-lg transition hover:bg-[#0a7f86]"
+                  className="motion-arrow motion-lift inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#8ce7dc] px-6 font-bold text-[#07172c] transition hover:bg-[#b2fff3]"
                 >
                   <MessageCircle size={19} aria-hidden="true" />
                   {t.cta}
                 </Link>
                 <Link
                   href="/login"
-                  className="motion-arrow motion-lift inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-[#071a3d] bg-white/90 px-6 font-bold text-[#071a3d] transition hover:border-[#0a7f86] hover:text-[#0a7f86]"
+                  className="motion-arrow motion-lift inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/25 px-6 font-bold text-white transition hover:border-[#8ce7dc] hover:bg-white/5"
                 >
                   {t.secondaryCta}
                   <ArrowRight size={18} aria-hidden="true" />
                 </Link>
                 <Link
                   href="/recursos"
-                  className="motion-arrow motion-lift inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-[#0a7f86] bg-white/90 px-6 font-bold text-[#075c63] transition hover:bg-[#e8fbf9]"
+                  className="motion-arrow inline-flex min-h-12 items-center justify-center gap-2 px-2 font-bold text-[#a2dcd7] transition hover:text-white"
                 >
                   <FileSearch size={18} aria-hidden="true" />
                   {t.resourceCta}
                 </Link>
               </div>
 
-              <div data-motion className="mt-9 border-y border-slate-300 bg-white/80 py-4">
-                <p className="mb-3 text-xs font-bold uppercase text-slate-500">{t.pilotReference}</p>
+              <div data-motion className="mt-10 border-t border-white/15 pt-5">
+                <p className="mb-4 text-xs font-bold uppercase tracking-[0.14em] text-[#93aebb]">{t.pilotReference}</p>
                 <div className="grid gap-4 sm:grid-cols-3">
                   {t.kpis.map(({ label, value, icon: Icon }) => (
-                    <div key={label} className="flex items-center gap-3 border-slate-200 sm:border-r sm:last:border-r-0">
-                      <Icon size={19} className="shrink-0 text-[#0a7f86]" aria-hidden="true" />
+                    <div key={label} className="flex items-center gap-3 border-white/15 sm:border-r sm:last:border-r-0">
+                      <Icon size={19} className="shrink-0 text-[#8ce7dc]" aria-hidden="true" />
                       <span>
-                        <strong className="block text-base text-[#071a3d]">{value}</strong>
-                        <span className="block text-xs text-slate-600">{label}</span>
+                        <strong className="block text-base text-white">{value}</strong>
+                        <span className="block text-xs text-[#b8cbd3]">{label}</span>
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
+            <div data-motion="scale" className="relative mx-auto w-full max-w-[620px]">
+              <div className="landing-image relative overflow-hidden rounded-[1.75rem] border border-white/20">
+                <Image src="/brand/opspecta-hero.png" alt={t.heroAlt} width={1672} height={941} priority sizes="(max-width: 660px) calc(133.34vw - 53.34px), 827px" className="aspect-[4/3] w-full object-cover object-[72%_center]" />
+              </div>
+              <div className="relative mx-auto -mt-7 aspect-[22/5] w-[88%] overflow-hidden rounded-xl border border-white/70 bg-white shadow-xl" data-brand-banner>
+                <Image src={brandBannerSrc} alt={`${APP_NAME} - ${t.brandTagline}`} fill sizes="(max-width: 660px) 88vw, 546px" className="object-contain" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-[#f4f8fa] py-16">
+      <section className="bg-[#f5f8f7] py-20 sm:py-24">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
-          <p data-motion className="text-sm font-black uppercase text-[#0a7f86]">{t.sectionEyebrow}</p>
-          <h2 data-motion className="mt-3 max-w-3xl text-4xl font-black leading-tight text-[#071a3d]">{t.sectionTitle}</h2>
+          <p data-motion className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#087a72]">{t.sectionEyebrow}</p>
+          <h2 data-motion className="mt-4 max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-[#10293a] sm:text-4xl">{t.sectionTitle}</h2>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             {t.highlights.map(({ icon: Icon, title, description }, index) => (
-              <article key={title} data-motion className="motion-lift rounded-lg border border-slate-200 bg-white p-7 shadow-sm" style={{ transitionDelay: `${index * 80}ms` }}>
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-[#dff8f6] text-[#08777c]">
+              <article key={title} data-motion className="motion-lift rounded-2xl border border-[#dfeae7] bg-white p-8" style={{ transitionDelay: `${index * 80}ms` }}>
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[#e1f5f0] text-[#087a72]">
                   <Icon size={22} aria-hidden="true" />
                 </span>
-                <h3 className="mt-6 text-xl font-black text-[#071a3d]">{title}</h3>
+                <h3 className="mt-7 text-xl font-semibold text-[#10293a]">{title}</h3>
                 <p className="mt-3 leading-7 text-slate-600">{description}</p>
               </article>
             ))}
@@ -405,7 +392,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="bg-[#071a33] py-14 text-white" aria-labelledby="pilot-learning-heading">
+      <section className="landing-pilot relative overflow-hidden bg-[#07172c] py-20 text-white sm:py-24" aria-labelledby="pilot-learning-heading">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
           <div data-motion className="max-w-3xl">
             <BarChart3 size={34} className="text-[#22d7cf]" aria-hidden="true" />
@@ -415,7 +402,7 @@ export default function LandingPage() {
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {t.pilotOutcomes.map((outcome, index) => (
-              <article key={outcome.title} data-motion className="rounded-lg border border-slate-600 bg-white/5 p-6" style={{ transitionDelay: `${index * 80}ms` }}>
+              <article key={outcome.title} data-motion className="rounded-2xl border border-white/15 bg-white/5 p-7" style={{ transitionDelay: `${index * 80}ms` }}>
                 <h3 className="text-lg font-black text-white">{outcome.title}</h3>
                 <p className="mt-3 leading-7 text-slate-200">{outcome.description}</p>
               </article>
@@ -431,12 +418,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="py-20 sm:py-24">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
           <h2 data-motion className="text-4xl font-black text-[#071a3d]">{t.processTitle}</h2>
           <div className="mt-10 grid gap-8 md:grid-cols-3">
             {t.process.map((step, index) => (
-              <article key={step.number} data-motion className="border-t-4 border-[#18c8c0] pt-5" style={{ transitionDelay: `${index * 80}ms` }}>
+              <article key={step.number} data-motion className="border-t border-[#92d9d0] pt-6" style={{ transitionDelay: `${index * 80}ms` }}>
                 <span className="text-sm font-black text-[#0a7f86]">{step.number}</span>
                 <h3 className="mt-3 text-2xl font-black text-[#071a3d]">{step.title}</h3>
                 <p className="mt-3 leading-7 text-slate-600">{step.text}</p>
@@ -446,7 +433,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="border-y border-slate-200 bg-white py-14" aria-labelledby="resources-heading">
+      <section className="border-y border-[#dfeae7] bg-[#eff8f5] py-16" aria-labelledby="resources-heading">
         <div className="mx-auto flex max-w-[1280px] flex-col gap-5 px-5 sm:px-8 md:flex-row md:items-center md:justify-between">
           <div className="max-w-3xl">
             <p className="text-sm font-black uppercase tracking-wide text-[#0a7f86]">{t.resourceCta}</p>
@@ -464,7 +451,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="plans" className="border-y border-slate-200 bg-[#f4f8fa] py-16">
+      <section id="plans" className="border-y border-slate-200 bg-[#f5f8f7] py-20 sm:py-24">
         <div className="mx-auto max-w-[1280px] px-5 sm:px-8">
           <div data-motion className="max-w-4xl">
             <p className="text-sm font-black uppercase text-[#0a7f86]">{t.chooseTitle}</p>
@@ -484,7 +471,7 @@ export default function LandingPage() {
                   aria-pressed={selected}
                   onClick={() => setActivePlan(planKey)}
                   style={{ transitionDelay: `${planOrder.indexOf(planKey) * 70}ms` }}
-                  className={`motion-lift min-h-28 rounded-lg border p-5 text-left transition ${
+                  className={`motion-lift min-h-28 rounded-2xl border p-5 text-left transition ${
                     selected
                       ? "border-[#0a7f86] bg-[#071a33] text-white shadow-md"
                       : "border-slate-300 bg-white text-[#071a3d] hover:border-[#0a7f86]"
@@ -497,7 +484,7 @@ export default function LandingPage() {
             })}
           </div>
 
-          <div data-motion className="mt-8 grid gap-8 rounded-lg border border-slate-200 bg-white p-7 shadow-sm lg:grid-cols-[1fr_0.8fr] lg:p-9">
+          <div data-motion className="mt-8 grid gap-8 rounded-2xl border border-[#dfeae7] bg-white p-7 lg:grid-cols-[1fr_0.8fr] lg:p-9">
             <div>
               <p className="text-sm font-bold uppercase text-[#0a7f86]">{active.label}</p>
               <h3 className="mt-3 text-3xl font-black text-[#071a3d]">{active.name}</h3>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   ArrowRight,
   Check,
@@ -13,6 +13,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
+import { setLanguagePreference, useLanguagePreference } from "@/components/LanguageRuntime";
 import { APP_NAME } from "@/lib/brand";
 
 type Locale = "pt" | "en";
@@ -101,7 +102,7 @@ const copy = {
 } as const;
 
 export default function DiagnosticPage() {
-  const [locale, setLocale] = useState<Locale>("pt");
+  const locale: Locale = useLanguagePreference() === "en-US" ? "en" : "pt";
   const t = useMemo(() => copy[locale], [locale]);
   const whatsappHref =
     "https://wa.me/5547996789861?text=" +
@@ -112,7 +113,7 @@ export default function DiagnosticPage() {
     );
 
   return (
-    <main className="brand-surface app-viewport bg-white text-[#071a3d]" data-no-translate>
+    <main className="brand-surface app-viewport marketing-page bg-white text-[#071a3d]" data-no-translate>
       <section className="border-b border-slate-200 bg-[#f4f8fa]">
         <div className="mx-auto max-w-[1180px] px-5 py-5 sm:px-8">
           <nav className="flex items-center justify-between gap-4">
@@ -124,14 +125,16 @@ export default function DiagnosticPage() {
               <Languages size={16} className="ml-2 hidden text-[#0a7f86] sm:block" aria-hidden="true" />
               <button
                 type="button"
-                onClick={() => setLocale("pt")}
+                aria-pressed={locale === "pt"}
+                onClick={() => setLanguagePreference("pt-BR")}
                 className={`min-h-9 rounded-md px-3 ${locale === "pt" ? "bg-[#071a3d] text-white" : "text-slate-600"}`}
               >
                 PT
               </button>
               <button
                 type="button"
-                onClick={() => setLocale("en")}
+                aria-pressed={locale === "en"}
+                onClick={() => setLanguagePreference("en-US")}
                 className={`min-h-9 rounded-md px-3 ${locale === "en" ? "bg-[#071a3d] text-white" : "text-slate-600"}`}
               >
                 EN
@@ -141,7 +144,7 @@ export default function DiagnosticPage() {
         </div>
       </section>
 
-      <section className="bg-white py-16 sm:py-20">
+      <section className="marketing-resource-hero bg-white py-16 sm:py-20">
         <div className="mx-auto grid max-w-[1180px] gap-12 px-5 sm:px-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-[#18c8c0]/40 bg-[#e9fbfa] px-4 py-2 text-sm font-black text-[#075c63]">
@@ -231,7 +234,7 @@ export default function DiagnosticPage() {
         </div>
       </section>
 
-      <section className="bg-[#071a33] py-16 text-white">
+      <section className="marketing-hero bg-[#071a33] py-16 text-white">
         <div className="mx-auto max-w-[900px] px-5 text-center sm:px-8">
           <h2 className="text-3xl font-black sm:text-4xl">{t.nextTitle}</h2>
           <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-slate-200">{t.nextText}</p>
